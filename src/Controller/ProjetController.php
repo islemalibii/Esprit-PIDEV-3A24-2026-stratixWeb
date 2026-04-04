@@ -17,12 +17,12 @@ class ProjetController extends AbstractController
     /**
      * Liste tous les projets actifs.
      */
-    #[Route('/', name: 'app_projet_index', methods: ['GET'])]
+    #[Route('/projet', name: 'app_projet_index', methods: ['GET'])]
     public function index(ProjetRepository $projetRepository): Response
     {
-        // Correction du chemin : ajout de "admin/"
         return $this->render('admin/Projet/listeProjets.html.twig', [
-            'projets' => $projetRepository->findBy(['isArchived' => false], ['id' => 'DESC']),
+            // Utilisation de la méthode personnalisée du repository
+            'projets' => $projetRepository->findAllActive(),
         ]);
     }
 
@@ -33,7 +33,8 @@ class ProjetController extends AbstractController
     public function archives(ProjetRepository $projetRepository): Response
     {
         return $this->render('admin/Projet/listeArchives.html.twig', [
-            'projets' => $projetRepository->findBy(['isArchived' => true], ['id' => 'DESC']),
+            // Utilisation de la méthode personnalisée du repository
+            'projets' => $projetRepository->findAllArchived(),
         ]);
     }
 
@@ -44,6 +45,9 @@ class ProjetController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $projet = new Projet();
+        // On s'assure qu'un nouveau projet n'est pas archivé par défaut
+        $projet->setIsArchived(false);
+        
         $form = $this->createForm(ProjetType::class, $projet);
         $form->handleRequest($request);
 
@@ -51,7 +55,7 @@ class ProjetController extends AbstractController
             $entityManager->persist($projet);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Projet créé avec succès.');
+            $this->addFlash('success', 'Le projet "' . $projet->getNom() . '" a été créé avec succès.');
             return $this->redirectToRoute('app_projet_index');
         }
 
@@ -72,24 +76,13 @@ class ProjetController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Projet mis à jour.');
+            $this->addFlash('success', 'Le projet a été mis à jour.');
             return $this->redirectToRoute('app_projet_index');
         }
 
         return $this->render('admin/Projet/modifierProjet.html.twig', [
             'projet' => $projet,
             'form' => $form->createView(),
-        ]);
-    }
-
-    /**
-     * Détails du projet.
-     */
-    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
-    public function show(Projet $projet): Response
-    {
-        return $this->render('admin/Projet/detailsProjet.html.twig', [
-            'projet' => $projet,
         ]);
     }
 
@@ -102,7 +95,7 @@ class ProjetController extends AbstractController
         $projet->setIsArchived(true);
         $entityManager->flush();
 
-        $this->addFlash('warning', 'Projet déplacé dans les archives.');
+        $this->addFlash('warning', 'Le projet a été déplacé dans les archives.');
         return $this->redirectToRoute('app_projet_index');
     }
 
@@ -115,7 +108,33 @@ class ProjetController extends AbstractController
         $projet->setIsArchived(false);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Projet restauré avec succès.');
+        $this->addFlash('success', 'Le projet a été restauré dans la liste active.');
         return $this->redirectToRoute('app_projet_archives');
+    }
+
+    /**
+     * Suppression définitive (Optionnel).
+     */
+    #[Route('/{id}/delete', name: 'app_projet_delete', methods: ['POST'])]
+    public function delete(Request $request, Projet $projet, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$projet->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($projet);
+            $entityManager->flush();
+            $this->addFlash('danger', 'Le projet a été supprimé définitivement.');
+        }
+
+        return $this->redirectToRoute('app_projet_index');
+    }
+
+    /**
+     * Détails du projet (Placé à la fin pour éviter les conflits de routes).
+     */
+    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
+    public function show(Projet $projet): Response
+    {
+        return $this->render('admin/Projet/detailsProjet.html.twig', [
+            'projet' => $projet,
+        ]);
     }
 }
