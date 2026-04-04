@@ -28,14 +28,20 @@
             </select>
         </div>
         
-        <div class="col-lg-3 text-end">
-            {# Vérifie que la route app_projet_new existe bien dans ton Controller #}
-            <a href="{{ path('app_projet_new') }}" class="btn btn-danger shadow-sm px-4 fw-bold">
+        <div class="col-lg-3 text-end d-flex gap-2 justify-content-end">
+            {# BOUTON ARCHIVES #}
+            <a href="{{ path('app_projet_archives') }}" class="btn btn-outline-secondary shadow-sm px-3 fw-bold rounded-3">
+                <i class="ti ti-archive me-1"></i> Archives
+            </a>
+
+            {# BOUTON NOUVEAU PROJET #}
+            <a href="{{ path('app_projet_new') }}" class="btn btn-danger shadow-sm px-4 fw-bold rounded-3">
                 <i class="ti ti-plus me-1"></i> Nouveau Projet
             </a>
         </div>
     </div>
 
+    {# LE RESTE DU TABLEAU RESTE IDENTIQUE #}
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table align-middle mb-0" id="projetTable">
@@ -85,9 +91,9 @@
                                 <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Modifier">
                                     <i class="ti ti-edit text-warning"></i>
                                 </a>
-                                {# Correction ici : on utilise une vérification de route ou un lien mort si l'erreur persiste #}
-                                <a href="#" class="btn btn-sm btn-white" title="Supprimer" onclick="return confirm('Action non configurée');">
-                                    <i class="ti ti-trash text-danger"></i>
+                                {# Optionnel : tu peux aussi ajouter une icône pour archiver directement ici #}
+                                <a href="{{ path('app_projet_archive_action', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Archiver" onclick="return confirm('Voulez-vous archiver ce projet ?');">
+                                    <i class="ti ti-archive text-secondary"></i>
                                 </a>
                             </div>
                         </td>
@@ -106,6 +112,7 @@
     </div>
 </div>
 
+{# LE SCRIPT RESTE LE MÊME #}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchInput');
@@ -141,10 +148,10 @@
 
         rows.sort((a, b) => {
             let aVal, bVal;
-            if (idx === 2) { // Colonne Budget
+            if (idx === 2) { 
                 aVal = parseFloat(a.querySelector(".projet-budget").dataset.value) || 0;
                 bVal = parseFloat(b.querySelector(".projet-budget").dataset.value) || 0;
-            } else { // Texte
+            } else { 
                 aVal = a.children[idx].innerText.toLowerCase();
                 bVal = b.children[idx].innerText.toLowerCase();
             }

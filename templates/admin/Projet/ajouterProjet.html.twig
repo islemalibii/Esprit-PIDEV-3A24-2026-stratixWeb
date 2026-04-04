@@ -3,7 +3,7 @@
 {% block title %}STRATIX - Nouveau Projet{% endblock %}
 
 {% block body %}
-{# On ne met plus de navbar ou de sidebar ici, elles sont gérées par base.html.twig #}
+{# Hérite de la structure globale de STRATIX #}
 
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -24,7 +24,7 @@
                         <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
                     </div>
 
-                    {# Budget et Statut #}
+                    {# Budget et Statut Visuel #}
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">BUDGET (DT)</label>
@@ -33,6 +33,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">STATUT</label>
+                            {# Affichage statique pour l'UI uniquement #}
                             <input type="text" class="form-control border-0 bg-light p-3 rounded-3 fw-bold text-muted" value="Planifié" readonly>
                         </div>
                     </div>
@@ -76,7 +77,9 @@
                             </a>
                         </div>
                     </div>
-                {{ form_end(form) }}
+
+                {# CRITIQUE : Empêche l'affichage de la liste de statuts indésirable en bas #}
+                {{ form_end(form, {'render_rest': false}) }}
             </div>
         </div>
     </div>
