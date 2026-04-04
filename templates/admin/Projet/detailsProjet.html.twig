@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Détails du Projet{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fs-4 fw-bold text-dark">🔍 Détails : {{ projet.nom }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_projet_index') }}" class="text-danger text-decoration-none">Liste des projets</a>
+                    </li>
+                    <li class="breadcrumb-item active">Fiche projet</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-warning text-white shadow-sm fw-bold">
+                <i class="ti ti-edit me-1"></i> Modifier
+            </a>
+            <a href="{{ path('app_projet_index') }}" class="btn btn-light border shadow-sm fw-bold">
+                <i class="ti ti-arrow-back-up me-1"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="ti ti-info-circle me-2 text-danger"></i>Fiche descriptive
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold" style="width: 30%;">NOM DU PROJET</th>
+                                <td class="ps-3 fw-bold text-dark">{{ projet.nom }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">DESCRIPTION</th>
+                                <td class="ps-3 text-muted">{{ projet.description|default('Aucune description enregistrée.') }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">BUDGET ESTIMÉ</th>
+                                <td class="ps-3 text-success fw-bold fs-5">{{ projet.budget|number_format(2, ',', ' ') }} DT</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">STATUT ACTUEL</th>
+                                <td class="ps-3">
+                                    <span class="badge rounded-pill px-3 py-2 
+                                        {% if projet.statut == 'En cours' %}bg-warning text-dark
+                                        {% elseif projet.statut == 'Terminé' %}bg-success
+                                        {% elseif projet.statut == 'Annulé' %}bg-danger
+                                        {% else %}bg-info text-white{% endif %}">
+                                        {{ projet.statut }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="ti ti-calendar me-2 text-danger"></i>Planning
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="bg-light p-2 rounded-3 me-3">
+                            <i class="ti ti-calendar-event fs-3 text-primary"></i>
+                        </div>
+                        <div>
+                            <label class="text-muted small fw-bold d-block">DATE DE DÉBUT</label>
+                            <span class="fw-bold text-dark fs-6">{{ projet.dateDebut|date('d/m/Y') }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <div class="bg-light p-2 rounded-3 me-3">
+                            <i class="ti ti-calendar-check fs-3 text-danger"></i>
+                        </div>
+                        <div>
+                            <label class="text-muted small fw-bold d-block">DATE DE FIN</label>
+                            <span class="fw-bold text-dark fs-6">{{ projet.dateFin|date('d/m/Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

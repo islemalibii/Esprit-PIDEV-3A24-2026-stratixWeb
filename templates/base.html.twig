@@ -1,26 +1,114 @@
+{# templates/base.html.twig #}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}InApp Inventory Dashboard{% endblock %}</title>
+    <title>{% block title %}STRATIX - Inventory Dashboard{% endblock %}</title>
 
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('inapp/assets/images/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('inapp/assets/images/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('inapp/assets/images/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset('inapp/assets/site.webmanifest') }}">
+
+    {# Icônes Tabler #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    {# Bootstrap 5 CSS #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {% block stylesheets %}
-        <link rel="stylesheet" crossorigin href="/styles/app.css">
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+        <style>
+            :root {
+                --sidebar-width: 260px;
+                --navbar-height: 70px;
+            }
+
+            body { 
+                background-color: #f8f9fa; 
+                margin: 0;
+                overflow-x: hidden;
+            }
+            
+            /* Sidebar Fixe */
+            .sidebar {
+                width: var(--sidebar-width);
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1040;
+                background: #fff;
+                border-right: 1px solid #eaeaea;
+                transition: all 0.3s ease;
+            }
+
+            /* Navbar Fixe */
+            .navbar {
+                height: var(--navbar-height);
+                position: fixed;
+                top: 0;
+                right: 0;
+                /* La navbar prend toute la largeur MOINS la sidebar */
+                width: calc(100% - var(--sidebar-width));
+                z-index: 1030;
+                background: #fff;
+                border-bottom: 1px solid #eaeaea;
+                transition: all 0.3s ease;
+            }
+
+            /* Conteneur de contenu principal */
+            .main-wrapper {
+                margin-left: var(--sidebar-width);
+                padding-top: var(--navbar-height);
+                min-height: 100vh;
+                transition: all 0.3s ease;
+            }
+
+            .content-padding {
+                padding: 2rem;
+            }
+
+            /* Responsive : Mobile et Tablettes */
+            @media (max-width: 992px) {
+                .sidebar { 
+                    left: calc(-1 * var(--sidebar-width)); 
+                }
+                .navbar { 
+                    width: 100%; 
+                }
+                .main-wrapper { 
+                    margin-left: 0; 
+                }
+                /* Classe à ajouter via JS pour ouvrir la sidebar sur mobile */
+                .sidebar-open .sidebar { 
+                    left: 0; 
+                }
+            }
+        </style>
     {% endblock %}
 </head>
 <body>
     <div id="overlay" class="overlay"></div>
 
-    {% block body %}{% endblock %}
+    {# Inclusion de la Sidebar #}
+    <div class="sidebar">
+        {{ include('admin/partials/sidebar.html.twig') }}
+    </div>
+
+    {# Inclusion de la Navbar #}
+    {{ include('admin/partials/navbar.html.twig') }}
+
+    {# Zone de contenu principal #}
+    <main class="main-wrapper">
+        <div class="content-padding">
+            {% block body %}{% endblock %}
+        </div>
+    </main>
 
     {% block javascripts %}
-        <script src="/inapp/assets/js/main.js"></script>
+        {# Bootstrap JS Bundle (inclut Popper) #}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ asset('inapp/assets/js/main.js') }}"></script>
     {% endblock %}
 </body>
 </html>
