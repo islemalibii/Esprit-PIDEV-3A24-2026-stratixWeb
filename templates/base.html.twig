@@ -12,7 +12,6 @@
 
     {% block stylesheets %}
         <link rel="stylesheet" crossorigin href="/styles/app.css">
-        <script type="module" crossorigin src="/js/main.js"></script>
     {% endblock %}
 </head>
 <body>
@@ -20,6 +19,8 @@
 
     {% block body %}{% endblock %}
 
-    {% block javascripts %}{% endblock %}
+    {% block javascripts %}
+        <script src="/inapp/assets/js/main.js"></script>
+    {% endblock %}
 </body>
 </html>
