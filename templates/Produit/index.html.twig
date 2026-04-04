@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stratix - Liste des Produits{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            
+            {# BARRE DE RECHERCHE #}
+            <form method="GET" action="{{ path('produit_index') }}" class="row g-2 mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">🔍</span>
+                        <input type="text" name="q" value="{{ searchTerm }}" class="form-control border-start-0" placeholder="Rechercher un produit (nom, catégorie...)...">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn text-white" style="background-color: #3498db;">Rechercher</button>
+                    <a href="{{ path('produit_index') }}" class="btn text-white" style="background-color: #95a5a6;">Effacer</a>
+                </div>
+            </form>
+
+            {# ENTÊTE ET ACTIONS #}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0 fw-bold" style="color: #2c3e50;">Gestion des Produits</h2>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn text-white dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color: #9b59b6;">
+                            🔽 Trier par
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ path('produit_index', {sort: 'prix', direction: 'asc'}) }}">Prix croissant</a></li>
+                            <li><a class="dropdown-item" href="{{ path('produit_index', {sort: 'prix', direction: 'desc'}) }}">Prix décroissant</a></li>
+                            <li><a class="dropdown-item" href="{{ path('produit_index', {sort: 'nom', direction: 'asc'}) }}">Nom (A-Z)</a></li>
+                        </ul>
+                    </div>
+                    <a href="{{ path('produit_new') }}" class="btn text-white fw-bold" style="background-color: #27ae60;">➕ Nouveau Produit</a>
+                    <a href="{{ path('produit_pdf') }}" class="btn btn-danger">
+    Export PDF 📄
+</a>
+                </div>
+            </div>
+
+            {# TABLEAU (L'équivalent de ta ListView JavaFX) #}
+            <div class="table-responsive rounded border">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix</th>
+                            <th>Stock Actuel</th>
+                            <th>Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for produit in produits %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ produit.nom }}</div>
+                                    <small class="text-muted">{{ produit.categorie }}</small>
+                                </td>
+                                <td class="fw-bold text-success">{{ produit.prix|number_format(2, ',', ' ') }} DT</td>
+                                <td>
+                                    {{ produit.stockActuel }} 
+                                    <small class="text-muted">(min: {{ produit.stockMin }})</small>
+                                </td>
+                                <td>
+                                    {# On utilise ta méthode getStatut() définie dans l'Entité #}
+                                    <span class="badge {{ produit.statut.class }} p-2">
+                                        {{ produit.statut.text }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a href="{{ path('produit_edit', {id: produit.id}) }}" class="btn btn-sm btn-outline-warning">✏</a>
+                                        <form method="post" action="{{ path('produit_delete', {id: produit.id}) }}" style="display:inline-block;" onsubmit="return confirm('Supprimer ce produit ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger">🗑</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">Aucun produit trouvé.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# STATISTIQUES (Le bottom de ton FXML) #}
+            <div class="row g-0 text-center mt-4 p-3 border rounded" style="background-color: #ecf0f1;">
+                <div class="col-md-4 border-end">
+                    <div class="small text-muted">TOTAL PRODUITS</div>
+                    <div class="fw-bold h5 mb-0">{{ stats.total }}</div>
+                </div>
+                <div class="col-md-4 border-end">
+                    <div class="small text-muted">STOCK FAIBLE</div>
+                    <div class="fw-bold h5 mb-0 text-danger">{{ stats.stockFaible }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small text-muted">VALEUR DU STOCK</div>
+                    <div class="fw-bold h5 mb-0 text-success">{{ stats.valeurStock|number_format(2, ',', ' ') }} DT</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
