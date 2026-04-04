@@ -32,12 +32,29 @@ class DashboardController extends AbstractController
             if ($t->getPriorite() === 'BASSE')   $basse++;
         }
 
-        // Tâches récentes (5 dernières)
         $tachesRecentes = array_slice(array_reverse($taches), 0, 5);
 
-        // Prochain planning
-        $prochainPlanning = null;
         $today = new \DateTime();
+        $tachesImminentes = [];
+        foreach ($taches as $t) {
+            if ($t->getDeadline() && $t->getDeadline() >= $today && $t->getStatut() !== 'TERMINEE') {
+                $diff = $today->diff($t->getDeadline())->days;
+                if ($diff <= 3) {
+                    $tachesImminentes[] = $t;
+                }
+            }
+        }
+        $tachesImminentes = array_slice($tachesImminentes, 0, 5);
+
+        $planningsAVenir = [];
+        foreach ($plannings as $p) {
+            if ($p->getDate() >= $today) {
+                $planningsAVenir[] = $p;
+            }
+        }
+        $planningsAVenir = array_slice($planningsAVenir, 0, 5);
+
+        $prochainPlanning = null;
         foreach ($plannings as $p) {
             if ($p->getDate() >= $today) {
                 $prochainPlanning = $p;
@@ -52,26 +69,28 @@ class DashboardController extends AbstractController
 
         $quotes = [
             ["text" => "Le succès c'est tomber sept fois et se relever huit.", "author" => "Proverbe japonais"],
-            ["text" => "La productivité n'est jamais un accident. C'est toujours le résultat d'un engagement envers l'excellence.", "author" => "Paul J. Meyer"],
-            ["text" => "Commencez par faire ce qui est nécessaire, puis ce qui est possible.", "author" => "François d'Assise"],
-            ["text" => "Le temps est ce que nous voulons le plus, mais ce que nous utilisons le plus mal.", "author" => "William Penn"],
+            ["text" => "La productivité n'est jamais un accident.", "author" => "Paul J. Meyer"],
             ["text" => "Une heure de planification peut vous faire gagner 10 heures de travail.", "author" => "Dale Carnegie"],
         ];
         $quote = $quotes[array_rand($quotes)];
 
         return $this->render('dashboard/index.html.twig', [
-            'total'          => count($taches),
-            'aFaire'         => $aFaire,
-            'enCours'        => $enCours,
-            'terminees'      => $terminees,
-            'haute'          => $haute,
-            'moyenne'        => $moyenne,
-            'basse'          => $basse,
-            'tachesRecentes' => $tachesRecentes,
-            'totalPlannings' => count($plannings),
-            'employes'       => $employes,
-            'quote'          => $quote,
-            'taches'         => $taches,
+            'total'            => count($taches),
+            'aFaire'           => $aFaire,
+            'enCours'          => $enCours,
+            'terminees'        => $terminees,
+            'haute'            => $haute,
+            'moyenne'          => $moyenne,
+            'basse'            => $basse,
+            'tachesRecentes'   => $tachesRecentes,
+            'tachesImminentes' => $tachesImminentes,
+            'planningsAVenir'  => $planningsAVenir,
+            'totalPlannings'   => count($plannings),
+            'prochainPlanning' => $prochainPlanning,
+            'employes'         => $employes,
+            'quote'            => $quote,
+            'taches'           => $taches,
+            'plannings'        => $plannings,
         ]);
     }
 }
