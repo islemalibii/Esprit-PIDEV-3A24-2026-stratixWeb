@@ -16,31 +16,29 @@ class ProjetController extends AbstractController
 {
     /**
      * Liste tous les projets actifs.
-     * Le filtrage "temps réel" est géré côté client (Navigateur) via JS.
      */
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
     public function index(ProjetRepository $projetRepository): Response
     {
-        return $this->render('projet/listeProjets.html.twig', [
-            // On récupère tous les projets non archivés, triés par les plus récents
+        // Correction du chemin : ajout de "admin/"
+        return $this->render('admin/Projet/listeProjets.html.twig', [
             'projets' => $projetRepository->findBy(['isArchived' => false], ['id' => 'DESC']),
         ]);
     }
 
     /**
-     * Liste des archives
+     * Liste des archives.
      */
     #[Route('/archives', name: 'app_projet_archives', methods: ['GET'])]
     public function archives(ProjetRepository $projetRepository): Response
     {
-        return $this->render('projet/listeArchives.html.twig', [
+        return $this->render('admin/Projet/listeArchives.html.twig', [
             'projets' => $projetRepository->findBy(['isArchived' => true], ['id' => 'DESC']),
         ]);
     }
 
     /**
      * Création d'un projet.
-     * Le statut est "Planifié" par défaut et bloqué dans le formulaire.
      */
     #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -57,14 +55,13 @@ class ProjetController extends AbstractController
             return $this->redirectToRoute('app_projet_index');
         }
 
-        return $this->render('projet/ajouterProjet.html.twig', [
+        return $this->render('admin/Projet/ajouterProjet.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
     /**
      * Modification d'un projet.
-     * Le statut devient modifiable ici.
      */
     #[Route('/{id}/edit', name: 'app_projet_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Projet $projet, EntityManagerInterface $entityManager): Response
@@ -79,25 +76,25 @@ class ProjetController extends AbstractController
             return $this->redirectToRoute('app_projet_index');
         }
 
-        return $this->render('projet/modifierProjet.html.twig', [
+        return $this->render('admin/Projet/modifierProjet.html.twig', [
             'projet' => $projet,
             'form' => $form->createView(),
         ]);
     }
 
     /**
-     * Détails du projet
+     * Détails du projet.
      */
     #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
     public function show(Projet $projet): Response
     {
-        return $this->render('projet/detailsProjet.html.twig', [
+        return $this->render('admin/Projet/detailsProjet.html.twig', [
             'projet' => $projet,
         ]);
     }
 
     /**
-     * Action d'archivage
+     * Action d'archivage.
      */
     #[Route('/{id}/archiver', name: 'app_projet_archive_action', methods: ['GET'])]
     public function archiver(Projet $projet, EntityManagerInterface $entityManager): Response
@@ -110,7 +107,7 @@ class ProjetController extends AbstractController
     }
 
     /**
-     * Action de désarchivage
+     * Action de désarchivage.
      */
     #[Route('/{id}/desarchiver', name: 'app_projet_unarchive_action', methods: ['GET'])]
     public function desarchiver(Projet $projet, EntityManagerInterface $entityManager): Response
