@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Modifier le Projet{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            {# La carte avec ton style spécifique #}
+            <div class="card shadow-lg border-0 p-4" style="border-radius: 20px; background-color: #fdf6e3;">
+                <div class="card-body">
+                    {# En-tête avec ton style orange/marron #}
+                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-2" style="border-color: #e67e22 !important;">
+                        <i class="ti ti-edit fa-2x me-3" style="color: #e67e22; font-size: 2rem;"></i>
+                        <h3 class="fw-bold mb-0" style="color: #5d4037;">Modifier le projet</h3>
+                    </div>
+                    
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        {# NOM DU PROJET #}
+                        <div class="mb-4">
+                            <label class="fw-bold small mb-2" style="color: #5d4037;">NOM DU PROJET</label>
+                            {{ form_widget(form.nom, {
+                                'attr': {
+                                    'class': 'form-control border-0 p-3', 
+                                    'style': 'background-color: #eee4cc; border-radius: 10px;'
+                                }
+                            }) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
+                        </div>
+
+                        {# BUDGET ET STATUT #}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="fw-bold small mb-2" style="color: #5d4037;">BUDGET (DT)</label>
+                                {{ form_widget(form.budget, {
+                                    'attr': {
+                                        'class': 'form-control border-0 p-3', 
+                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
+                                    }
+                                }) }}
+                                <div class="text-danger mt-1 small">{{ form_errors(form.budget) }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small mb-2" style="color: #e67e22;">STATUT ACTUEL</label>
+                                {{ form_widget(form.statut, {
+                                    'attr': {
+                                        'class': 'form-select border-0 p-3 fw-bold', 
+                                        'style': 'background-color: #fbe9e7; color: #d35400; border-radius: 10px;'
+                                    }
+                                }) }}
+                            </div>
+                        </div>
+
+                        {# DATES (SANS CONTRAINTE MIN) #}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="fw-bold small mb-2" style="color: #5d4037;">DATE DÉBUT</label>
+                                {{ form_widget(form.dateDebut, {
+                                    'attr': {
+                                        'class': 'form-control border-0 p-3', 
+                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
+                                    }
+                                }) }}
+                                <div class="text-danger mt-1 small">{{ form_errors(form.dateDebut) }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small mb-2" style="color: #5d4037;">DATE FIN</label>
+                                {{ form_widget(form.dateFin, {
+                                    'attr': {
+                                        'class': 'form-control border-0 p-3', 
+                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
+                                    }
+                                }) }}
+                                <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
+                            </div>
+                        </div>
+
+                        {# DESCRIPTION #}
+                        <div class="mb-5">
+                            <label class="fw-bold small mb-2" style="color: #5d4037;">DESCRIPTION</label>
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'form-control border-0 p-3', 
+                                    'rows': '3', 
+                                    'style': 'background-color: #eee4cc; border-radius: 10px;'
+                                }
+                            }) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.description) }}</div>
+                        </div>
+
+                        {# BOUTONS #}
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <button type="submit" class="btn w-100 fw-bold p-3 text-white" 
+                                        style="background-color: #f1b31a; border-radius: 12px; box-shadow: 0 4px 15px rgba(241, 179, 26, 0.4);">
+                                    METTRE À JOUR
+                                </button>
+                            </div>
+                            <div class="col-md-5">
+                                <a href="{{ path('app_projet_index') }}" class="btn btn-dark w-100 p-3 shadow-sm" style="border-radius: 12px;">RETOUR</a>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Pour s'assurer que les champs n'ont pas de bordure au clic */
+    .form-control:focus, .form-select:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 2px #e67e22 !important;
+    }
+</style>
+{% endblock %}
