@@ -19,10 +19,10 @@ class AdminController extends AbstractController
     public function dashboard(UtilisateurRepository $repo): Response
     {
         $stats = [
-            'total'     => $repo->count([]),
-            'actifs'    => $repo->count(['statut' => 'actif']),
-            'locked'    => $repo->count(['account_locked' => true]),
-            'admins'    => $repo->count(['role' => 'ADMIN']),
+            'total'  => $repo->count([]),
+            'actifs' => $repo->count(['statut' => 'actif']),
+            'locked' => $repo->count(['account_locked' => true]),
+            'admins' => $repo->count(['role' => 'admin']),
         ];
 
         $recent = $repo->findBy([], ['id' => 'DESC'], 5);

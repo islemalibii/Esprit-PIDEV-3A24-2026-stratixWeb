@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {# Include Navbar Partial #}
+    {% include 'admin/partials/navbar.html.twig' %}
+    
+    {# Include Sidebar Partial #}
+    {% include 'admin/partials/sidebar.html.twig' %}
+
+    {# Main Admin Content Area #}
+    <main id="content" class="content py-10">
+        <div class="container-fluid">
+            {% block admin_content %}
+                {# Child templates will override this block with their content #}
+            {% endblock %}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
