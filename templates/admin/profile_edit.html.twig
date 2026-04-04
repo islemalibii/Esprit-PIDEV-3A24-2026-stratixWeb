@@ -1,0 +1,97 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Modifier mon profil — Stratix{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+    <a href="{{ path('admin_profile') }}" style="color:#6b7280;text-decoration:none;font-size:.9rem;">← Retour au profil</a>
+
+    <form method="post" style="margin-top:1rem;">
+
+        {# Infos personnelles #}
+        <div style="background:#fff;border-radius:12px;padding:2rem;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:600;margin-bottom:1.25rem;color:#1e1b4b;">Informations personnelles</h2>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Nom *</label>
+                    <input type="text" name="nom" value="{{ user.nom }}" required
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.nom is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.nom is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.nom }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Prénom *</label>
+                    <input type="text" name="prenom" value="{{ user.prenom }}" required
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.prenom is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.prenom is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.prenom }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Téléphone</label>
+                    <input type="text" name="tel" value="{{ user.tel }}" placeholder="8 chiffres"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.tel is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.tel is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.tel }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Département</label>
+                    <input type="text" name="department" value="{{ user.department }}"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid #d1d5db;border-radius:8px;font-size:.95rem;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Poste</label>
+                    <input type="text" name="poste" value="{{ user.poste }}"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid #d1d5db;border-radius:8px;font-size:.95rem;">
+                </div>
+            </div>
+        </div>
+
+        {# Changement de mot de passe #}
+        <div style="background:#fff;border-radius:12px;padding:2rem;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:600;margin-bottom:.25rem;color:#1e1b4b;">Changer le mot de passe</h2>
+            <p style="color:#9ca3af;font-size:.85rem;margin-bottom:1.25rem;">Laisser vide pour ne pas modifier</p>
+
+            <div style="display:grid;grid-template-columns:1fr;gap:1rem;max-width:400px;">
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Mot de passe actuel</label>
+                    <input type="password" name="current_password"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.current_password is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.current_password is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.current_password }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Nouveau mot de passe</label>
+                    <input type="password" name="new_password" placeholder="Min. 8 car., 1 majuscule, 1 chiffre"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.new_password is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.new_password is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.new_password }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Confirmer le mot de passe</label>
+                    <input type="password" name="confirm_password"
+                           style="width:100%;padding:.6rem .9rem;border:1px solid {% if errors.confirm_password is defined %}#dc2626{% else %}#d1d5db{% endif %};border-radius:8px;font-size:.95rem;">
+                    {% if errors.confirm_password is defined %}
+                        <div style="color:#dc2626;font-size:.8rem;margin-top:.2rem;">{{ errors.confirm_password }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:1rem;">
+            <button type="submit" style="background:#4f46e5;color:#fff;padding:.65rem 1.5rem;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;font-weight:600;">
+                Enregistrer
+            </button>
+            <a href="{{ path('admin_profile') }}" style="padding:.65rem 1.5rem;border:1px solid #d1d5db;border-radius:8px;text-decoration:none;color:#374151;">
+                Annuler
+            </a>
+        </div>
+    </form>
+    </div>
+</div>
+{% endblock %}

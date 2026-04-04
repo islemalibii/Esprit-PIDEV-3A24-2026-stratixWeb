@@ -18,18 +18,36 @@ class AdminController extends AbstractController
     #[Route('', name: 'admin_dashboard')]
     public function dashboard(UtilisateurRepository $repo): Response
     {
-        $stats = [
-            'total'  => $repo->count([]),
-            'actifs' => $repo->count(['statut' => 'actif']),
-            'locked' => $repo->count(['account_locked' => true]),
-            'admins' => $repo->count(['role' => 'admin']),
-        ];
+        $total  = $repo->count([]);
+        $actifs = $repo->count(['statut' => 'actif']);
+        $locked = $repo->count(['account_locked' => true]);
+        $admins = $repo->count(['role' => 'admin']);
 
-        $recent = $repo->findBy([], ['id' => 'DESC'], 5);
+        // Répartition par rôle
+        $rolesRaw = $repo->createQueryBuilder('u')
+            ->select('u.role, COUNT(u.id) as total')
+            ->groupBy('u.role')
+            ->getQuery()->getResult();
+
+        $roles = [];
+        foreach ($rolesRaw as $r) {
+            $roles[$r['role']] = $r['total'];
+        }
+
+        $recent = $repo->findBy([], ['id' => 'DESC'], 8);
+        $lockedUsers = $repo->findBy(['account_locked' => true], ['id' => 'DESC'], 5);
 
         return $this->render('admin/dashboard.html.twig', [
-            'stats'  => $stats,
-            'recent' => $recent,
+            'stats' => [
+                'total'  => $total,
+                'actifs' => $actifs,
+                'locked' => $locked,
+                'admins' => $admins,
+                'taux_actifs' => $total > 0 ? round($actifs / $total * 100) : 0,
+            ],
+            'roles'       => $roles,
+            'recent'      => $recent,
+            'lockedUsers' => $lockedUsers,
         ]);
     }
 

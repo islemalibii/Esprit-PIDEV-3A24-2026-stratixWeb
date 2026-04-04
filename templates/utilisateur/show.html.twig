@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ utilisateur.nom }} {{ utilisateur.prenom }}{% endblock %}
+{% block body %}
+<div style="max-width:700px;margin:2rem auto;font-family:sans-serif;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h1 style="margin:0;">{{ utilisateur.nom }} {{ utilisateur.prenom }}</h1>
+        <a href="{{ path('utilisateur_index') }}" style="color:#6b7280;text-decoration:none;">← Retour</a>
+    </div>
+    <div style="background:#fff;padding:2rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+        {% set rows = [
+            ['CIN', utilisateur.cin],
+            ['Email', utilisateur.email],
+            ['Téléphone', utilisateur.tel],
+            ['Rôle', utilisateur.role],
+            ['Statut', utilisateur.statut],
+            ['Département', utilisateur.department],
+            ['Poste', utilisateur.poste],
+            ['Salaire', utilisateur.salaire ? utilisateur.salaire ~ ' TND' : '-'],
+            ['Date d\'embauche', utilisateur.dateEmbauche ? utilisateur.dateEmbauche|date('d/m/Y') : '-'],
+            ['Date d\'ajout', utilisateur.dateAjout ? utilisateur.dateAjout|date('d/m/Y') : '-'],
+            ['Compte verrouillé', utilisateur.isAccountLocked() ? 'Oui' : 'Non'],
+        ] %}
+        {% for row in rows %}
+        <div style="display:flex;padding:.6rem 0;border-bottom:1px solid #f3f4f6;">
+            <span style="width:200px;color:#6b7280;font-size:.9rem;">{{ row[0] }}</span>
+            <span style="font-weight:500;">{{ row[1] ?: '-' }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:1rem;">
+        <a href="{{ path('utilisateur_edit', {id: utilisateur.id}) }}" style="background:#4f46e5;color:#fff;padding:.6rem 1.5rem;border-radius:6px;text-decoration:none;">Modifier</a>
+        <form method="post" action="{{ path('utilisateur_delete', {id: utilisateur.id}) }}" onsubmit="return confirm('Supprimer ?')">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete'~utilisateur.id) }}">
+            <button type="submit" style="background:#dc2626;color:#fff;padding:.6rem 1.5rem;border:none;border-radius:6px;cursor:pointer;">Supprimer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

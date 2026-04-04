@@ -1,0 +1,137 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Utilisateurs — Stratix{% endblock %}
+
+{% block admin_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-0" style="font-size:1.8rem;">Utilisateurs</h1>
+        <p class="text-secondary mb-0" style="font-size:.95rem;">{{ users|length }} utilisateur(s) trouvé(s)</p>
+    </div>
+    <a href="{{ path('admin_user_new') }}" class="btn btn-primary">
+        <i class="ti ti-plus me-1"></i> Ajouter
+    </a>
+</div>
+
+{# Filtres #}
+<div class="card mb-4">
+    <div class="card-body py-3 px-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="ti ti-search text-secondary"></i></span>
+                    <input type="text" name="search" value="{{ search }}" class="form-control form-control-lg" placeholder="Rechercher nom, prénom, email...">
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <select name="role" class="form-select form-select-lg">
+                    <option value="">Tous les rôles</option>
+                    {% for r in ['admin','employe','responsable_rh','responsable_projet','responsable_production','ceo'] %}
+                        <option value="{{ r }}" {% if role == r %}selected{% endif %}>{{ r|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <select name="statut" class="form-select form-select-lg">
+                    <option value="">Tous statuts</option>
+                    <option value="actif" {% if statut == 'actif' %}selected{% endif %}>Actif</option>
+                    <option value="inactif" {% if statut == 'inactif' %}selected{% endif %}>Inactif</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-lg">Filtrer</button>
+                <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-lg ms-1">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Cards #}
+{% set roleColors = {
+    'admin': 'primary', 'ceo': 'danger', 'employe': 'info',
+    'responsable_rh': 'success', 'responsable_projet': 'purple',
+    'responsable_production': 'warning'
+} %}
+
+{% if users|length == 0 %}
+    <div class="text-center text-secondary py-5">
+        <i class="ti ti-users-off fs-1 d-block mb-3"></i>
+        Aucun utilisateur trouvé.
+    </div>
+{% else %}
+<div class="row g-3">
+    {% for u in users %}
+        {% set rc = roleColors[u.role] ?? 'secondary' %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm" style="border-radius:12px;transition:transform .2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='translateY(0)'">
+                <div class="card-body p-4">
+
+                    {# Avatar + nom #}
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                             style="width:48px;height:48px;font-size:1rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+                            {{ u.prenom|first|upper }}{{ u.nom|first|upper }}
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size:.95rem;">{{ u.nom }} {{ u.prenom }}</div>
+                            <div class="text-secondary" style="font-size:.75rem;">CIN: {{ u.cin }}</div>
+                        </div>
+                    </div>
+
+                    {# Infos #}
+                    <div class="mb-2" style="font-size:.82rem;color:#6b7280;">
+                        <i class="ti ti-mail me-1"></i>{{ u.email ?: '-' }}
+                    </div>
+                    {% if u.tel %}
+                    <div class="mb-2" style="font-size:.82rem;color:#6b7280;">
+                        <i class="ti ti-phone me-1"></i>{{ u.tel }}
+                    </div>
+                    {% endif %}
+                    {% if u.poste %}
+                    <div class="mb-3" style="font-size:.82rem;color:#6b7280;">
+                        <i class="ti ti-briefcase me-1"></i>{{ u.poste }}
+                    </div>
+                    {% endif %}
+
+                    {# Badges #}
+                    <div class="d-flex gap-2 flex-wrap mb-3">
+                        <span class="badge bg-{{ rc }}-subtle text-{{ rc }} border border-{{ rc }} border-opacity-25">
+                            {{ u.role|upper }}
+                        </span>
+                        {% if u.isAccountLocked() %}
+                            <span class="badge bg-danger-subtle text-danger">🔒 Verrouillé</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success">✓ Actif</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Actions #}
+                <div class="card-footer bg-white border-top px-3 py-2" style="border-radius:0 0 12px 12px;">
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('admin_user_edit', {id: u.id}) }}" class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="ti ti-edit me-1"></i>Modifier
+                        </a>
+                        <form method="post" action="{{ path('admin_user_toggle_lock', {id: u.id}) }}" class="flex-fill">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle'~u.id) }}">
+                            <button type="submit" class="btn btn-sm w-100 {% if u.isAccountLocked() %}btn-outline-success{% else %}btn-outline-warning{% endif %}">
+                                <i class="ti ti-{% if u.isAccountLocked() %}lock-open{% else %}lock{% endif %} me-1"></i>
+                                {% if u.isAccountLocked() %}Déverrouiller{% else %}Verrouiller{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    <form method="post" action="{{ path('admin_user_delete', {id: u.id}) }}" class="mt-2"
+                          onsubmit="return confirm('Supprimer {{ u.nom }} {{ u.prenom }} ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~u.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="ti ti-trash me-1"></i>Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
