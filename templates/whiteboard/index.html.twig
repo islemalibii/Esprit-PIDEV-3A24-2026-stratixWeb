@@ -1,0 +1,426 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Whiteboard - Tableau Kanban{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .kanban-board {
+        display: flex;
+        gap: 16px;
+        padding: 10px 0;
+        align-items: flex-start;
+    }
+
+    .kanban-column {
+        background-color: #ebecf0;
+        border-radius: 12px;
+        padding: 12px;
+        width: 320px;
+        min-width: 320px;
+        min-height: 500px;
+        flex-shrink: 0;
+    }
+
+    .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        font-size: 15px;
+        color: #172b4d;
+    }
+
+    .count-badge {
+        background-color: #dfe1e6;
+        color: #172b4d;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .tasks-container {
+        min-height: 60px;
+        transition: background 0.2s;
+        border-radius: 8px;
+        padding: 4px;
+    }
+
+    .tasks-container.drag-over {
+        background-color: #c1c7d0;
+    }
+
+    .task-card {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        cursor: grab;
+        border-left: 4px solid;
+        transition: box-shadow 0.2s, transform 0.2s;
+        position: relative;
+    }
+
+    .task-card:active { cursor: grabbing; }
+
+    .task-card.dragging {
+        opacity: 0.5;
+        transform: rotate(2deg);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .task-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+
+    .task-priorite-haute   { border-left-color: #ef4444; }
+    .task-priorite-moyenne { border-left-color: #f59e0b; }
+    .task-priorite-basse   { border-left-color: #10b981; }
+
+    .task-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 6px;
+        color: #172b4d;
+    }
+
+    .task-description {
+        font-size: 13px;
+        color: #5e6c84;
+        margin-bottom: 8px;
+    }
+
+    .task-meta {
+        font-size: 11px;
+        color: #97a0af;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .badge-priorite {
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 6px;
+    }
+
+    .badge-haute   { background-color: #fee2e2; color: #ef4444; }
+    .badge-moyenne { background-color: #fef3c7; color: #f59e0b; }
+    .badge-basse   { background-color: #dcfce7; color: #10b981; }
+
+    .task-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .task-actions .btn-sm {
+        padding: 2px 8px;
+        font-size: 11px;
+    }
+
+    .drop-placeholder {
+        background: #c1c7d0;
+        border: 2px dashed #97a0af;
+        border-radius: 8px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1><i class="fas fa-chalkboard"></i> Tableau Kanban</h1>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="kanban-board">
+
+        {# ===== COLONNE À FAIRE ===== #}
+        <div class="kanban-column">
+            <div class="column-header">
+                <span>📌 À FAIRE</span>
+                <span class="count-badge" id="count-A_FAIRE">{{ countAFaire }}</span>
+            </div>
+            <div class="tasks-container" data-statut="A_FAIRE" id="col-A_FAIRE">
+                {% for tache in tachesAFaire %}
+                <div class="task-card task-priorite-{{ tache.priorite|lower }}"
+                     draggable="true"
+                     data-id="{{ tache.id }}"
+                     data-statut="A_FAIRE">
+                    <div class="task-title">{{ tache.titre }}</div>
+                    <div class="task-description">{{ tache.description|slice(0,80) }}{% if tache.description|length > 80 %}...{% endif %}</div>
+                    <div class="task-meta">
+                        <span><i class="fas fa-user"></i> {{ tache.employeNom }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ tache.deadline }}</span>
+                    </div>
+                    <span class="badge-priorite badge-{{ tache.priorite|lower }}">
+                        {% if tache.priorite == 'HAUTE' %}🔴 Haute
+                        {% elseif tache.priorite == 'MOYENNE' %}🟡 Moyenne
+                        {% else %}🟢 Basse{% endif %}
+                    </span>
+                    <div class="task-actions">
+                        <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_whiteboard_move', {'id': tache.id, 'newStatut': 'EN_COURS'}) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-info">
+                                <i class="fas fa-arrow-right"></i> Démarrer
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_whiteboard_delete', {'id': tache.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cette tâche ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ tache.id) }}">
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i><p>Aucune tâche à faire</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# ===== COLONNE EN COURS ===== #}
+        <div class="kanban-column">
+            <div class="column-header">
+                <span>⚡ EN COURS</span>
+                <span class="count-badge" id="count-EN_COURS">{{ countEnCours }}</span>
+            </div>
+            <div class="tasks-container" data-statut="EN_COURS" id="col-EN_COURS">
+                {% for tache in tachesEnCours %}
+                <div class="task-card task-priorite-{{ tache.priorite|lower }}"
+                     draggable="true"
+                     data-id="{{ tache.id }}"
+                     data-statut="EN_COURS">
+                    <div class="task-title">{{ tache.titre }}</div>
+                    <div class="task-description">{{ tache.description|slice(0,80) }}{% if tache.description|length > 80 %}...{% endif %}</div>
+                    <div class="task-meta">
+                        <span><i class="fas fa-user"></i> {{ tache.employeNom }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ tache.deadline }}</span>
+                    </div>
+                    <span class="badge-priorite badge-{{ tache.priorite|lower }}">
+                        {% if tache.priorite == 'HAUTE' %}🔴 Haute
+                        {% elseif tache.priorite == 'MOYENNE' %}🟡 Moyenne
+                        {% else %}🟢 Basse{% endif %}
+                    </span>
+                    <div class="task-actions">
+                        <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_whiteboard_move', {'id': tache.id, 'newStatut': 'TERMINEE'}) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="fas fa-check"></i> Terminer
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_whiteboard_move', {'id': tache.id, 'newStatut': 'A_FAIRE'}) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Reculer
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_whiteboard_delete', {'id': tache.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cette tâche ?')">
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i><p>Aucune tâche en cours</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# ===== COLONNE TERMINÉE ===== #}
+        <div class="kanban-column">
+            <div class="column-header">
+                <span>✅ TERMINÉE</span>
+                <span class="count-badge" id="count-TERMINEE">{{ countTerminees }}</span>
+            </div>
+            <div class="tasks-container" data-statut="TERMINEE" id="col-TERMINEE">
+                {% for tache in tachesTerminees %}
+                <div class="task-card task-priorite-{{ tache.priorite|lower }}"
+                     draggable="true"
+                     data-id="{{ tache.id }}"
+                     data-statut="TERMINEE">
+                    <div class="task-title">{{ tache.titre }}</div>
+                    <div class="task-description">{{ tache.description|slice(0,80) }}{% if tache.description|length > 80 %}...{% endif %}</div>
+                    <div class="task-meta">
+                        <span><i class="fas fa-user"></i> {{ tache.employeNom }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ tache.deadline }}</span>
+                    </div>
+                    <span class="badge-priorite badge-{{ tache.priorite|lower }}">
+                        {% if tache.priorite == 'HAUTE' %}🔴 Haute
+                        {% elseif tache.priorite == 'MOYENNE' %}🟡 Moyenne
+                        {% else %}🟢 Basse{% endif %}
+                    </span>
+                    <div class="task-actions">
+                        <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_whiteboard_move', {'id': tache.id, 'newStatut': 'EN_COURS'}) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-undo"></i> Réactiver
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_whiteboard_delete', {'id': tache.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cette tâche ?')">
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i><p>Aucune tâche terminée</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const moveUrl = '/whiteboard/move/';
+let draggedCard = null;
+let placeholder = null;
+
+document.querySelectorAll('.task-card').forEach(card => initCard(card));
+
+function initCard(card) {
+    card.addEventListener('dragstart', e => {
+        draggedCard = card;
+        setTimeout(() => card.classList.add('dragging'), 0);
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        removePlaceholder();
+        draggedCard = null;
+    });
+}
+
+document.querySelectorAll('.tasks-container').forEach(col => {
+    col.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        col.classList.add('drag-over');
+        const afterEl = getDragAfterElement(col, e.clientY);
+        if (!placeholder) {
+            placeholder = document.createElement('div');
+            placeholder.className = 'drop-placeholder';
+        }
+        if (afterEl == null) {
+            col.appendChild(placeholder);
+        } else {
+            col.insertBefore(placeholder, afterEl);
+        }
+    });
+
+    col.addEventListener('dragleave', e => {
+        if (!col.contains(e.relatedTarget)) {
+            col.classList.remove('drag-over');
+            removePlaceholder();
+        }
+    });
+
+    col.addEventListener('drop', e => {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        removePlaceholder();
+        if (!draggedCard) return;
+
+        const newStatut = col.dataset.statut;
+        const oldStatut = draggedCard.dataset.statut;
+        const id = draggedCard.dataset.id;
+
+        const afterEl = getDragAfterElement(col, e.clientY);
+        if (afterEl == null) {
+            col.appendChild(draggedCard);
+        } else {
+            col.insertBefore(draggedCard, afterEl);
+        }
+
+        draggedCard.dataset.statut = newStatut;
+        updateCount(oldStatut);
+        updateCount(newStatut);
+
+        if (oldStatut === newStatut) return;
+
+        fetch(moveUrl + id + '/' + newStatut, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => {
+            if (r.ok || r.redirected) {
+                showToast('✅ Tâche déplacée vers ' + labelStatut(newStatut));
+            } else {
+                showToast('❌ Erreur serveur', 'danger');
+            }
+        })
+        .catch(() => showToast('❌ Erreur réseau', 'danger'));
+    });
+});
+
+function getDragAfterElement(container, y) {
+    const draggables = [...container.querySelectorAll('.task-card:not(.dragging)')];
+    return draggables.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, element: child };
+        }
+        return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function removePlaceholder() {
+    if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.removeChild(placeholder);
+    }
+    placeholder = null;
+}
+
+function updateCount(statut) {
+    const col = document.getElementById('col-' + statut);
+    const count = col.querySelectorAll('.task-card').length;
+    document.getElementById('count-' + statut).textContent = count;
+}
+
+function labelStatut(s) {
+    return { 'A_FAIRE': 'À Faire', 'EN_COURS': 'En Cours', 'TERMINEE': 'Terminée' }[s] || s;
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.createElement('div');
+    t.className = `alert alert-${type} shadow`;
+    t.style.cssText = 'min-width:250px;animation:fadeIn .3s';
+    t.textContent = msg;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+</script>
+{% endblock %}

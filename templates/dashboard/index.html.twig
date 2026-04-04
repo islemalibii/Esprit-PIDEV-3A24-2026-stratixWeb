@@ -1,0 +1,587 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Dashboard{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .dashboard-hero {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 50%, #1a73e8 100%);
+        border-radius: 20px;
+        padding: 40px;
+        color: white;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .dashboard-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        right: 10%;
+        width: 250px;
+        height: 250px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .hero-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 20px;
+    }
+
+    .quote-box {
+        background: rgba(255,255,255,0.15);
+        border-left: 4px solid rgba(255,255,255,0.6);
+        border-radius: 8px;
+        padding: 15px 20px;
+        font-style: italic;
+        backdrop-filter: blur(5px);
+    }
+
+    .quote-box .quote-author {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 6px;
+        font-style: normal;
+    }
+
+    /* Search bar */
+    .search-section {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 25px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        margin-bottom: 28px;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+    }
+
+    .search-input-wrapper i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 16px;
+    }
+
+    .search-input-wrapper input {
+        padding-left: 45px;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        height: 48px;
+        font-size: 15px;
+        transition: border-color 0.2s;
+        width: 100%;
+    }
+
+    .search-input-wrapper input:focus {
+        border-color: #1a73e8;
+        box-shadow: none;
+        outline: none;
+    }
+
+    #searchResults {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        z-index: 100;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        margin-top: 6px;
+    }
+
+    .search-result-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .search-result-item:hover { background: #f8fafc; }
+    .search-result-item:last-child { border-bottom: none; }
+
+    /* Stat cards */
+    .stat-card {
+        border-radius: 16px;
+        padding: 24px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+        color: white;
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.3;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+    }
+
+    .stat-card .stat-number {
+        font-size: 2.8rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+
+    .stat-card .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .card-total    { background: linear-gradient(135deg, #1a73e8, #0d47a1); }
+    .card-afaire   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .card-encours  { background: linear-gradient(135deg, #06b6d4, #0284c7); }
+    .card-termine  { background: linear-gradient(135deg, #10b981, #059669); }
+    .card-planning { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+    /* Priority section */
+    .priority-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        height: 100%;
+        margin-bottom: 24px;
+    }
+
+    .priority-bar {
+        height: 10px;
+        border-radius: 5px;
+        margin-top: 6px;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    /* Recent tasks */
+    .recent-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recent-tasks-list {
+        flex: 1;
+    }
+
+    .recent-task-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .recent-task-item:hover {
+        background: #f8fafc;
+        padding-left: 8px;
+        margin-left: -8px;
+        border-radius: 12px;
+    }
+
+    .recent-task-item:last-child { border-bottom: none; }
+
+    .task-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .dot-haute   { background: #ef4444; box-shadow: 0 0 0 2px #fee2e2; }
+    .dot-moyenne { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
+    .dot-basse   { background: #10b981; box-shadow: 0 0 0 2px #d1fae5; }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge-statut-afaire  { background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-statut-encours { background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-statut-termine { background: #dcfce7; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+    /* Quick actions - CORRIGÉ et bien positionné */
+    .quick-actions {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        height: auto;
+    }
+
+    .quick-btn {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #1e293b;
+        background: #f8fafc;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+        font-weight: 500;
+        font-size: 14px;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+    }
+
+    .quick-btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .quick-btn:hover {
+        background: #eff6ff;
+        border-color: #1a73e8;
+        color: #1a73e8;
+        transform: translateX(5px);
+    }
+
+    .quick-btn i { 
+        font-size: 18px; 
+        width: 28px; 
+        text-align: center;
+    }
+
+    .btn-outline-primary {
+        border-radius: 40px;
+        padding: 8px 20px;
+    }
+
+    /* Fix pour le bon alignement */
+    .row.g-4 {
+        margin-bottom: 0;
+    }
+    
+    /* Container fix */
+    .container {
+        max-width: 1400px;
+    }
+    
+    /* Pour que les colonnes aient la même hauteur */
+    .col-lg-7, .col-lg-5 {
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ===== HERO ===== #}
+<div class="dashboard-hero">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="hero-title">
+                🚀 STRATIX
+            </div>
+            <div class="hero-subtitle">
+                Votre espace de gestion des tâches et plannings — {{ "now"|date("l d F Y") }}
+            </div>
+            <div class="quote-box">
+                <div>"{{ quote.text }}"</div>
+                <div class="quote-author">— {{ quote.author }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fas fa-chart-line" style="font-size: 6rem; opacity: 0.12;"></i>
+        </div>
+    </div>
+</div>
+
+{# ===== SEARCH ===== #}
+<div class="search-section">
+    <div class="row g-3">
+        <div class="col-md-8 position-relative">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="globalSearch" class="form-control" placeholder="Rechercher une tâche par titre...">
+            </div>
+            <div id="searchResults"></div>
+        </div>
+        <div class="col-md-4">
+            <select id="filterStatut" class="form-select" style="height:48px; border-radius:12px; border: 2px solid #e2e8f0;">
+                <option value="">📋 Tous les statuts</option>
+                <option value="A_FAIRE">📌 À faire</option>
+                <option value="EN_COURS">⚡ En cours</option>
+                <option value="TERMINEE">✅ Terminée</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+{# ===== STAT CARDS ===== #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-2">
+        <a href="{{ path('app_tache_index') }}" class="stat-card card-total">
+            <i class="fas fa-tasks stat-icon"></i>
+            <div class="stat-number">{{ total }}</div>
+            <div class="stat-label">Total Tâches</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-2">
+        <a href="{{ path('app_tache_index', {'statut': 'A_FAIRE'}) }}" class="stat-card card-afaire">
+            <i class="fas fa-clipboard-list stat-icon"></i>
+            <div class="stat-number">{{ aFaire }}</div>
+            <div class="stat-label">À Faire</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-2">
+        <a href="{{ path('app_tache_index', {'statut': 'EN_COURS'}) }}" class="stat-card card-encours">
+            <i class="fas fa-sync-alt stat-icon"></i>
+            <div class="stat-number">{{ enCours }}</div>
+            <div class="stat-label">En Cours</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-2">
+        <a href="{{ path('app_tache_index', {'statut': 'TERMINEE'}) }}" class="stat-card card-termine">
+            <i class="fas fa-check-circle stat-icon"></i>
+            <div class="stat-number">{{ terminees }}</div>
+            <div class="stat-label">Terminées</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-2">
+        <a href="{{ path('app_planning_index') }}" class="stat-card card-planning">
+            <i class="fas fa-calendar-week stat-icon"></i>
+            <div class="stat-number">{{ totalPlannings }}</div>
+            <div class="stat-label">Plannings</div>
+        </a>
+    </div>
+</div>
+
+{# ===== MAIN CONTENT ===== #}
+<div class="row g-4">
+    <!-- Colonne de gauche : Tâches récentes -->
+    <div class="col-lg-7">
+        <div class="recent-card">
+            <div class="section-title">
+                <i class="fas fa-clock text-primary"></i> 📋 Tâches récentes
+            </div>
+            <div class="recent-tasks-list">
+                {% for tache in tachesRecentes %}
+                <a href="{{ path('app_tache_show', {'id': tache.getId()}) }}" class="recent-task-item">
+                    <div class="task-dot dot-{{ tache.getPriorite()|lower }}"></div>
+                    <div style="flex:1">
+                        <div style="font-weight: 600; font-size: 14px; color: #1e293b;">{{ tache.getTitre() }}</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                            <i class="fas fa-user"></i> {{ employes[tache.getEmployeId()] ?? 'Non assigné' }}
+                            &nbsp;•&nbsp;
+                            <i class="fas fa-calendar"></i> {{ tache.getDeadline() ? tache.getDeadline()|date('d/m/Y') : 'Pas de deadline' }}
+                        </div>
+                    </div>
+                    <span class="
+                        {% if tache.getStatut() == 'A_FAIRE' %}badge-statut-afaire
+                        {% elseif tache.getStatut() == 'EN_COURS' %}badge-statut-encours
+                        {% else %}badge-statut-termine{% endif %}">
+                        {% if tache.getStatut() == 'A_FAIRE' %}📌 À faire
+                        {% elseif tache.getStatut() == 'EN_COURS' %}⚡ En cours
+                        {% else %}✅ Terminée{% endif %}
+                    </span>
+                </a>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                    Aucune tâche pour le moment
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 text-center">
+                <a href="{{ path('app_tache_index') }}" class="btn btn-outline-primary rounded-pill px-4">
+                    Voir toutes les tâches <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne de droite : Priorités + Accès rapides -->
+    <div class="col-lg-5">
+        <!-- Bloc Priorités -->
+        <div class="priority-card">
+            <div class="section-title">
+                <i class="fas fa-chart-pie text-danger"></i> Répartition par priorité
+            </div>
+            {% set totalP = haute + moyenne + basse %}
+            {% if totalP > 0 %}
+                <div class="progress-label">
+                    <span><i class="fas fa-circle text-danger" style="font-size: 10px;"></i> Haute</span>
+                    <span>{{ haute }} tâches ({{ (haute / totalP * 100)|round }}%)</span>
+                </div>
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar bg-danger" style="width: {{ (haute / totalP * 100)|round }}%"></div>
+                </div>
+
+                <div class="progress-label">
+                    <span><i class="fas fa-circle text-warning" style="font-size: 10px;"></i> Moyenne</span>
+                    <span>{{ moyenne }} tâches ({{ (moyenne / totalP * 100)|round }}%)</span>
+                </div>
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar bg-warning" style="width: {{ (moyenne / totalP * 100)|round }}%"></div>
+                </div>
+
+                <div class="progress-label">
+                    <span><i class="fas fa-circle text-success" style="font-size: 10px;"></i> Basse</span>
+                    <span>{{ basse }} tâches ({{ (basse / totalP * 100)|round }}%)</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-success" style="width: {{ (basse / totalP * 100)|round }}%"></div>
+                </div>
+            {% else %}
+                <div class="text-muted text-center py-3">Aucune tâche avec priorité</div>
+            {% endif %}
+        </div>
+
+        <!-- Bloc Accès rapides - MAINTENANT BIEN POSITIONNÉ -->
+        <div class="quick-actions">
+            <div class="section-title">
+                <i class="fas fa-bolt text-warning"></i> ⚡ Actions rapides
+            </div>
+            <a href="{{ path('app_tache_new') }}" class="quick-btn">
+                <i class="fas fa-plus-circle text-primary"></i> Nouvelle tâche
+            </a>
+            <a href="{{ path('app_planning_new') }}" class="quick-btn">
+                <i class="fas fa-calendar-plus" style="color: #8b5cf6;"></i> Nouveau planning
+            </a>
+            <a href="{{ path('app_whiteboard_index') }}" class="quick-btn">
+                <i class="fas fa-chalkboard text-info"></i> Tableau Kanban
+            </a>
+            <a href="{{ path('app_tache_index') }}" class="quick-btn">
+                <i class="fas fa-list text-success"></i> Toutes les tâches
+            </a>
+        </div>
+    </div>
+</div>
+
+{# ===== SEARCH JS ===== #}
+<script>
+const taches = [
+    {% for tache in taches %}
+    {
+        id: {{ tache.getId() }},
+        titre: {{ tache.getTitre()|json_encode|raw }},
+        statut: {{ tache.getStatut()|json_encode|raw }},
+        priorite: {{ tache.getPriorite()|json_encode|raw }},
+        employe: {{ (employes[tache.getEmployeId()] ?? 'Non assigné')|json_encode|raw }},
+        showUrl: "{{ path('app_tache_show', {'id': tache.getId()}) }}"
+    },
+    {% endfor %}
+];
+
+const searchInput = document.getElementById('globalSearch');
+const filterStatut = document.getElementById('filterStatut');
+const resultsBox = document.getElementById('searchResults');
+
+function doSearch() {
+    const q = searchInput.value.toLowerCase().trim();
+    const s = filterStatut.value;
+
+    if (!q && !s) {
+        resultsBox.style.display = 'none';
+        return;
+    }
+
+    const filtered = taches.filter(t => {
+        const matchQ = !q || t.titre.toLowerCase().includes(q);
+        const matchS = !s || t.statut === s;
+        return matchQ && matchS;
+    });
+
+    if (filtered.length === 0) {
+        resultsBox.innerHTML = '<div class="search-result-item text-muted">🔍 Aucune tâche trouvée</div>';
+    } else {
+        resultsBox.innerHTML = filtered.slice(0, 10).map(t => {
+            let badgeClass = '', badgeText = '';
+            if (t.statut === 'A_FAIRE') {
+                badgeClass = 'badge-statut-afaire';
+                badgeText = '📌 À faire';
+            } else if (t.statut === 'EN_COURS') {
+                badgeClass = 'badge-statut-encours';
+                badgeText = '⚡ En cours';
+            } else {
+                badgeClass = 'badge-statut-termine';
+                badgeText = '✅ Terminée';
+            }
+            return `<a href="${t.showUrl}" class="search-result-item">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">${t.titre}</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 3px;">
+                        <i class="fas fa-user"></i> ${t.employe}
+                    </div>
+                </div>
+                <span class="${badgeClass}">${badgeText}</span>
+            </a>`;
+        }).join('');
+    }
+    resultsBox.style.display = 'block';
+}
+
+searchInput.addEventListener('input', doSearch);
+filterStatut.addEventListener('change', doSearch);
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-section')) {
+        resultsBox.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
