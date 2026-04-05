@@ -1,0 +1,112 @@
+{# templates/employee/whiteboard.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Tableau Kanban{% endblock %}
+
+{% block employee_content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>📌 À faire</h5>
+                <small>{{ aFaire|length }} tâche(s)</small>
+            </div>
+            <div class="card-body" style="min-height: 400px;">
+                {% if aFaire|length > 0 %}
+                    {% for tache in aFaire %}
+                    <div class="alert alert-light border mb-2 shadow-sm">
+                        <strong>{{ tache.titre }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ tache.deadline ? tache.deadline|date('d/m/Y') : 'Pas de deadline' }}
+                        </small>
+                        <span class="badge float-end {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-success{% endif %}">
+                            {{ tache.priorite }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-check-circle fa-3x mb-2"></i>
+                        <p>Aucune tâche à faire</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-spinner me-2"></i>⚡ En cours</h5>
+                <small>{{ enCours|length }} tâche(s)</small>
+            </div>
+            <div class="card-body" style="min-height: 400px;">
+                {% if enCours|length > 0 %}
+                    {% for tache in enCours %}
+                    <div class="alert alert-light border mb-2 shadow-sm">
+                        <strong>{{ tache.titre }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ tache.deadline ? tache.deadline|date('d/m/Y') : 'Pas de deadline' }}
+                        </small>
+                        <span class="badge float-end {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-success{% endif %}">
+                            {{ tache.priorite }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-play-circle fa-3x mb-2"></i>
+                        <p>Aucune tâche en cours</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>✅ Terminées</h5>
+                <small>{{ terminees|length }} tâche(s)</small>
+            </div>
+            <div class="card-body" style="min-height: 400px;">
+                {% if terminees|length > 0 %}
+                    {% for tache in terminees %}
+                    <div class="alert alert-light border mb-2 shadow-sm">
+                        <strong>{{ tache.titre }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ tache.deadline ? tache.deadline|date('d/m/Y') : 'Pas de deadline' }}
+                        </small>
+                        <span class="badge float-end {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-success{% endif %}">
+                            {{ tache.priorite }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-check-double fa-3x mb-2"></i>
+                        <p>Aucune tâche terminée</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not hasTaches %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>
+            Vous n'avez pas encore de tâches assignées. Les tâches apparaîtront ici une fois qu'un administrateur vous les aura assignées.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

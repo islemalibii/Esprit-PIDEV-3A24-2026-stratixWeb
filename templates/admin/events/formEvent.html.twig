@@ -1,0 +1,378 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.id ? 'Modifier' : 'Nouvel' }} Événement{% endblock %}
+
+{% block body %}
+<div id="overlay" class="overlay"></div>
+
+
+<style>
+    .form-control, .form-select {
+        border-color: #e2e8f0;
+        font-size: .875rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124,58,237,.08);
+    }
+    .input-group-text {
+        border-color: #e2e8f0;
+    }
+    .form-control.is-invalid {
+        border-color: #dc2626 !important;
+        background-image: none;
+    }
+    .invalid-feedback, .form-error-message {
+        color: #dc2626 !important;
+        font-size: .75rem;
+        margin-top: .25rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .invalid-feedback::before, .form-error-message::before {
+        content: '\ea0d';
+        font-family: 'tabler-icons';
+        font-size: .8rem;
+    }
+    .type-option, .statut-option {
+        transition: all .15s ease;
+    }
+    .type-option:hover, .statut-option:hover {
+        background: #faf5ff;
+        border-color: #c4b5fd !important;
+    }
+    .section-label {
+        font-size: .68rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .form-error-icon {
+        color: #dc2626;
+    }
+    ul.form-errors, .form-errors {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    ul li, .form-error-message {
+        color: #dc2626 !important;
+        font-size: .75rem;
+        margin-top: .3rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+</style>
+
+<main id="content" class="content py-10">
+    <div class="container-fluid">
+
+        {# Header #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <a href="{{ path('resp_event_index') }}"
+                   class="text-muted small text-decoration-none d-inline-flex align-items-center gap-1 mb-2">
+                    <i class="ti ti-arrow-left"></i> Retour aux événements
+                </a>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-2 p-2" style="background:#ede9fe;">
+                        <i class="ti ti-{{ evenement.id ? 'pencil' : 'calendar-plus' }} fs-5" style="color:#7c3aed;"></i>
+                    </div>
+                    <div>
+                        <h1 class="fs-4 fw-semibold text-dark mb-0">
+                            {{ evenement.id ? 'Modifier l\'événement' : 'Nouvel événement' }}
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_start(form, {
+            'action': path('resp_event_new'),
+            'method': 'POST',
+            'attr': {
+                'novalidate': 'novalidate',
+                'enctype': 'multipart/form-data'
+            }
+        }) 
+        }}
+        <div class="row g-4">
+
+            {# LEFT column #}
+            <div class="col-lg-8 d-flex flex-column gap-4">
+
+                {# General info card #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <p class="section-label">Informations générales</p>
+
+                        {# Titre #}
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-dark mb-1">
+                                Titre <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="ti ti-text-size"></i>
+                                </span>
+                                {{ form_widget(form.titre, {
+                                    'attr': {
+                                        'class': 'form-control border-start-0 ps-0',
+                                        'placeholder': 'runion trimestrielle'
+                                    }
+                                }) }}
+                            </div>
+                            {{ form_errors(form.titre) }}
+                        </div>
+
+                        {# Description #}
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-dark mb-1">
+                                Description <span class="text-danger">*</span>
+                            </label>
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'rows': 5,
+                                    'placeholder': 'description...'
+                                }
+                            }) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        {# Date + Lieu #}
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-semibold text-dark mb-1">
+                                    Date <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="ti ti-calendar"></i>
+                                    </span>
+                                    {{ form_widget(form.dateEvent, {
+                                        'attr': {'class': 'form-control border-start-0 ps-0'}
+                                    }) }}
+                                </div>
+                                {{ form_errors(form.dateEvent) }}
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-semibold text-dark mb-1">
+                                    Lieu <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="ti ti-map-pin"></i>
+                                    </span>
+                                    {{ form_widget(form.lieu, {
+                                        'attr': {
+                                            'class': 'form-control border-start-0 ps-0',
+                                            'placeholder': 'esprit, bloc A'
+                                        }
+                                    }) }}
+                                </div>
+                                {{ form_errors(form.lieu) }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                {# Image card #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <p class="section-label">Image</p>
+                        <div class="d-flex gap-3 align-items-start">
+
+                            {# Preview #}
+                            <div id="imgPreview" class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
+                                style="width:80px; height:80px; background:#f1f5f9; border: 1.5px dashed #cbd5e1;">
+                                {% if evenement.imageUrl %}
+                                    <img src="{{ asset('images/events/' ~ evenement.imageUrl) }}"
+                                        style="width:80px;height:80px;object-fit:cover;"
+                                        onerror="this.parentElement.innerHTML='<i class=\'ti ti-photo text-muted fs-3\'></i>'">
+                                {% else %}
+                                    <i class="ti ti-photo text-muted fs-3"></i>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <label class="form-label small fw-semibold text-dark mb-1">
+                                    Choisir une image
+                                </label>
+
+                                
+                                {{ form_widget(form.imageUrl, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm',
+                                        'placeholder': 'formation.jpg',
+                                        'id': 'imageUrlInput'
+                                    }
+                                }) }}
+
+                     
+                                {{ form_errors(form.imageUrl) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# RIGHT column #}
+            <div class="col-lg-4 d-flex flex-column gap-4">
+
+                {# Type card #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <p class="section-label">Type d'événement <span class="text-danger">*</span></p>
+
+                        <div class="d-flex flex-column gap-2">
+                            {% set icons = {
+                                'formation':        ['ti-school',       '#8b5cf6', '#f5f3ff'],
+                                'reunion':          ['ti-users',        '#3b82f6', '#eff6ff'],
+                                'lancementProduit': ['ti-rocket',       '#10b981', '#ecfdf5'],
+                                'recrutement':      ['ti-user-plus',    '#ef4444', '#fef2f2'],
+                                'seminaire':        ['ti-presentation', '#f59e0b', '#fffbeb']
+                            } %}
+                            {% for choice in form.typeEvent %}
+                                {% set val = choice.vars.value %}
+                                <label class="d-flex align-items-center gap-3 px-3 py-2 rounded-2 type-option"
+                                       style="border: 1.5px solid #e2e8f0; cursor:pointer;">
+                                    {{ form_widget(choice, {'attr': {'class': 'd-none type-radio'}}) }}
+                                    {% if val in icons|keys %}
+                                        {% set ic = icons[val] %}
+                                        <div class="rounded-2 p-1 d-flex align-items-center justify-content-center"
+                                             style="background:{{ ic[2] }}; min-width:28px; height:28px;">
+                                            <i class="ti {{ ic[0] }} small" style="color:{{ ic[1] }};"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span class="small fw-semibold text-dark">{{ choice.vars.label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {{ form_errors(form.typeEvent ) }}
+                    </div>
+                </div>
+
+                {# Statut card #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <p class="section-label">Statut <span class="text-danger">*</span></p>
+
+                        <div class="d-flex flex-column gap-2">
+                            {% for choice in form.statut %}
+                                {% set val = choice.vars.value %}
+                                <label class="d-flex align-items-center gap-3 px-3 py-2 rounded-2 statut-option"
+                                       style="border: 1.5px solid #e2e8f0; cursor:pointer;">
+                                    {{ form_widget(choice, {'attr': {'class': 'd-none statut-radio'}}) }}
+                                    {% if val == 'planifier' %}
+                                        <div class="rounded-2 p-1 d-flex align-items-center justify-content-center"
+                                             style="background:#dcfce7; min-width:28px; height:28px;">
+                                            <i class="ti ti-circle-check small" style="color:#16a34a;"></i>
+                                        </div>
+                                        <span class="small fw-semibold text-dark">Planifié</span>
+                                    {% elseif val == 'terminer' %}
+                                        <div class="rounded-2 p-1 d-flex align-items-center justify-content-center"
+                                             style="background:#fef9c3; min-width:28px; height:28px;">
+                                            <i class="ti ti-flag small" style="color:#ca8a04;"></i>
+                                        </div>
+                                        <span class="small fw-semibold text-dark">Terminé</span>
+                                    {% elseif val == 'annuler' %}
+                                        <div class="rounded-2 p-1 d-flex align-items-center justify-content-center"
+                                             style="background:#fee2e2; min-width:28px; height:28px;">
+                                            <i class="ti ti-ban small" style="color:#dc2626;"></i>
+                                        </div>
+                                        <span class="small fw-semibold text-dark">Annulé</span>
+                                    {% endif %}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {{ form_errors(form.statut) }}
+                    </div>
+                </div>
+
+                {# Actions card #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column gap-2">
+                        <p class="section-label mb-3">Actions</p>
+                        <button type="submit" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                            <i class="ti ti-{{ evenement.id ? 'device-floppy' : 'calendar-plus' }}"></i>
+                            {{ evenement.id ? 'Enregistrer les modifications' : 'Créer l\'événement' }}
+                        </button>
+                        <a href="{{ path('resp_event_index') }}"
+                           class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                            <i class="ti ti-x"></i> Annuler
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+
+        <footer class="text-center py-3 mt-5 text-muted small">
+            Copyright © 2026 InApp Inventory Dashboard.
+        </footer>
+
+    </div>
+</main>
+
+<script>
+    // Live image preview from filename input
+    const imgInput = document.getElementById('imageUrlInput');
+    const imgPreview = document.getElementById('imgPreview');
+
+    if (imgInput) {
+        imgInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            if (val) {
+                imgPreview.innerHTML = `<img src="/images/events/${val}"
+                    style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+                    onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo text-muted fs-3\\'></i>'">`;
+            } else {
+                imgPreview.innerHTML = '<i class="ti ti-photo text-muted fs-3"></i>';
+            }
+        });
+    }
+
+    // Type radio highlight
+    document.querySelectorAll('.type-radio').forEach(radio => {
+        const apply = () => {
+            document.querySelectorAll('.type-option').forEach(l => {
+                l.style.borderColor = '#e2e8f0';
+                l.style.background = '';
+            });
+            if (radio.checked) {
+                radio.closest('.type-option').style.borderColor = '#7c3aed';
+                radio.closest('.type-option').style.background = '#faf5ff';
+            }
+        };
+        radio.addEventListener('change', apply);
+        if (radio.checked) apply();
+    });
+
+    // Statut radio highlight
+    document.querySelectorAll('.statut-radio').forEach(radio => {
+        const apply = () => {
+            document.querySelectorAll('.statut-option').forEach(l => {
+                l.style.borderColor = '#e2e8f0';
+                l.style.background = '';
+            });
+            if (radio.checked) {
+                radio.closest('.statut-option').style.borderColor = '#7c3aed';
+                radio.closest('.statut-option').style.background = '#faf5ff';
+            }
+        };
+        radio.addEventListener('change', apply);
+        if (radio.checked) apply();
+    });
+</script>
+
+{% endblock %}

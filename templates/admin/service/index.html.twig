@@ -1,0 +1,140 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des Services</h1>
+        <a href="{{ path('app_service_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau Service
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <!-- Search and Filter Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Recherche et Filtrage</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par titre ou description..."
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="categorie" class="form-select">
+                        <option value="">Toutes les catégories</option>
+                        {% for categorie in categories %}
+                            <option value="{{ categorie.nom }}" {{ selectedCategorie == categorie.nom ? 'selected' }}>
+                                {{ categorie.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="archive" value="1" id="archiveCheck"
+                               {{ showArchives ? 'checked' }}>
+                        <label class="form-check-label" for="archiveCheck">
+                            Archives
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                    <a href="{{ path('app_service_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="row">
+        {% for service in services %}
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">{{ service.titre }}</h6>
+                        {% if service.categorie %}
+                            <span class="badge bg-secondary">{{ service.categorie.nom }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center mb-2">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Budget
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{ service.budget|number_format(0, ',', ' ') }} DT
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row no-gutters align-items-center mb-2">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Période
+                                </div>
+                                <div class="text-xs text-muted">
+                                    {{ service.dateDebut ? service.dateDebut|date('d/m/Y') : 'N/A' }} -
+                                    {{ service.dateFin ? service.dateFin|date('d/m/Y') : 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                        {% if service.description %}
+                            <p class="text-muted small mb-3">
+                                {{ service.description|slice(0, 100) ~ (service.description|length > 100 ? '...' : '') }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ path('app_service_show', {'id': service.id}) }}"
+                               class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('app_service_edit', {'id': service.id}) }}"
+                               class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form method="post" action="{{ path('app_service_archive', {'id': service.id}) }}"
+                                  class="d-inline"
+                                  onsubmit="return confirm('{{ service.archive ? 'Restaurer' : 'Archiver' }} ce service ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ service.id) }}">
+                                <button type="submit" class="btn btn-sm {{ service.archive ? 'btn-outline-success' : 'btn-outline-secondary' }}">
+                                    <i class="fas fa-{{ service.archive ? 'undo' : 'archive' }}"></i>
+                                    {{ service.archive ? 'Restaurer' : 'Archiver' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucun service trouvé</h5>
+                        <p class="text-muted">Il n'y a pas de services {{ showArchives ? 'archivés' : 'actifs' }} correspondant à vos critères.</p>
+                        <a href="{{ path('app_service_new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer le premier service
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

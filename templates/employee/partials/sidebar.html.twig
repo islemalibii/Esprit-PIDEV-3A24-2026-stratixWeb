@@ -1,0 +1,89 @@
+<aside id="sidebar" class="sidebar">
+    <div class="logo-area">
+        <a href="{{ path('app_employee_dashboard') }}" class="d-inline-flex align-items-center text-decoration-none">
+            <img src="/images/logo.png" alt="Stratix" style="height:110px;width:auto;max-width:200px;">
+        </a>
+    </div>
+
+    <ul class="nav flex-column">
+        <li class="px-4 py-2"><small class="nav-text text-uppercase" style="font-size:.7rem;letter-spacing:.8px;color:#9ca3af;">Principal</small></li>
+
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') == 'app_employee_dashboard' %}active{% endif %}"
+               href="{{ path('app_employee_dashboard') }}">
+                <i class="ti ti-home"></i><span class="nav-text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') == 'app_employee_taches' or app.request.attributes.get('_route') == 'app_employee_plannings' %}active{% endif %}"
+               href="{{ path('app_employee_taches') }}">
+                <i class="ti ti-checklist"></i><span class="nav-text">Tâches & Planning</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') == 'app_employee_calendar' %}active{% endif %}"
+               href="{{ path('app_employee_calendar') }}">
+                <i class="ti ti-calendar-week"></i><span class="nav-text">Calendrier</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') == 'app_employee_whiteboard' %}active{% endif %}"
+               href="{{ path('app_employee_whiteboard') }}">
+                <i class="ti ti-layout-kanban"></i><span class="nav-text">Kanban</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'app_projet_employee' %}active{% endif %}"
+               href="{{ path('app_projet_employee_index') }}">
+                <i class="ti ti-folder"></i><span class="nav-text">Mes Projets</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'emp_event' %}active{% endif %}"
+               href="{{ path('emp_event_list') }}">
+                <i class="ti ti-calendar-event"></i><span class="nav-text">Événements</span>
+            </a>
+        </li>
+
+        <li class="px-4 pt-3 pb-2"><small class="nav-text text-uppercase" style="font-size:.7rem;letter-spacing:.8px;color:#9ca3af;">Catalogue</small></li>
+
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'app_employee_service' %}active{% endif %}"
+               href="{{ path('app_employee_service_index') }}">
+                <i class="ti ti-building"></i><span class="nav-text">Services</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'app_employee_categorie' %}active{% endif %}"
+               href="{{ path('app_employee_categorie_index') }}">
+                <i class="ti ti-category"></i><span class="nav-text">Catégories</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'front_produit' %}active{% endif %}"
+               href="{{ path('front_produit_index') }}">
+                <i class="ti ti-shopping-bag"></i><span class="nav-text">Produits</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'front_ressource' %}active{% endif %}"
+               href="{{ path('front_ressource_index') }}">
+                <i class="ti ti-package"></i><span class="nav-text">Ressources</span>
+            </a>
+        </li>
+
+        <li class="px-4 pt-3 pb-2"><small class="nav-text text-uppercase" style="font-size:.7rem;letter-spacing:.8px;color:#9ca3af;">Compte</small></li>
+
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'employee_profile' %}active{% endif %}"
+               href="{{ path('employee_profile') }}">
+                <i class="ti ti-user-circle"></i><span class="nav-text">Mon profil</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link text-danger" href="{{ path('app_logout') }}">
+                <i class="ti ti-logout"></i><span class="nav-text">Déconnexion</span>
+            </a>
+        </li>
+    </ul>
+</aside>

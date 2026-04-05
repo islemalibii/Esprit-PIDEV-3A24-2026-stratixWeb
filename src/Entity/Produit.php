@@ -71,7 +71,7 @@ class Produit
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?float $prix = null;
 
     public function getPrix(): ?float
@@ -307,4 +307,18 @@ class Produit
         return $this;
     }
 
+
+public function getStatut(): array {
+    $now = new \DateTime();
+    
+    if ($this->date_peremption && $this->date_peremption < $now) {
+        return ['text' => '⚠ PRODUIT PÉRIMÉ ⚠', 'class' => 'bg-danger-subtle text-danger'];
+    }
+    if ($this->stock_actuel <= $this->stock_min) {
+        return ['text' => '⚠ Stock faible', 'class' => 'bg-warning-subtle text-warning'];
+    }
+    // ... reproduis ici tes autres conditions Java ...
+    
+    return ['text' => '✓ Produit en bon état', 'class' => 'bg-success-subtle text-success'];
+}
 }

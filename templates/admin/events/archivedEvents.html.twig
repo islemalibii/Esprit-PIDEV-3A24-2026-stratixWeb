@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Événements Archivés{% endblock %}
+
+{% block body %}
+<div id="overlay" class="overlay"></div>
+
+
+<main id="content" class="content py-10">
+    <div class="container-fluid">
+
+        {# Header #}
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fs-4 mb-1 fw-semibold text-dark">
+                        <i class="ti ti-archive me-2 text-muted"></i>Événements Archivés
+                    </h1>
+                    <p class="text-muted mb-0 small">{{ archived|length }} événement(s) archivé(s)</p>
+                </div>
+                <a href="{{ path('resp_event_index') }}" class="btn btn-outline-secondary btn-sm px-3">
+                    <i class="ti ti-arrow-left me-1"></i> Retour aux événements
+                </a>
+            </div>
+        </div>
+
+        {# Table #}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                {% if archived is empty %}
+                    <div class="text-center py-6 text-muted">
+                        <i class="ti ti-archive-off fs-1 d-block mb-2"></i>
+                        <p>Aucun événement archivé.</p>
+                        <a href="{{ path('resp_event_index') }}" class="btn btn-sm btn-primary">
+                            Retour aux événements
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background:#f8f9fb;">
+                                <tr>
+                                    <th class="px-4 py-3 text-muted fw-semibold small">TITRE</th>
+                                    <th class="py-3 text-muted fw-semibold small">TYPE</th>
+                                    <th class="py-3 text-muted fw-semibold small">DATE</th>
+                                    <th class="py-3 text-muted fw-semibold small">LIEU</th>
+                                    <th class="py-3 text-muted fw-semibold small">STATUT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ev in archived %}
+                                {% set typeLabels = {
+                                    'reunion':          ['Réunion',      '#3b82f6', '#eff6ff'],
+                                    'formation':        ['Formation',    '#8b5cf6', '#f5f3ff'],
+                                    'lancementProduit': ['Lancement',    '#10b981', '#ecfdf5'],
+                                    'seminaire':        ['Séminaire',    '#f59e0b', '#fffbeb'],
+                                    'recrutement':      ['Recrutement',  '#ef4444', '#fef2f2']
+                                } %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if ev.imageUrl %}
+                                                <img src="{{ asset('images/events/' ~ ev.imageUrl) }}"
+                                                     class="rounded-2" width="70" height="70" style="object-fit:cover;">
+                                            {% else %}
+                                                <div class="rounded-2 d-flex align-items-center justify-content-center"
+                                                     style="width:44px;height:44px;background:#ede9fe;">
+                                                    <i class="ti ti-calendar-event" style="color:#7c3aed;"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <p class="mb-0 fw-semibold text-dark small">{{ ev.titre }}</p>
+                                                <small class="text-muted">{{ ev.description|slice(0, 45) }}{% if ev.description|length > 45 %}…{% endif %}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if ev.typeEvent in typeLabels|keys %}
+                                            {% set label = typeLabels[ev.typeEvent] %}
+                                            <span class="badge rounded-pill px-2 py-1 small fw-normal"
+                                                  style="background:{{ label[2] }};color:{{ label[1] }};">
+                                                {{ label[0] }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ ev.typeEvent }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">
+                                            <i class="ti ti-calendar me-1"></i>
+                                            {{ ev.dateEvent ? ev.dateEvent|date('d/m/Y') : '—' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if ev.lieu %}
+                                            <span class="text-muted small">
+                                                <i class="ti ti-map-pin me-1"></i>{{ ev.lieu }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if ev.statut == 'planifier' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#dcfce7;color:#16a34a;">Planifié</span>
+                                        {% elseif ev.statut == 'annuler' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#fee2e2;color:#dc2626;">Annulé</span>
+                                        {% elseif ev.statut == 'terminer' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#fef9c3;color:#ca8a04;">Terminé</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill small">{{ ev.statut }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <footer class="text-center py-3 mt-5 text-muted small">
+            Copyright © 2026 InApp Inventory Dashboard.
+        </footer>
+
+    </div>
+</main>
+{% endblock %}

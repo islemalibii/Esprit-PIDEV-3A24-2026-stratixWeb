@@ -13,7 +13,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class AuthController extends AbstractController
 {
-    #[Route('/', name: 'resp_event_index')]
+    #[Route('/', name: 'app_home')]
     public function home(): Response
     {
         $user = $this->getUser();
@@ -23,14 +23,19 @@ class AuthController extends AbstractController
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('admin_dashboard');
         }
-        return $this->render('admin/events/responsableEvent.html.twig', ['user' => $user]);
+        // Responsables → espace admin
+        if (in_array($user->getRole(), ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {
+            return $this->redirectToRoute('admin_dashboard');
+        }
+        // Employés → espace employé
+        return $this->redirectToRoute('app_employee_dashboard');
     }
 
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authUtils): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('resp_event_index');
+            return $this->redirectToRoute('app_home');
         }
 
         return $this->render('auth/login.html.twig', [
@@ -46,7 +51,7 @@ class AuthController extends AbstractController
     public function signup(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('resp_event_index');
+            return $this->redirectToRoute('app_home');
         }
 
         $errors = [];
@@ -94,7 +99,7 @@ class AuthController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', 'Compte créé ! Vous pouvez vous connecter.');
-                return $this->redirectToRoute('resp_event_index');
+                return $this->redirectToRoute('app_login');
             }
         }
 

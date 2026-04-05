@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% block title %}Utilisateurs{% endblock %}
+{% block body %}
+<div style="max-width:1100px;margin:2rem auto;font-family:sans-serif;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h1 style="margin:0;">Utilisateurs</h1>
+        <a href="{{ path('utilisateur_new') }}" style="background:#4f46e5;color:#fff;padding:.5rem 1rem;border-radius:6px;text-decoration:none;">+ Nouvel utilisateur</a>
+    </div>
+    {% for type, messages in app.flashes %}
+        {% for msg in messages %}
+            <div style="padding:.75rem 1rem;margin-bottom:1rem;border-radius:6px;background:{% if type=='success' %}#d1fae5{% else %}#fee2e2{% endif %};color:{% if type=='success' %}#065f46{% else %}#991b1b{% endif %};">{{ msg }}</div>
+        {% endfor %}
+    {% endfor %}
+    <form method="get" style="display:flex;gap:.75rem;margin-bottom:1.5rem;">
+        <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..."
+               style="flex:1;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;">
+        <select name="role" style="padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;">
+            <option value="">Tous les rôles</option>
+            {% for r in ['admin','employe','responsable_rh','responsable_projet','responsable_production','ceo'] %}
+                <option value="{{ r }}" {% if role == r %}selected{% endif %}>{{ r|upper }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" style="background:#4f46e5;color:#fff;padding:.5rem 1rem;border:none;border-radius:6px;cursor:pointer;">Filtrer</button>
+        <a href="{{ path('utilisateur_index') }}" style="padding:.5rem 1rem;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;">Reset</a>
+    </form>
+    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+        <thead style="background:#f3f4f6;">
+            <tr>
+                <th style="padding:.75rem 1rem;text-align:left;">Nom</th>
+                <th style="padding:.75rem 1rem;text-align:left;">Email</th>
+                <th style="padding:.75rem 1rem;text-align:left;">Rôle</th>
+                <th style="padding:.75rem 1rem;text-align:left;">Statut</th>
+                <th style="padding:.75rem 1rem;text-align:left;">Compte</th>
+                <th style="padding:.75rem 1rem;text-align:left;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for u in utilisateurs %}
+            <tr style="border-top:1px solid #e5e7eb;">
+                <td style="padding:.75rem 1rem;"><strong>{{ u.nom }} {{ u.prenom }}</strong><br><small style="color:#6b7280;">CIN: {{ u.cin }}</small></td>
+                <td style="padding:.75rem 1rem;">{{ u.email }}</td>
+                <td style="padding:.75rem 1rem;"><span style="background:#e0e7ff;color:#3730a3;padding:.2rem .6rem;border-radius:999px;font-size:.8rem;">{{ u.role|upper }}</span></td>
+                <td style="padding:.75rem 1rem;">
+                    {% if u.statut == 'actif' %}<span style="background:#d1fae5;color:#065f46;padding:.2rem .6rem;border-radius:999px;font-size:.8rem;">Actif</span>
+                    {% else %}<span style="background:#f3f4f6;color:#6b7280;padding:.2rem .6rem;border-radius:999px;font-size:.8rem;">{{ u.statut ?: '-' }}</span>{% endif %}
+                </td>
+                <td style="padding:.75rem 1rem;">{% if u.isAccountLocked() %}<span style="color:#dc2626;">🔒</span>{% else %}<span style="color:#16a34a;">✓</span>{% endif %}</td>
+                <td style="padding:.75rem 1rem;">
+                    <a href="{{ path('utilisateur_show', {id: u.id}) }}" style="color:#4f46e5;margin-right:.5rem;">Voir</a>
+                    <a href="{{ path('utilisateur_edit', {id: u.id}) }}" style="color:#0891b2;margin-right:.5rem;">Modifier</a>
+                    <form method="post" action="{{ path('utilisateur_delete', {id: u.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~u.id) }}">
+                        <button type="submit" style="background:none;border:none;cursor:pointer;color:#dc2626;">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" style="padding:2rem;text-align:center;color:#6b7280;">Aucun utilisateur trouvé.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

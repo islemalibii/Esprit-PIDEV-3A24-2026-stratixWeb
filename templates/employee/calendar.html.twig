@@ -1,0 +1,63 @@
+{# templates/employee/calendar.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Calendrier{% endblock %}
+
+{% block stylesheets %}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        .fc-event {
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-weight: 500;
+        }
+        .fc-day-today {
+            background-color: #eff6ff !important;
+        }
+    </style>
+{% endblock %}
+
+{% block employee_content %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h4 class="mb-0"><i class="fas fa-calendar-week me-2 text-primary"></i>Calendrier des Tâches et Plannings</h4>
+    </div>
+    <div class="card-body">
+        <div id="calendar"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                buttonText: {
+                    today: "Aujourd'hui",
+                    month: 'Mois',
+                    week: 'Semaine',
+                    list: 'Liste'
+                },
+                events: {{ events|raw }},
+                eventClick: function(info) {
+                    alert(info.event.title);
+                },
+                height: 'auto',
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00'
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}
