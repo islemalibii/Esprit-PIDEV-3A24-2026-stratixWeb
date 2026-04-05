@@ -1,0 +1,35 @@
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Mes Tâches{% endblock %}
+
+{% block employee_content %}
+<div class="card">
+    <div class="card-header">
+        <h4>📋 Mes Tâches</h4>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Statut</th>
+                    <th>Priorité</th>
+                    <th>Deadline</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tache in taches %}
+                <tr>
+                    <td>{{ tache.titre }}</td>
+                    <td>{{ tache.statut }}</td>
+                    <td>{{ tache.priorite }}</td>
+                    <td>{{ tache.deadline ? tache.deadline|date('d/m/Y') : '-' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center">Aucune tâche</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

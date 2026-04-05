@@ -1,0 +1,181 @@
+{% extends 'base_ryhabbb.html.twig' %}
+
+{% block title %}Liste des Tâches{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tasks"></i> Gestion des Tâches</h1>
+    <a href="{{ path('app_tache_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouvelle tâche
+    </a>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-2x mb-2"></i>
+                <h5 class="card-title">Total tâches</h5>
+                <h2 class="display-4">{{ total|default(taches|length) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h5 class="card-title">En cours</h5>
+                <h2 class="display-4">{{ en_cours|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h5 class="card-title">Terminées</h5>
+                <h2 class="display-4">{{ terminees|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h5 class="card-title">À faire</h5>
+                <h2 class="display-4">{{ a_faire|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Barre de recherche -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Rechercher une tâche...">
+            </div>
+            <div class="col-md-4">
+                <select id="statutFilter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="A_FAIRE">📌 À faire</option>
+                    <option value="EN_COURS">⚡ En cours</option>
+                    <option value="TERMINEE">✅ Terminée</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tableau des tâches (SANS la colonne ID) -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="tacheTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Deadline</th>
+                        <th>Statut</th>
+                        <th>Priorité</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tache in taches %}
+                    <tr>
+                        <td>
+                            <strong>{{ tache.titre }}</strong>
+                        </td>
+                        <td>
+                            {{ tache.description|slice(0, 50) }}{% if tache.description|length > 50 %}...{% endif %}
+                        </td>
+                        <td>
+                            {% if tache.deadline|date('Y-m-d') < 'now'|date('Y-m-d') and tache.statut != 'TERMINEE' %}
+                                <span class="text-danger fw-bold">
+                                    <i class="fas fa-exclamation-circle"></i> {{ tache.deadline|date('d/m/Y') }}
+                                </span>
+                            {% else %}
+                                {{ tache.deadline|date('d/m/Y') }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if tache.statut == 'A_FAIRE' %}
+                                <span class="badge bg-warning">📌 À faire</span>
+                            {% elseif tache.statut == 'EN_COURS' %}
+                                <span class="badge bg-info">⚡ En cours</span>
+                            {% else %}
+                                <span class="badge bg-success">✅ Terminée</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if tache.priorite == 'HAUTE' %}
+                                <span class="badge bg-danger">🔴 Haute</span>
+                            {% elseif tache.priorite == 'MOYENNE' %}
+                                <span class="badge bg-warning">🟡 Moyenne</span>
+                            {% else %}
+                                <span class="badge bg-success">🟢 Basse</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-actions">
+                            <a href="{{ path('app_tache_show', {'id': tache.id}) }}" class="btn btn-sm btn-info" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_tache_delete', {'id': tache.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer cette tâche ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ tache.id) }}">
+                                <button class="btn btn-sm btn-danger" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        filterTable();
+    });
+    document.getElementById('statutFilter').addEventListener('change', function() {
+        filterTable();
+    });
+
+    function filterTable() {
+        let searchText = document.getElementById('searchInput').value.toLowerCase();
+        let statutFilter = document.getElementById('statutFilter').value;
+        let rows = document.querySelectorAll('#tacheTable tbody tr');
+        
+        rows.forEach(row => {
+            let titre = row.cells[0].innerText.toLowerCase();
+            let statut = row.cells[3].innerText;
+            
+            let matchStatut = true;
+            if (statutFilter) {
+                if (statutFilter === 'A_FAIRE') matchStatut = statut.includes('À faire');
+                else if (statutFilter === 'EN_COURS') matchStatut = statut.includes('En cours');
+                else if (statutFilter === 'TERMINEE') matchStatut = statut.includes('Terminée');
+            }
+            
+            let matchSearch = titre.includes(searchText);
+            
+            row.style.display = (matchStatut && matchSearch) ? '' : 'none';
+        });
+    }
+</script>
+
+<style>
+    .table-actions .btn { padding: 2px 8px; margin: 0 2px; }
+    .badge { font-size: 0.85rem; padding: 5px 10px; }
+    .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+</style>
+{% endblock %}

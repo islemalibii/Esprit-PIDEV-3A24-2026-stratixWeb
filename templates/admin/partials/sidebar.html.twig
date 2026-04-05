@@ -1,10 +1,7 @@
-{# Sidebar Partial #}
-
 <aside id="sidebar" class="sidebar" style="background-color: #f8f9fb; border-right: 1px solid #e9ecef;">
-    <div class="logo-area" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+<div class="logo-area" style="padding: 2rem 1.5rem 0.5rem 0.2rem; border-bottom: 1px solid #e9ecef;">
         <a href="{{ path('app_home') }}" class="d-inline-flex align-items-center text-decoration-none">
-            <img src="/images/logo-icon.svg" alt="" width="28">
-            <span class="logo-text ms-2"><img src="/images/logo.svg" alt=""></span>
+            <img src="/images/logo.png" alt="" width="200">
         </a>
     </div>
 
@@ -68,7 +65,7 @@
 
         <li>
             <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
-               href="#"
+               href="{{ path('app_dashboard') }}"
                style="color: #4a5568; transition: all 0.2s;">
                 <i class="ti ti-checklist fs-5"></i>
                 <span class="nav-text">Tâches et Planning</span>
