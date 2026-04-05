@@ -22,11 +22,14 @@ class EvenementType extends AbstractType
                 'attr' => ['placeholder' => 'Nom de l\'événement']
             ])
             ->add('description', TextareaType::class)
-            ->add('date_event', DateType::class, [
+            ->add('dateEvent', DateType::class, [
                 'widget' => 'single_text', 
+                'html5'          => true,
+                'property_path'  => 'date_event',
             ])
-            ->add('lieu', TextType::class)
-            ->add('type_event', ChoiceType::class, [
+            ->add('lieu', TextType::class, [
+            ])
+            ->add('typeEvent', ChoiceType::class, [
                 'choices'  => [
                     'Formation'        => 'formation',
                     'Réunion'          => 'reunion',
@@ -36,6 +39,7 @@ class EvenementType extends AbstractType
                 ],
                 'expanded' => true, 
                 'multiple' => false,
+                'property_path'  => 'type_event',
             ])
             ->add('statut', ChoiceType::class, [
                 'choices'  => [
@@ -47,7 +51,10 @@ class EvenementType extends AbstractType
                 'multiple' => false,
             ])
 
-            ->add('image_url', TextType::class, ['required' => false]);
+            ->add('imageUrl', TextType::class, [
+                'required' => false,
+                'property_path'  => 'image_url',
+            ]);
             
     }
 

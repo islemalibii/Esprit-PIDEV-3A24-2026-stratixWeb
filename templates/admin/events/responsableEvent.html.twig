@@ -216,6 +216,15 @@
                                                 <i class="ti ti-eye"></i>
                                             </a>
 
+
+                                            {# Edit #}
+                                            <a href="{{ path('resp_event_edit', {'id': evenement.id}) }}"
+                                            class="btn btn-sm rounded-2"
+                                            style="background:#dbeafe; color:#2563eb; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;"
+                                            title="Modifier">
+                                                <i class="ti ti-pencil"></i>
+                                            </a>
+                                            
                                             {# Archive / Restore #}
                                             <a href="{{ path('resp_event_archive', {'id': evenement.id}) }}"
                                             class="btn btn-sm rounded-2"

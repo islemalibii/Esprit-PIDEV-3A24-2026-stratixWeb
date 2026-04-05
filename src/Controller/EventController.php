@@ -51,6 +51,10 @@ class EventController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($evenement->isArchived() === null) {
+                $evenement->setIsArchived(false);
+            }
+            
             $em->persist($evenement);
             $em->flush();
             return $this->redirectToRoute('resp_event_index');

@@ -52,6 +52,24 @@
         text-transform: uppercase;
         margin-bottom: 1rem;
     }
+
+    .form-error-icon {
+        color: #dc2626;
+    }
+    ul.form-errors, .form-errors {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    ul li, .form-error-message {
+        color: #dc2626 !important;
+        font-size: .75rem;
+        margin-top: .3rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
 </style>
 
 <main id="content" class="content py-10">
@@ -77,8 +95,15 @@
             </div>
         </div>
 
-        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
-
+        {{ form_start(form, {
+            'action': path('resp_event_new'),
+            'method': 'POST',
+            'attr': {
+                'novalidate': 'novalidate',
+                'enctype': 'multipart/form-data'
+            }
+        }) 
+        }}
         <div class="row g-4">
 
             {# LEFT column #}
@@ -133,11 +158,11 @@
                                     <span class="input-group-text bg-white border-end-0 text-muted">
                                         <i class="ti ti-calendar"></i>
                                     </span>
-                                    {{ form_widget(form.date_event, {
+                                    {{ form_widget(form.dateEvent, {
                                         'attr': {'class': 'form-control border-start-0 ps-0'}
                                     }) }}
                                 </div>
-                                {{ form_errors(form.date_event) }}
+                                {{ form_errors(form.dateEvent) }}
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">
@@ -166,34 +191,39 @@
                     <div class="card-body p-4">
                         <p class="section-label">Image</p>
                         <div class="d-flex gap-3 align-items-start">
-                            {# Preview placeholder #}
-                            <div id="imgPreview" class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0"
-                                 style="width:72px; height:72px; background:#f1f5f9; border: 1.5px dashed #cbd5e1;">
-                                <i class="ti ti-photo text-muted fs-4"></i>
+
+                            {# Preview #}
+                            <div id="imgPreview" class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
+                                style="width:80px; height:80px; background:#f1f5f9; border: 1.5px dashed #cbd5e1;">
+                                {% if evenement.imageUrl %}
+                                    <img src="{{ asset('images/events/' ~ evenement.imageUrl) }}"
+                                        style="width:80px;height:80px;object-fit:cover;"
+                                        onerror="this.parentElement.innerHTML='<i class=\'ti ti-photo text-muted fs-3\'></i>'">
+                                {% else %}
+                                    <i class="ti ti-photo text-muted fs-3"></i>
+                                {% endif %}
                             </div>
+
                             <div class="flex-grow-1">
                                 <label class="form-label small fw-semibold text-dark mb-1">
-                                    Nom du fichier image
+                                    Choisir une image
                                 </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="ti ti-photo"></i>
-                                    </span>
-                                    {{ form_widget(form.image_url, {
-                                        'attr': {
-                                            'class': 'form-control border-start-0 ps-0',
-                                            'placeholder': 'formation.jpg',
-                                            'id': 'imageUrlInput'
-                                        }
-                                    }) }}
-                                </div>
-    
-                                {{ form_errors(form.image_url) }}
+
+                                
+                                {{ form_widget(form.imageUrl, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm',
+                                        'placeholder': 'formation.jpg',
+                                        'id': 'imageUrlInput'
+                                    }
+                                }) }}
+
+                     
+                                {{ form_errors(form.imageUrl) }}
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {# RIGHT column #}
@@ -212,7 +242,7 @@
                                 'recrutement':      ['ti-user-plus',    '#ef4444', '#fef2f2'],
                                 'seminaire':        ['ti-presentation', '#f59e0b', '#fffbeb']
                             } %}
-                            {% for choice in form.type_event %}
+                            {% for choice in form.typeEvent %}
                                 {% set val = choice.vars.value %}
                                 <label class="d-flex align-items-center gap-3 px-3 py-2 rounded-2 type-option"
                                        style="border: 1.5px solid #e2e8f0; cursor:pointer;">
@@ -228,7 +258,7 @@
                                 </label>
                             {% endfor %}
                         </div>
-                        {{ form_errors(form.type_event) }}
+                        {{ form_errors(form.typeEvent ) }}
                     </div>
                 </div>
 
@@ -297,6 +327,23 @@
 </main>
 
 <script>
+    // Live image preview from filename input
+    const imgInput = document.getElementById('imageUrlInput');
+    const imgPreview = document.getElementById('imgPreview');
+
+    if (imgInput) {
+        imgInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            if (val) {
+                imgPreview.innerHTML = `<img src="/images/events/${val}"
+                    style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+                    onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo text-muted fs-3\\'></i>'">`;
+            } else {
+                imgPreview.innerHTML = '<i class="ti ti-photo text-muted fs-3"></i>';
+            }
+        });
+    }
+
     // Type radio highlight
     document.querySelectorAll('.type-radio').forEach(radio => {
         const apply = () => {
@@ -328,24 +375,6 @@
         radio.addEventListener('change', apply);
         if (radio.checked) apply();
     });
-
-    // Image preview on filename input
-    const imgInput = document.getElementById('imageUrlInput');
-    const imgPreview = document.getElementById('imgPreview');
-    if (imgInput) {
-        const updatePreview = () => {
-            const val = imgInput.value.trim();
-            if (val) {
-                imgPreview.innerHTML = `<img src="/images/events/${val}" 
-                    style="width:72px;height:72px;object-fit:cover;border-radius:8px;"
-                    onerror="this.parentElement.innerHTML='<i class=\'ti ti-photo text-muted fs-4\'></i>'">`;
-            } else {
-                imgPreview.innerHTML = '<i class="ti ti-photo text-muted fs-4"></i>';
-            }
-        };
-        imgInput.addEventListener('input', updatePreview);
-        updatePreview(); // run on load for edit mode
-    }
 </script>
 
 {% endblock %}
