@@ -38,7 +38,6 @@ class ProjetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Sécurité : forcer les valeurs par défaut si null
             if (!$projet->getStatut()) $projet->setStatut('Planifié');
             $projet->setIsArchived(false);
             $em->persist($projet);
@@ -72,6 +71,17 @@ class ProjetController extends AbstractController
         $p->setIsArchived(true);
         $em->flush();
         return $this->redirectToRoute('app_projet_index');
+    }
+
+    /**
+     * MÉTHODE AJOUTÉE : Pour désarchiver un projet
+     */
+    #[Route('/{id}/desarchiver', name: 'app_projet_unarchive_action')]
+    public function desarchiver(Projet $p, EntityManagerInterface $em): Response
+    {
+        $p->setIsArchived(false);
+        $em->flush();
+        return $this->redirectToRoute('app_projet_archives');
     }
 
     #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
