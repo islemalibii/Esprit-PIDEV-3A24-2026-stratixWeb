@@ -1,10 +1,12 @@
-{% extends 'base.html.twig' %}
+{# templates/front/produit/index.html.twig #}
+{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}Stratix - Catalogue Produits{% endblock %}
 
-{% block body %}
+{# TRÈS IMPORTANT : On utilise admin_content car c'est ce bloc que tu as défini dans base_admin #}
+{% block admin_content %}
 <style>
-    /* Reproduction du style JavaFX */
+    /* Style JavaFX - On s'assure que le contenu ne passe pas sous la sidebar */
     .header-gradient {
         background: linear-gradient(to right, #667eea, #764ba2);
         padding: 40px 20px;
@@ -31,21 +33,31 @@
         border-radius: 10px;
         margin-top: 30px;
     }
+
+    .card-product {
+        border-radius: 10px;
+        transition: transform 0.2s;
+        border: none !important;
+        background: white;
+    }
+    .card-product:hover {
+        transform: scale(1.01);
+    }
 </style>
 
-<div class="container pb-5">
-    <div class="header-gradient">
-        <h1 class="display-5 fw-bold">CATALOGUE PRODUITS</h1>
+<div class="container-fluid pb-5">
+    <div class="header-gradient shadow">
+        <h1 class="display-5 fw-bold text-white">CATALOGUE PRODUITS</h1>
         <p class="lead opacity-75">Découvrez tous nos produits</p>
     </div>
 
-    <div class="search-bar">
+    <div class="search-bar shadow-sm">
         <form method="GET" action="{{ path('front_produit_index') }}" class="row g-3 align-items-center">
             <div class="col-auto d-none d-lg-block">
                 <span class="fw-bold">🔍 Rechercher:</span>
             </div>
             <div class="col-lg-4">
-                <input type="text" name="q" value="{{ searchTerm }}" 
+                <input type="text" name="q" value="{{ searchTerm|default('') }}" 
                        class="form-control" placeholder="Nom du produit...">
             </div>
             <div class="col-auto">
@@ -54,7 +66,7 @@
             </div>
             
             <div class="col text-end d-flex gap-2 justify-content-end">
-                <a href="{{ path('ressource_index') }}" class="btn btn-stratix-secondary">
+                <a href="{{ path('front_ressource_index') }}" class="btn btn-stratix-secondary">
                     Voir les Ressources
                 </a>
                 <a href="{{ path('produit_index') }}" class="btn btn-stratix-admin">
@@ -67,7 +79,7 @@
     <div class="row row-cols-1 g-3">
         {% for produit in produits %}
             <div class="col">
-                <div class="card shadow-sm border-0" style="border-radius: 10px;">
+                <div class="card card-product shadow-sm">
                     <div class="row g-0 align-items-center">
                         <div class="col-md-2 p-3 text-center">
                             {% if produit.imagePath %}
@@ -109,10 +121,10 @@
 
     <div class="stats-footer d-flex justify-content-around align-items-center shadow-sm">
         <div class="fw-bold fs-5" style="color: #2c3e50;">
-            Total produits: {{ stats.total }}
+            Total produits: {{ stats.total|default(0) }}
         </div>
         <div class="fw-bold fs-5 text-success">
-            Produits disponibles: {{ stats.disponibles }}
+            Produits disponibles: {{ stats.disponibles|default(0) }}
         </div>
         <div class="text-muted fst-italic d-none d-md-block">
             Mode Consultation Uniquement

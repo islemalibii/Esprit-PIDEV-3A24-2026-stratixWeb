@@ -1,0 +1,35 @@
+{# Sidebar Partial Corrigé #}
+<aside id="sidebar" class="sidebar">
+    <div class="logo-area">
+        {# Lien vers l'accueil admin ou dashboard #}
+        <a href="{{ path('app_home') }}" class="d-inline-flex">
+            <img src="{{ asset('images/logo-icon.svg') }}" alt="" width="24">
+            <span class="logo-text ms-2"><img src="{{ asset('images/logo.svg') }}" alt=""></span>
+        </a>
+    </div>
+    <ul class="nav flex-column">
+        <li class="px-4 py-2"><small class="nav-text">Menu Principal</small></li>
+        
+        {# Tableau de bord #}
+        <li><a class="nav-link active" href="{{ path('app_home') }}"><i class="ti ti-home"></i><span class="nav-text">Dashboard</span></a></li>
+        
+        {# Tes Produits (Remplacement de reports.html) #}
+        <li>
+            <a class="nav-link" href="{{ path('produit_index') }}">
+                <i class="ti ti-receipt"></i><span class="nav-text">Produit</span>
+            </a>
+        </li>
+        
+        {# Tes Ressources (Remplacement de 404-error.html) #}
+        <li>
+            <a class="nav-link" href="{{ path('ressource_index') }}">
+                <i class="ti ti-alert-circle"></i><span class="nav-text">Ressources</span>
+            </a>
+        </li>
+
+        {# Autres liens (à adapter selon tes autres contrôleurs) #}
+        <li><a class="nav-link" href="#"><i class="ti ti-box-seam"></i><span class="nav-text">Services</span></a></li>
+        <li><a class="nav-link" href="#"><i class="ti ti-plus"></i><span class="nav-text">Categories</span></a></li>
+        <li><a class="nav-link" href="#"><i class="ti ti-file-text"></i><span class="nav-text">Projets</span></a></li>
+    </ul>
+</aside>
