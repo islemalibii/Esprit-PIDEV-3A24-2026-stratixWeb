@@ -1,121 +1,185 @@
+{# templates/projet/edit.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}STRATIX - Modifier le Projet{% endblock %}
+{% block title %}STRATIX - Modifier {{ projet.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {# Import de Tom Select pour la gestion flexible de l'équipe #}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --stratix-orange: #f1b31a;
+            --stratix-brown: #5d4037;
+            --stratix-bg-input: #eee4cc;
+        }
+
+        .edit-card {
+            border-radius: 24px;
+            background-color: #fdf6e3;
+            border: none;
+        }
+
+        .form-label-custom {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--stratix-brown);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-custom {
+            background-color: var(--stratix-bg-input) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 0.8rem 1rem !important;
+            transition: all 0.2s ease;
+        }
+
+        .input-custom:focus {
+            box-shadow: 0 0 0 3px rgba(241, 179, 26, 0.25) !important;
+            background-color: #fff !important;
+        }
+
+        /* Style spécifique pour Tom Select dans l'édition */
+        .ts-control {
+            border: none !important;
+            background-color: var(--stratix-bg-input) !important;
+            border-radius: 12px !important;
+            padding: 0.5rem !important;
+        }
+
+        .btn-update {
+            background-color: var(--stratix-orange);
+            color: white;
+            border-radius: 15px;
+            padding: 1rem;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(241, 179, 26, 0.3);
+        }
+
+        .btn-update:hover {
+            background-color: #d9a016;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(241, 179, 26, 0.4);
+            color: white;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<main id="content" class="content py-4">
+<main id="content" class="content py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                
+                <div class="card edit-card shadow-lg p-2 p-md-4">
+                    <div class="card-body">
+                        {# En-tête #}
+                        <div class="d-flex align-items-center justify-content-between mb-5 pb-3 border-bottom border-2" style="border-color: var(--stratix-orange) !important;">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-warning-subtle p-3 rounded-circle me-3">
+                                    <i class="fas fa-pen-nib fa-lg text-warning"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0" style="color: var(--stratix-brown);">Modifier le projet</h3>
+                                    <p class="text-muted small mb-0">ID: #{{ projet.id }} — Stratix Platform</p>
+                                </div>
+                            </div>
+                            <span class="badge bg-dark rounded-pill px-3 py-2">{{ projet.statut }}</span>
+                        </div>
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            {# La carte avec ton style spécifique #}
-            <div class="card shadow-lg border-0 p-4" style="border-radius: 20px; background-color: #fdf6e3;">
-                <div class="card-body">
-                    {# En-tête avec ton style orange/marron #}
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-2" style="border-color: #e67e22 !important;">
-                        <i class="ti ti-edit fa-2x me-3" style="color: #e67e22; font-size: 2rem;"></i>
-                        <h3 class="fw-bold mb-0" style="color: #5d4037;">Modifier le projet</h3>
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                            
+                            <div class="row g-4">
+                                {# NOM #}
+                                <div class="col-12">
+                                    <label class="form-label-custom">Nom du projet</label>
+                                    {{ form_widget(form.nom, {'attr': {'class': 'form-control input-custom'}}) }}
+                                    <div class="text-danger small mt-1">{{ form_errors(form.nom) }}</div>
+                                </div>
+
+                                {# BUDGET & STATUT #}
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Budget estimé (DT)</label>
+                                    {{ form_widget(form.budget, {'attr': {'class': 'form-control input-custom'}}) }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Statut de progression</label>
+                                    {{ form_widget(form.statut, {'attr': {'class': 'form-select input-custom fw-bold'}}) }}
+                                </div>
+
+                                {# DATES #}
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Date de début</label>
+                                    {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control input-custom'}}) }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Date de fin prévue</label>
+                                    {{ form_widget(form.dateFin, {'attr': {'class': 'form-control input-custom'}}) }}
+                                </div>
+
+                                {# RESPONSABLE & EQUIPE #}
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Responsable</label>
+                                    {{ form_widget(form.responsable, {'attr': {'class': 'form-select input-custom'}}) }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom">Équipe (Membres)</label>
+                                    {{ form_widget(form.membres, {
+                                        'attr': {
+                                            'class': 'tom-select-edit', 
+                                            'placeholder': 'Ajouter/Supprimer des membres...'
+                                        }
+                                    }) }}
+                                </div>
+
+                                {# DESCRIPTION #}
+                                <div class="col-12">
+                                    <label class="form-label-custom">Description détaillée</label>
+                                    {{ form_widget(form.description, {'attr': {'class': 'form-control input-custom', 'rows': '4'}}) }}
+                                </div>
+
+                                {# ACTIONS #}
+                                <div class="col-12 mt-5">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <button type="submit" class="btn btn-update w-100 shadow-sm">
+                                                <i class="fas fa-save me-2"></i> ENREGISTRER LES MODIFICATIONS
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <a href="{{ path('app_projet_index') }}" class="btn btn-outline-dark w-100 p-3 fw-bold" style="border-radius: 15px;">
+                                                ANNULER
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {{ form_end(form) }}
                     </div>
-                    
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-                        
-                        {# NOM DU PROJET #}
-                        <div class="mb-4">
-                            <label class="fw-bold small mb-2" style="color: #5d4037;">NOM DU PROJET</label>
-                            {{ form_widget(form.nom, {
-                                'attr': {
-                                    'class': 'form-control border-0 p-3', 
-                                    'style': 'background-color: #eee4cc; border-radius: 10px;'
-                                }
-                            }) }}
-                            <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
-                        </div>
-
-                        {# BUDGET ET STATUT #}
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="fw-bold small mb-2" style="color: #5d4037;">BUDGET (DT)</label>
-                                {{ form_widget(form.budget, {
-                                    'attr': {
-                                        'class': 'form-control border-0 p-3', 
-                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
-                                    }
-                                }) }}
-                                <div class="text-danger mt-1 small">{{ form_errors(form.budget) }}</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="fw-bold small mb-2" style="color: #e67e22;">STATUT ACTUEL</label>
-                                {{ form_widget(form.statut, {
-                                    'attr': {
-                                        'class': 'form-select border-0 p-3 fw-bold', 
-                                        'style': 'background-color: #fbe9e7; color: #d35400; border-radius: 10px;'
-                                    }
-                                }) }}
-                            </div>
-                        </div>
-
-                        {# DATES (SANS CONTRAINTE MIN) #}
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="fw-bold small mb-2" style="color: #5d4037;">DATE DÉBUT</label>
-                                {{ form_widget(form.dateDebut, {
-                                    'attr': {
-                                        'class': 'form-control border-0 p-3', 
-                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
-                                    }
-                                }) }}
-                                <div class="text-danger mt-1 small">{{ form_errors(form.dateDebut) }}</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="fw-bold small mb-2" style="color: #5d4037;">DATE FIN</label>
-                                {{ form_widget(form.dateFin, {
-                                    'attr': {
-                                        'class': 'form-control border-0 p-3', 
-                                        'style': 'background-color: #eee4cc; border-radius: 10px;'
-                                    }
-                                }) }}
-                                <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
-                            </div>
-                        </div>
-
-                        {# DESCRIPTION #}
-                        <div class="mb-5">
-                            <label class="fw-bold small mb-2" style="color: #5d4037;">DESCRIPTION</label>
-                            {{ form_widget(form.description, {
-                                'attr': {
-                                    'class': 'form-control border-0 p-3', 
-                                    'rows': '3', 
-                                    'style': 'background-color: #eee4cc; border-radius: 10px;'
-                                }
-                            }) }}
-                            <div class="text-danger mt-1 small">{{ form_errors(form.description) }}</div>
-                        </div>
-
-                        {# BOUTONS #}
-                        <div class="row g-3">
-                            <div class="col-md-7">
-                                <button type="submit" class="btn w-100 fw-bold p-3 text-white" 
-                                        style="background-color: #f1b31a; border-radius: 12px; box-shadow: 0 4px 15px rgba(241, 179, 26, 0.4);">
-                                    METTRE À JOUR
-                                </button>
-                            </div>
-                            <div class="col-md-5">
-                                <a href="{{ path('app_projet_index') }}" class="btn btn-dark w-100 p-3 shadow-sm" style="border-radius: 12px;">RETOUR</a>
-                            </div>
-                        </div>
-                    {{ form_end(form) }}
                 </div>
             </div>
         </div>
     </div>
-</div>
 </main>
+{% endblock %}
 
-<style>
-    /* Pour s'assurer que les champs n'ont pas de bordure au clic */
-    .form-control:focus, .form-select:focus {
-        outline: none !important;
-        box-shadow: 0 0 0 2px #e67e22 !important;
-    }
-</style>
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Activation de Tom Select pour le champ membres dans la modification
+            new TomSelect(".tom-select-edit", {
+                plugins: ['remove_button'],
+                persist: false,
+                create: false,
+                maxItems: 20,
+            });
+        });
+    </script>
 {% endblock %}

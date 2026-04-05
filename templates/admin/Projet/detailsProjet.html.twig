@@ -1,12 +1,13 @@
+{# templates/projet/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}STRATIX - Détails du Projet{% endblock %}
 
 {% block body %}
 <main id="content" class="content py-4">
-
 <div class="container-fluid">
     
+    {# Header #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fs-4 fw-bold text-dark">🔍 Détails : {{ projet.nom }}</h2>
@@ -21,20 +22,22 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-warning text-white shadow-sm fw-bold">
-                <i class="ti ti-edit me-1"></i> Modifier
+                <i class="fas fa-edit me-1"></i> Modifier
             </a>
             <a href="{{ path('app_projet_index') }}" class="btn btn-light border shadow-sm fw-bold">
-                <i class="ti ti-arrow-back-up me-1"></i> Retour
+                <i class="fas fa-arrow-left me-1"></i> Retour
             </a>
         </div>
     </div>
 
     <div class="row g-4">
+        {# Colonne de Gauche : Description et Équipe #}
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            {# Fiche Descriptive #}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="mb-0 fw-bold text-dark">
-                        <i class="ti ti-info-circle me-2 text-danger"></i>Fiche descriptive
+                        <i class="fas fa-info-circle me-2 text-danger"></i>Fiche descriptive
                     </h5>
                 </div>
                 <div class="card-body p-0">
@@ -68,19 +71,69 @@
                     </table>
                 </div>
             </div>
+
+            {# Section Équipe #}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-users me-2 text-primary"></i>Équipe du projet
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if projet.membres|length > 0 %}
+                        <div class="row g-3">
+                            {% for membre in projet.membres %}
+                                <div class="col-md-6 col-xl-4">
+                                    <div class="d-flex align-items-center p-3 border rounded-3 bg-light-subtle">
+                                        <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark small">{{ membre.prenom }} {{ membre.nom }}</h6>
+                                            <span class="text-muted" style="font-size: 0.75rem;">Collaborateur</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted italic mb-0">Aucun membre assigné à ce projet pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
+        {# Colonne de Droite : Planning & Responsable #}
         <div class="col-lg-4">
+            {# Responsable #}
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-user-tie me-2 text-warning"></i>Responsable
+                    </h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-user-shield fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">
+                        {{ projet.responsable ? projet.responsable.prenom ~ ' ' ~ projet.responsable.nom : 'Non défini' }}
+                    </h5>
+                    <p class="text-muted small text-uppercase fw-bold mb-0">Chef de projet</p>
+                </div>
+            </div>
+
+            {# Planning #}
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="mb-0 fw-bold text-dark">
-                        <i class="ti ti-calendar me-2 text-danger"></i>Planning
+                        <i class="fas fa-calendar-alt me-2 text-danger"></i>Planning
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-4">
-                        <div class="bg-light p-2 rounded-3 me-3">
-                            <i class="ti ti-calendar-event fs-3 text-primary"></i>
+                        <div class="bg-primary-subtle p-2 rounded-3 me-3">
+                            <i class="fas fa-calendar-plus fs-4 text-primary"></i>
                         </div>
                         <div>
                             <label class="text-muted small fw-bold d-block">DATE DE DÉBUT</label>
@@ -88,8 +141,8 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-start">
-                        <div class="bg-light p-2 rounded-3 me-3">
-                            <i class="ti ti-calendar-check fs-3 text-danger"></i>
+                        <div class="bg-danger-subtle p-2 rounded-3 me-3">
+                            <i class="fas fa-calendar-check fs-4 text-danger"></i>
                         </div>
                         <div>
                             <label class="text-muted small fw-bold d-block">DATE DE FIN</label>
@@ -102,5 +155,4 @@
     </div>
 </div>
 </main>
-
 {% endblock %}
