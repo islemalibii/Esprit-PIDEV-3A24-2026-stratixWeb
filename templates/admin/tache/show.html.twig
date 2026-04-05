@@ -1,0 +1,50 @@
+{% extends 'base_ryhabbb.html.twig' %}
+
+{% block title %}Tache{% endblock %}
+
+{% block body %}
+    <h1>Tache</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ tache.id }}</td>
+            </tr>
+            <tr>
+                <th>Titre</th>
+                <td>{{ tache.titre }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ tache.description }}</td>
+            </tr>
+            <tr>
+                <th>Deadline</th>
+                <td>{{ tache.deadline ? tache.deadline|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Statut</th>
+                <td>{{ tache.statut }}</td>
+            </tr>
+            <tr>
+                <th>Employe_id</th>
+                <td>{{ tache.employeId }}</td>
+            </tr>
+            <tr>
+                <th>Projet_id</th>
+                <td>{{ tache.projetId }}</td>
+            </tr>
+            <tr>
+                <th>Priorite</th>
+                <td>{{ tache.priorite }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_tache_index') }}">back to list</a>
+
+    <a href="{{ path('app_tache_edit', {'id': tache.id}) }}">edit</a>
+
+    {{ include('tache/_delete_form.html.twig') }}
+{% endblock %}

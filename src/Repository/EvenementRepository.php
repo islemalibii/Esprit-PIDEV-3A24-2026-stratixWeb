@@ -16,6 +16,67 @@ class EvenementRepository extends ServiceEntityRepository
         parent::__construct($registry, Evenement::class);
     }
 
+    
+    public function findByArchiveStatus(bool $status): array
+    {
+        return $this->findBy(['isArchived' => $status]);
+    }
+
+    
+    public function searchByTitle(string $title): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.titre LIKE :title')
+            ->andWhere('e.isArchived = false')
+            ->setParameter('title', '%'.$title.'%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function filterByType(string $type): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.type_event = :type')
+            ->andWhere('e.isArchived = false')
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getResult();
+    }
+    
+
+    public function findVisibleForEmployees(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.statut IN (:allowed_status)')
+            ->andWhere('e.isArchived = false')
+            ->setParameter('allowed_status', ['planifier', 'terminer'])
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    public function filterByTypeForEmployee(string $type): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.type_event = :type')
+            ->andWhere('e.statut = :status')
+            ->andWhere('e.isArchived = false')
+            ->setParameter('type', $type)
+            ->setParameter('status','planifier')
+            ->getQuery()
+            ->getResult();
+    }
+    public function searchPlanifierByTitle(string $title): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.statut = :status')
+            ->andWhere('e.isArchived = false')
+            ->andWhere('e.titre LIKE :title')
+            ->setParameter('status', 'planifier')
+            ->setParameter('title', '%' . $title . '%')
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return Evenement[] Returns an array of Evenement objects
     //     */

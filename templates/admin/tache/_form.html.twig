@@ -1,0 +1,60 @@
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> {{ button_label|default('Nouvelle tâche') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                {{ form_label(form.titre, 'Titre *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Saisir le titre de la tâche'}}) }}
+                {{ form_errors(form.titre) }}
+            </div>
+            
+            <div class="col-md-12 mb-3">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Description détaillée...'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.deadline, 'Deadline *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.deadline, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.deadline) }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.statut, 'Statut *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.statut) }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.priorite, 'Priorité *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.priorite, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.priorite) }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.employe_id, 'Employé *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.employe_id, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.employe_id) }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.projet_id, 'Projet *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.projet_id, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.projet_id) }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+        <a href="{{ path('app_tache_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+{{ form_end(form) }}

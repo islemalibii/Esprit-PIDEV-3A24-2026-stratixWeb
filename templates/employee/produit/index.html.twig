@@ -1,0 +1,134 @@
+{# templates/front/produit/index.html.twig #}
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Stratix - Catalogue Produits{% endblock %}
+
+{# TRÈS IMPORTANT : On utilise admin_content car c'est ce bloc que tu as défini dans base_admin #}
+{% block admin_content %}
+<style>
+    /* Style JavaFX - On s'assure que le contenu ne passe pas sous la sidebar */
+    .header-gradient {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        padding: 40px 20px;
+        color: white;
+        text-align: center;
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .search-bar {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
+    }
+    .btn-stratix-primary { background-color: #667eea; color: white; border: none; }
+    .btn-stratix-secondary { background-color: #764ba2; color: white; border: none; }
+    .btn-stratix-admin { background-color: #e74c3c; color: white; border: none; }
+    
+    .stats-footer {
+        background-color: #ecf0f1;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 30px;
+    }
+
+    .card-product {
+        border-radius: 10px;
+        transition: transform 0.2s;
+        border: none !important;
+        background: white;
+    }
+    .card-product:hover {
+        transform: scale(1.01);
+    }
+</style>
+
+<div class="container-fluid pb-5">
+    <div class="header-gradient shadow">
+        <h1 class="display-5 fw-bold text-white">CATALOGUE PRODUITS</h1>
+        <p class="lead opacity-75">Découvrez tous nos produits</p>
+    </div>
+
+    <div class="search-bar shadow-sm">
+        <form method="GET" action="{{ path('front_produit_index') }}" class="row g-3 align-items-center">
+            <div class="col-auto d-none d-lg-block">
+                <span class="fw-bold">🔍 Rechercher:</span>
+            </div>
+            <div class="col-lg-4">
+                <input type="text" name="q" value="{{ searchTerm|default('') }}" 
+                       class="form-control" placeholder="Nom du produit...">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-stratix-primary px-4">Rechercher</button>
+                <a href="{{ path('front_produit_index') }}" class="btn btn-secondary">Effacer</a>
+            </div>
+            
+            <div class="col text-end d-flex gap-2 justify-content-end">
+                <a href="{{ path('front_ressource_index') }}" class="btn btn-stratix-secondary">
+                    Voir les Ressources
+                </a>
+                <a href="{{ path('produit_index') }}" class="btn btn-stratix-admin">
+                    🔙 Administration
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="row row-cols-1 g-3">
+        {% for produit in produits %}
+            <div class="col">
+                <div class="card card-product shadow-sm">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-2 p-3 text-center">
+                            {% if produit.imagePath %}
+                                <img src="{{ asset('uploads/produits/' ~ produit.imagePath) }}" 
+                                     class="img-fluid rounded" style="max-height: 120px; border: 1px solid #ddd;">
+                            {% else %}
+                                <img src="{{ asset('images/default-product.png') }}" 
+                                     class="img-fluid rounded" style="max-height: 120px; opacity: 0.5;">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card-body">
+                                <h4 class="card-title fw-bold" style="color: #2c3e50;">{{ produit.nom }}</h4>
+                                <p class="text-muted small mb-2">{{ produit.description }}</p>
+                                <span class="badge bg-light text-primary border mb-0">Catégorie: {{ produit.categorie }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 p-3 text-center border-start">
+                            <h3 class="text-success fw-bold">{{ produit.prix }} DT</h3>
+                            <div class="mb-2">Stock: {{ produit.stockActuel }}</div>
+                            
+                            {% if produit.stockActuel <= 0 %}
+                                <span class="badge w-100 py-2" style="background-color: #ffebee; color: #c62828;">⚠ RUPTURE</span>
+                            {% elseif produit.stockActuel <= produit.stockMin %}
+                                <span class="badge w-100 py-2" style="background-color: #fff3e0; color: #ef6c00;">⚠ Stock faible</span>
+                            {% else %}
+                                <span class="badge w-100 py-2" style="background-color: #e8f5e8; color: #2e7d32;">✓ En stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-light text-center py-5 border">
+                Aucun produit trouvé pour cette recherche.
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="stats-footer d-flex justify-content-around align-items-center shadow-sm">
+        <div class="fw-bold fs-5" style="color: #2c3e50;">
+            Total produits: {{ stats.total|default(0) }}
+        </div>
+        <div class="fw-bold fs-5 text-success">
+            Produits disponibles: {{ stats.disponibles|default(0) }}
+        </div>
+        <div class="text-muted fst-italic d-none d-md-block">
+            Mode Consultation Uniquement
+        </div>
+    </div>
+</div>
+{% endblock %}

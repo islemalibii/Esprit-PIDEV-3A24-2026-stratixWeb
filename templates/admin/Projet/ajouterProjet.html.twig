@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Nouveau Projet{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            
+            <div class="mb-4">
+                <h2 class="fs-4 fw-bold text-dark">Créer un Nouveau Projet</h2>
+                <p class="text-muted">Remplissez les informations pour ajouter un projet à STRATIX.</p>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    {# Nom du Projet #}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">NOM DU PROJET</label>
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3', 'placeholder': 'Entrez le nom du projet...'}}) }}
+                        <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
+                    </div>
+
+                    {# Budget et Affichage Statut #}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">BUDGET (DT)</label>
+                            {{ form_widget(form.budget, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3', 'placeholder': '0.00'}}) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.budget) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">STATUT PAR DÉFAUT</label>
+                            <input type="text" class="form-control border-0 bg-light p-3 rounded-3 fw-bold text-muted" value="Planifié" readonly>
+                        </div>
+                    </div>
+
+                    {# Dates #}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">DATE DE DÉBUT</label>
+                            {{ form_widget(form.dateDebut, {
+                                'attr': {
+                                    'class': 'form-control border-0 bg-light p-3 rounded-3',
+                                    'min': "now"|date("Y-m-d")
+                                }
+                            }) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.dateDebut) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">DATE DE FIN</label>
+                            {{ form_widget(form.dateFin, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3'}}) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
+                        </div>
+                    </div>
+
+                    {# --- AJOUT : Responsable et Équipe --- #}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">RESPONSABLE DU PROJET</label>
+                            {{ form_widget(form.responsable, {'attr': {'class': 'form-select border-0 bg-light p-3 rounded-3'}}) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.responsable) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">ÉQUIPE (MEMBRES)</label>
+                            {{ form_widget(form.membres, {'attr': {
+                                'class': 'form-select border-0 bg-light p-3 rounded-3',
+                                'style': 'height: 58px;'
+                            }}) }}
+                            <div class="text-muted mt-1" style="font-size: 0.7rem;">
+                                <i class="ti ti-info-circle"></i> Maintenez Ctrl pour plusieurs choix.
+                            </div>
+                            <div class="text-danger mt-1 small">{{ form_errors(form.membres) }}</div>
+                        </div>
+                    </div>
+
+                    {# Description #}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">DESCRIPTION</label>
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3', 'rows': '3', 'placeholder': 'Description du projet...'}}) }}
+                        <div class="text-danger mt-1 small">{{ form_errors(form.description) }}</div>
+                    </div>
+
+                    {# Boutons d'Action #}
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-danger w-100 p-3 fw-bold rounded-3 shadow-sm">
+                                <i class="ti ti-device-floppy me-2"></i>CONFIRMER LA CRÉATION
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ path('app_projet_index') }}" class="btn btn-light border w-100 p-3 fw-bold rounded-3">
+                                <i class="ti ti-arrow-back-up me-1"></i>RETOUR
+                            </a>
+                        </div>
+                    </div>
+
+                {# Gestion des champs restants et cachés #}
+                {% do form.statut.setRendered() %}
+                {{ form_rest(form) }}
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

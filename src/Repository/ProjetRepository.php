@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Projet;
+use App\Entity\Utilisateur; 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,49 @@ class ProjetRepository extends ServiceEntityRepository
         parent::__construct($registry, Projet::class);
     }
 
-    //    /**
-    //     * @return Projet[] Returns an array of Projet objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Récupère uniquement les projets actifs (non archivés)
+     * @return Projet[]
+     */
+    public function findAllActive(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.isArchived = :val')
+            ->setParameter('val', false)
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Projet
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Récupère uniquement les projets archivés
+     * @return Projet[]
+     */
+    public function findAllArchived(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.isArchived = :val')
+            ->setParameter('val', true)
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les projets où l'utilisateur est soit responsable, soit membre
+     * @return Projet[]
+     */
+    public function findProjetsPourEmploye(Utilisateur $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.membres', 'm') 
+            ->where('p.responsable = :user')
+            ->orWhere('m = :user') 
+            ->setParameter('user', $user)
+            ->andWhere('p.isArchived = :archived') 
+            ->setParameter('archived', false)
+            ->orderBy('p.dateDebut', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

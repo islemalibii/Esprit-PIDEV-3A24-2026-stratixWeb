@@ -1,0 +1,71 @@
+{# templates/employee/plannings.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Plannings{% endblock %}
+
+{% block employee_content %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h4 class="mb-0"><i class="fas fa-calendar-alt me-2 text-primary"></i>Tous les Plannings</h4>
+    </div>
+    <div class="card-body">
+        {% if hasPlannings %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Titre</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for planning in plannings %}
+                    <tr>
+                        <td>
+                            <strong>
+                                {% if planning.titre is defined %}
+                                    {{ planning.titre }}
+                                {% elseif planning.nom is defined %}
+                                    {{ planning.nom }}
+                                {% elseif planning.libelle is defined %}
+                                    {{ planning.libelle }}
+                                {% else %}
+                                    Planning #{{ planning.id }}
+                                {% endif %}
+                            </strong>
+                        </td>
+                        <td>
+                            <i class="fas fa-calendar me-1 text-muted"></i>
+                            {% if planning.date is defined %}
+                                {{ planning.date ? planning.date|date('d/m/Y') : 'Non définie' }}
+                            {% elseif planning.dateDebut is defined %}
+                                {{ planning.dateDebut ? planning.dateDebut|date('d/m/Y') : 'Non définie' }}
+                            {% else %}
+                                Date non définie
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                {% if planning.type is defined %}
+                                    {{ planning.type }}
+                                {% else %}
+                                    Général
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Aucun planning</h5>
+            <p class="text-muted">Aucun planning n'a été créé pour le moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

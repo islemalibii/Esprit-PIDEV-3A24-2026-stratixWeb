@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ editMode ? 'Modifier' : 'Ajouter' }} une ressource{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-4">
+
+<div class="container mt-5" style="max-width: 600px; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; background-color: white; padding: 0;">
+    
+    <div style="background-color: #2c3e50; padding: 20px; text-align: center;">
+        <h2 style="color: white; font-size: 22px; font-weight: bold; margin: 0;">
+            {{ editMode ? 'Modifier la ressource' : 'Ajouter une ressource' }}
+        </h2>
+    </div>
+
+    <div class="p-4">
+        {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+            
+            {# L'ID est géré automatiquement par Symfony, pas besoin de champ caché visible #}
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nom de la ressource :</label>
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Ordinateur, Chaise, Papier...'}}) }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Type de ressource :</label>
+                {{ form_widget(form.type_ressource, {'attr': {'class': 'form-select'}}) }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Quantité :</label>
+                {{ form_widget(form.quantite, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 10'}}) }}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Fournisseur :</label>
+                {{ form_widget(form.fournisseur, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Fournitures SARL'}}) }}
+            </div>
+
+            <hr> <div class="d-flex justify-content-center gap-3">
+                <button type="submit" class="btn fw-bold px-4 py-2" style="background-color: #27ae60; color: white;">
+                    {{ editMode ? 'Modifier' : 'Ajouter' }}
+                </button>
+                <a href="{{ path('ressource_index') }}" class="btn fw-bold px-4 py-2" style="background-color: #e74c3c; color: white;">
+                    Annuler
+                </a>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+
+    <div style="background-color: #ecf0f1; padding: 15px; text-align: center; border-top: 1px solid #dee2e6;">
+        <span style="color: #7f8c8d; font-style: italic;">* Tous les champs sont obligatoires</span>
+    </div>
+</div>
+</main>
+
+{% endblock %}

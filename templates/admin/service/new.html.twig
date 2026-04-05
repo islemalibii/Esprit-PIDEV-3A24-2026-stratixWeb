@@ -1,0 +1,89 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Nouveau Service</h1>
+        <a href="{{ path('app_service_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du service</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.titre) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.categorie, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.categorie) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.dateDebut) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.dateFin, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.dateFin) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.budget, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.budget, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.budget) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.utilisateur, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.utilisateur, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.utilisateur) }}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ path('app_service_index') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Créer le service
+                            </button>
+                        </div>
+
+                        {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
