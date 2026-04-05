@@ -1,47 +1,91 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}Mes Projets - STRATIX{% endblock %}
+{% block title %}STRATIX - Mes Projets{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark">Mes Projets</h2>
-        <span class="badge bg-primary p-2">Session Employé</span>
+<div class="container-fluid py-4 px-4">
+    {# En-tête (équivalent au premier VBox/HBox du FXML) #}
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1" style="color: #64748b; font-size: 24px;">
+            Bonjour, {{ app.user.prenom }}
+        </h2>
+        <p style="color: #94a3b8; font-size: 14px;">Espace Collaborateur - Mes Projets</p>
     </div>
 
-    <div class="row g-4">
+    {# Barre de recherche (équivalent au TextField) #}
+    <div class="mb-5">
+        <div class="input-group shadow-sm rounded-3">
+            <span class="input-group-text border-0 bg-white text-muted">🔍</span>
+            <input type="text" id="projetSearch" class="form-control border-0 p-3" 
+                   placeholder="Rechercher parmi mes projets..." 
+                   onkeyup="filterProjets()">
+        </div>
+    </div>
+
+    {# Grille de Projets (équivalent au ScrollPane + FlowPane) #}
+    <div class="row g-4" id="projetsContainer">
         {% for projet in projets %}
-            <div class="col-md-6 col-xl-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="col-md-6 col-lg-4 projet-card">
+                <div class="card border-0 shadow-sm rounded-4 h-100 transition-card">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between mb-3">
-                            <span class="badge bg-light text-primary rounded-pill px-3">{{ projet.statut }}</span>
-                            <small class="text-muted">Budget: {{ projet.budget }} DT</small>
+                            <span class="badge rounded-pill px-3 py-2" 
+                                  style="background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                                {{ projet.statut }}
+                            </span>
+                            <small class="text-muted">{{ projet.budget|number_format(0, '.', ' ') }} DT</small>
                         </div>
-                        
-                        <h5 class="fw-bold mb-2">{{ projet.nom }}</h5>
-                        <p class="text-muted small mb-4">{{ projet.description|slice(0, 80) }}...</p>
-                        
-                        <div class="bg-light rounded-3 p-3 mb-3">
-                            <p class="mb-1 small"><strong>Responsable :</strong> {{ projet.responsable.nom }} {{ projet.responsable.prenom }}</p>
-                            <p class="mb-0 small text-truncate"><strong>Équipe :</strong> 
-                                {% for membre in projet.membres %}
-                                    {{ membre.prenom }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </p>
+
+                        <h5 class="fw-bold text-dark mb-2 card-title-text">{{ projet.nom }}</h5>
+                        <p class="text-muted small mb-4" style="height: 40px; overflow: hidden;">
+                            {{ projet.description|slice(0, 70) }}...
+                        </p>
+
+                        <div class="p-3 rounded-3 mb-3" style="background-color: #f8fafc;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="ti ti-crown text-warning me-2"></i>
+                                <span class="small"><strong>Resp :</strong> {{ projet.responsable.prenom }}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-calendar-event text-primary me-2"></i>
+                                <span class="small text-muted">{{ projet.dateFin|date('d/m/Y') }}</span>
+                            </div>
                         </div>
-                        
-                        <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-outline-dark w-100 rounded-3">
-                            Voir les détails
+
+                        <a href="{{ path('app_projet_show', {'id': projet.id}) }}" 
+                           class="btn btn-outline-dark w-100 rounded-3 fw-bold">
+                            Voir le projet
                         </a>
                     </div>
                 </div>
             </div>
         {% else %}
-            <div class="text-center py-5">
-                <p class="text-muted">Aucun projet ne vous est assigné pour le moment.</p>
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Aucun projet trouvé.</p>
             </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .transition-card { transition: all 0.3s ease; }
+    .transition-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important; }
+    #projetSearch:focus { box-shadow: none; background-color: #f8fafc; }
+</style>
+
+<script>
+function filterProjets() {
+    let input = document.getElementById('projetSearch').value.toLowerCase();
+    let cards = document.getElementsByClassName('projet-card');
+
+    for (let card of cards) {
+        let title = card.querySelector('.card-title-text').innerText.toLowerCase();
+        if (title.includes(input)) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    }
+}
+</script>
 {% endblock %}

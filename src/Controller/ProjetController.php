@@ -14,76 +14,49 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/projet')]
 class ProjetController extends AbstractController
 {
-    /**
-     * Liste tous les projets actifs.
-     * URL accessible via : /projet
-     */
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
-    public function index(ProjetRepository $projetRepository): Response
+    public function index(ProjetRepository $repo): Response
     {
         return $this->render('admin/Projet/listeProjets.html.twig', [
-            'projets' => $projetRepository->findAllActive(),
+            'projets' => $repo->findAllActive(),
         ]);
     }
 
-    /**
-     * Liste des archives.
-     * URL accessible via : /projet/archives
-     */
     #[Route('/archives', name: 'app_projet_archives', methods: ['GET'])]
-    public function archives(ProjetRepository $projetRepository): Response
+    public function archives(ProjetRepository $repo): Response
     {
         return $this->render('admin/Projet/listeArchives.html.twig', [
-            'projets' => $projetRepository->findAllArchived(),
+            'projets' => $repo->findAllArchived(),
         ]);
     }
 
-    /**
-     * Création d'un projet.
-     */
     #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $em): Response
     {
         $projet = new Projet();
-        
-        // INITIALISATION DES VALEURS PAR DÉFAUT (Essentiel car le champ est disabled dans le formulaire)
-        $projet->setStatut('Planifié');
-        $projet->setIsArchived(false); 
-        
-        if (!$projet->getDateDebut()) {
-            $projet->setDateDebut(new \DateTime());
-        }
-
         $form = $this->createForm(ProjetType::class, $projet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($projet);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Le projet a été créé avec succès !');
+            // Sécurité : forcer les valeurs par défaut si null
+            if (!$projet->getStatut()) $projet->setStatut('Planifié');
+            $projet->setIsArchived(false);
+            $em->persist($projet);
+            $em->flush();
             return $this->redirectToRoute('app_projet_index');
         }
 
-        return $this->render('admin/Projet/ajouterProjet.html.twig', [
-            'projet' => $projet,
-            'form' => $form->createView(),
-        ]);
+        return $this->render('admin/projet/ajouterProjet.html.twig', ['form' => $form]);
     }
 
-    /**
-     * Modification d'un projet.
-     */
     #[Route('/{id}/edit', name: 'app_projet_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Projet $projet, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Projet $projet, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(ProjetType::class, $projet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Le projet a été mis à jour.');
+            $em->flush();
             return $this->redirectToRoute('app_projet_index');
         }
 
@@ -93,55 +66,28 @@ class ProjetController extends AbstractController
         ]);
     }
 
-    /**
-     * Action d'archivage.
-     */
-    #[Route('/{id}/archiver', name: 'app_projet_archive_action', methods: ['GET'])]
-    public function archiver(Projet $projet, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/archiver', name: 'app_projet_archive_action')]
+    public function archiver(Projet $p, EntityManagerInterface $em): Response
     {
-        $projet->setIsArchived(true);
-        $entityManager->flush();
-
-        $this->addFlash('warning', 'Le projet a été déplacé dans les archives.');
+        $p->setIsArchived(true);
+        $em->flush();
         return $this->redirectToRoute('app_projet_index');
     }
 
-    /**
-     * Action de désarchivage.
-     */
-    #[Route('/{id}/desarchiver', name: 'app_projet_unarchive_action', methods: ['GET'])]
-    public function desarchiver(Projet $projet, EntityManagerInterface $entityManager): Response
+    #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
+    public function indexEmployee(ProjetRepository $repo): Response
     {
-        $projet->setIsArchived(false);
-        $entityManager->flush();
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
 
-        $this->addFlash('success', 'Le projet a été restauré dans la liste active.');
-        return $this->redirectToRoute('app_projet_archives');
+        return $this->render('employee/projetEmploye.html.twig', [
+            'projets' => $repo->findProjetsPourEmploye($user),
+        ]);
     }
 
-    /**
-     * Suppression définitive.
-     */
-    #[Route('/{id}/delete', name: 'app_projet_delete', methods: ['POST'])]
-    public function delete(Request $request, Projet $projet, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$projet->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($projet);
-            $entityManager->flush();
-            $this->addFlash('danger', 'Le projet a été supprimé définitivement.');
-        }
-
-        return $this->redirectToRoute('app_projet_index');
-    }
-
-    /**
-     * Détails du projet.
-     */
     #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
     public function show(Projet $projet): Response
     {
-        return $this->render('admin/Projet/detailsProjet.html.twig', [
-            'projet' => $projet,
-        ]);
+        return $this->render('admin/Projet/detailsProjet.html.twig', ['projet' => $projet]);
     }
 }
