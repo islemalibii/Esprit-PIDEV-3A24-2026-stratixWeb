@@ -14,7 +14,7 @@
         <li>
             <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2
                {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}"
-               href="{{ path('app_home') }}
+               href="{{ path('app_home') }}"
                style="color: #4a5568; transition: all 0.2s;">
                 <i class="ti ti-home fs-5"></i>
                 <span class="nav-text">Dashboard</span>
@@ -41,7 +41,7 @@
 
         <li>
             <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
-               href="#"
+               href="{{ path('produit_index') }}"
                style="color: #4a5568; transition: all 0.2s;">
                 <i class="ti ti-receipt fs-5"></i>
                 <span class="nav-text">Produit</span>
@@ -50,7 +50,7 @@
 
         <li>
             <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
-               href="#"
+               href="{{ path('ressource_index') }}"
                style="color: #4a5568; transition: all 0.2s;">
                 <i class="ti ti-alert-circle fs-5"></i>
                 <span class="nav-text">Ressources</span>

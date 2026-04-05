@@ -5,18 +5,21 @@
 {% endblock %}
 
 {% block body %}
-    {# Include Navbar Partial #}
-    {% include 'admin/partials/navbar.html.twig' %}
-    
-    {# Include Sidebar Partial #}
-    {% include 'admin/partials/sidebar.html.twig' %}
+    <main id="content" class="content py-4">
+        <div class="container-fluid px-4">
+            
+            {# Flash messages #}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
 
-    {# Main Admin Content Area #}
-    <main id="content" class="content py-10">
-        <div class="container-fluid">
-            {% block admin_content %}
-                {# Child templates will override this block with their content #}
-            {% endblock %}
+            {% block admin_content %}{% endblock %}
+
         </div>
     </main>
 {% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stratix - Gestion du Produit{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-4">
+
+<div class="container mt-4 mb-5" style="max-width: 700px; background-color: white; border: 1px solid #dee2e6; padding: 0; border-radius: 8px; overflow: hidden;">
+    
+    <div style="background-color: #2c3e50; padding: 20px; text-align: center;">
+        <h2 style="color: white; font-weight: bold; margin: 0;">
+            {{ produit.id ? 'Modifier le produit' : 'Ajouter un produit' }}
+        </h2>
+    </div>
+
+    {{ form_start(form, {'attr': {'class': 'p-4', 'enctype': 'multipart/form-data'}}) }}
+        
+        {# Section Image #}
+        <div class="card mb-4 shadow-sm" style="background-color: #f8f9fa;">
+            <div class="card-header">Image du produit</div>
+            <div class="card-body text-center">
+                {% if produit.imagePath %}
+                    <img src="{{ asset('uploads/produits/' ~ produit.imagePath) }}" id="preview" style="max-height: 150px; border-radius: 5px;" class="mb-2">
+                {% else %}
+                    <div id="no-image" class="mb-2 text-muted" style="height: 100px; border: 2px dashed #ced4da; display: flex; align-items: center; justify-content: center;">
+                        Aucune image sélectionnée
+                    </div>
+                {% endif %}
+                
+                <div class="mt-2 text-start">
+                    {# CORRECTION ICI : On utilise image_file car c'est le nom dans ProduitType #}
+                    {{ form_label(form.image_file, 'Sélectionner une nouvelle image') }}
+                    {{ form_widget(form.image_file, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                    {{ form_errors(form.image_file) }}
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3">
+            <div class="col-md-4"><label class="fw-bold">Nom du produit :</label></div>
+            <div class="col-md-8">
+                {{ form_widget(form.nom, {'attr': {'placeholder': 'Ex: Ordinateur portable'}}) }}
+                {{ form_errors(form.nom) }}
+            </div>
+
+            <div class="col-md-4"><label class="fw-bold">Description :</label></div>
+            <div class="col-md-8">{{ form_widget(form.description, {'attr': {'rows': 3}}) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Catégorie :</label></div>
+            <div class="col-md-8">
+                {{ form_widget(form.categorie, {'attr': {'id': 'categorie-select'}}) }}
+            </div>
+
+            <div id="autre-categorie-container" class="col-12 offset-md-4 col-md-8 d-none">
+                <label class="text-danger fw-bold">Catégorie personnalisée :</label>
+                <input type="text" name="autre_categorie" class="form-control" style="background-color: #fff3cd; border-color: #ffeeba;">
+            </div>
+
+            <div class="col-md-4"><label class="fw-bold">Prix (DT) :</label></div>
+            <div class="col-md-8">{{ form_widget(form.prix) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Stock actuel :</label></div>
+            <div class="col-md-8">{{ form_widget(form.stock_actuel) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Stock minimum :</label></div>
+            <div class="col-md-8">{{ form_widget(form.stock_min) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Ressources :</label></div>
+            <div class="col-md-8">{{ form_widget(form.ressources_necessaires, {'attr': {'rows': 2}}) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Date fabrication :</label></div>
+            <div class="col-md-8">{{ form_widget(form.date_fabrication) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Date péremption :</label></div>
+            <div class="col-md-8">{{ form_widget(form.date_peremption) }}</div>
+
+            <div class="col-md-4"><label class="fw-bold">Date garantie :</label></div>
+            <div class="col-md-8">{{ form_widget(form.date_garantie) }}</div>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="submit" class="btn btn-success px-5 fw-bold" style="background-color: #27ae60; border: none;">
+                {{ produit.id ? 'Mettre à jour' : 'Enregistrer' }}
+            </button>
+            <a href="{{ path('produit_index') }}" class="btn btn-danger px-5 fw-bold" style="background-color: #e74c3c; border: none;">
+                Annuler
+            </a>
+        </div>
+
+    {{ form_end(form) }}
+
+    <div style="background-color: #ecf0f1; padding: 10px; text-align: center;">
+        <small class="text-muted italic">* Assurez-vous que les dates sont cohérentes</small>
+    </div>
+</div>
+</main>
+
+
+<script>
+    // Logique pour la catégorie "Autre"
+    const select = document.querySelector('#categorie-select');
+    const container = document.querySelector('#autre-categorie-container');
+
+    if(select) {
+        select.addEventListener('change', function() {
+            container.classList.toggle('d-none', this.value !== 'Autre');
+        });
+        // Vérification au chargement pour le mode Edit
+        if (select.value === 'Autre') container.classList.remove('d-none');
+    }
+</script>
+{% endblock %}
