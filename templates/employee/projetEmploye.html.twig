@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Projets - STRATIX{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Mes Projets</h2>
+        <span class="badge bg-primary p-2">Session Employé</span>
+    </div>
+
+    <div class="row g-4">
+        {% for projet in projets %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-light text-primary rounded-pill px-3">{{ projet.statut }}</span>
+                            <small class="text-muted">Budget: {{ projet.budget }} DT</small>
+                        </div>
+                        
+                        <h5 class="fw-bold mb-2">{{ projet.nom }}</h5>
+                        <p class="text-muted small mb-4">{{ projet.description|slice(0, 80) }}...</p>
+                        
+                        <div class="bg-light rounded-3 p-3 mb-3">
+                            <p class="mb-1 small"><strong>Responsable :</strong> {{ projet.responsable.nom }} {{ projet.responsable.prenom }}</p>
+                            <p class="mb-0 small text-truncate"><strong>Équipe :</strong> 
+                                {% for membre in projet.membres %}
+                                    {{ membre.prenom }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+                        
+                        <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-outline-dark w-100 rounded-3">
+                            Voir les détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">Aucun projet ne vous est assigné pour le moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

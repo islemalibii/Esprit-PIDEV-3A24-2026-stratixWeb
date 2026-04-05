@@ -18,27 +18,29 @@ class ProjetType extends AbstractType
     {
         $builder
             ->add('nom', TextType::class, [
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Nom du projet...'],
-                'label' => false
+                'attr' => ['placeholder' => 'Nom du projet...'],
+                'label' => false,
+                'required' => true
             ])
             ->add('description', TextareaType::class, [
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Description...', 'rows' => 3],
+                'attr' => ['placeholder' => 'Description...', 'rows' => 3],
                 'label' => false,
                 'required' => false
             ])
             ->add('dateDebut', DateType::class, [
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-control'],
-                'label' => 'Date de Début'
+                'label' => 'Date de Début',
+                'required' => true
             ])
             ->add('dateFin', DateType::class, [
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-control'],
-                'label' => 'Date de Fin'
+                'label' => 'Date de Fin',
+                'required' => true
             ])
             ->add('budget', NumberType::class, [
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Budget (dt)'],
-                'label' => false
+                'attr' => ['placeholder' => '0.00'],
+                'label' => false,
+                'required' => true
             ])
             ->add('statut', ChoiceType::class, [
                 'choices'  => [
@@ -48,8 +50,7 @@ class ProjetType extends AbstractType
                     'Annulé' => 'Annulé',
                 ],
                 'attr' => ['class' => 'form-select'],
-                // Désactive le champ si c'est une création (id est nul)
-                'disabled' => $builder->getData()->getId() === null 
+                'disabled' => $builder->getData()->getId() === null,
             ])
         ;
     }

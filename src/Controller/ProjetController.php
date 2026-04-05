@@ -16,24 +16,24 @@ class ProjetController extends AbstractController
 {
     /**
      * Liste tous les projets actifs.
+     * URL accessible via : /projet
      */
-    #[Route('/projet', name: 'app_projet_index', methods: ['GET'])]
+    #[Route('/', name: 'app_projet_index', methods: ['GET'])]
     public function index(ProjetRepository $projetRepository): Response
     {
         return $this->render('admin/Projet/listeProjets.html.twig', [
-            // Utilisation de la méthode personnalisée du repository
             'projets' => $projetRepository->findAllActive(),
         ]);
     }
 
     /**
      * Liste des archives.
+     * URL accessible via : /projet/archives
      */
     #[Route('/archives', name: 'app_projet_archives', methods: ['GET'])]
     public function archives(ProjetRepository $projetRepository): Response
     {
         return $this->render('admin/Projet/listeArchives.html.twig', [
-            // Utilisation de la méthode personnalisée du repository
             'projets' => $projetRepository->findAllArchived(),
         ]);
     }
@@ -45,9 +45,15 @@ class ProjetController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $projet = new Projet();
-        // On s'assure qu'un nouveau projet n'est pas archivé par défaut
-        $projet->setIsArchived(false);
         
+        // INITIALISATION DES VALEURS PAR DÉFAUT (Essentiel car le champ est disabled dans le formulaire)
+        $projet->setStatut('Planifié');
+        $projet->setIsArchived(false); 
+        
+        if (!$projet->getDateDebut()) {
+            $projet->setDateDebut(new \DateTime());
+        }
+
         $form = $this->createForm(ProjetType::class, $projet);
         $form->handleRequest($request);
 
@@ -55,11 +61,12 @@ class ProjetController extends AbstractController
             $entityManager->persist($projet);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le projet "' . $projet->getNom() . '" a été créé avec succès.');
+            $this->addFlash('success', 'Le projet a été créé avec succès !');
             return $this->redirectToRoute('app_projet_index');
         }
 
         return $this->render('admin/Projet/ajouterProjet.html.twig', [
+            'projet' => $projet,
             'form' => $form->createView(),
         ]);
     }
@@ -113,7 +120,7 @@ class ProjetController extends AbstractController
     }
 
     /**
-     * Suppression définitive (Optionnel).
+     * Suppression définitive.
      */
     #[Route('/{id}/delete', name: 'app_projet_delete', methods: ['POST'])]
     public function delete(Request $request, Projet $projet, EntityManagerInterface $entityManager): Response
@@ -128,7 +135,7 @@ class ProjetController extends AbstractController
     }
 
     /**
-     * Détails du projet (Placé à la fin pour éviter les conflits de routes).
+     * Détails du projet.
      */
     #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
     public function show(Projet $projet): Response
