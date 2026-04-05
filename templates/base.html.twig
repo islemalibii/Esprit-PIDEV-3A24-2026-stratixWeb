@@ -12,13 +12,51 @@
 
     <link rel="manifest" href="{{ asset('inapp/assets/site.webmanifest') }}">
 
+ 
     {% block stylesheets %}
-        <link rel="stylesheet" crossorigin href="/styles/app.css">
-    {% endblock %}
+            <link rel="stylesheet" crossorigin href="/styles/app.css">
+            <style>
+                :root {
+                    --sidebar-width: 260px;
+                    --navbar-height: 70px;
+                }
+
+                body {
+                    background-color: #f8f9fa;
+                    margin: 0;
+                    overflow-x: hidden;
+                }
+
+                /* Your original pages - use #content or .content */
+                #content, .content {
+                    margin-left: var(--sidebar-width);
+                    padding-top: var(--navbar-height);
+                    min-height: 100vh;
+                    transition: all 0.3s ease;
+                }
+
+                /* Merged pages - use container-fluid directly in body block */
+                body > .container-fluid {
+                    margin-left: var(--sidebar-width);
+                    padding-top: calc(var(--navbar-height) + 1.5rem);
+                    padding-left: 2rem;
+                    padding-right: 2rem;
+                    min-height: 100vh;
+                    max-width: 100%;
+                }
+
+                @media (max-width: 992px) {
+                    #content, .content, body > .container-fluid {
+                        margin-left: 0;
+                    }
+                }
+            </style>
+        {% endblock %}
 </head>
 <body>
     <div id="overlay" class="overlay"></div>
-
+    {{ include('admin/partials/navbar.html.twig') }}
+    {{ include('admin/partials/sidebar.html.twig') }}
     {% block body %}{% endblock %}
 
     {% block javascripts %}

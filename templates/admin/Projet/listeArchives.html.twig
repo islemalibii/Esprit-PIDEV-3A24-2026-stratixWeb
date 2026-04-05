@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Archives des Projets{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-4">
+
+<div class="container-fluid">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fs-4 fw-bold text-dark">
+                <i class="ti ti-archive me-2 text-secondary"></i>Dossier des Archives
+            </h2>
+            <p class="text-muted">Consultez et restaurez les projets précédemment archivés.</p>
+        </div>
+        <a href="{{ path('app_projet_index') }}" class="btn btn-light border shadow-sm fw-bold">
+            <i class="ti ti-arrow-back-up me-1"></i> Retour aux projets
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 border-0 text-muted small fw-bold" style="width: 40%;">NOM DU PROJET</th>
+                            <th class="py-3 border-0 text-muted small fw-bold">BUDGET</th>
+                            <th class="py-3 border-0 text-muted small fw-bold text-center">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for projet in projets %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark">{{ projet.nom }}</span>
+                            </td>
+                            <td>
+                                <span class="text-success fw-bold">{{ projet.budget|number_format(2, ',', ' ') }} DT</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ path('app_projet_unarchive_action', {'id': projet.id}) }}" 
+                                   class="btn btn-sm btn-outline-success rounded-3 px-3 fw-bold"
+                                   onclick="return confirm('Voulez-vous vraiment désarchiver ce projet ?');">
+                                    <i class="ti ti-rotate-clockwise-2 me-1"></i> Désarchiver
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="ti ti-folder-off fs-1 d-block mb-2"></i>
+                                    Aucun projet archivé pour le moment.
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+
+<style>
+    /* Style pour le survol des lignes */
+    .table-hover tbody tr:hover {
+        background-color: #fcfcfc;
+    }
+    
+    /* Bouton désarchiver personnalisé */
+    .btn-outline-success {
+        border-color: #198754;
+        color: #198754;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-outline-success:hover {
+        background-color: #198754;
+        color: white;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}

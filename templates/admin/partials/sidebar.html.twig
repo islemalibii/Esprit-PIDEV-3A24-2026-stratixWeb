@@ -1,29 +1,111 @@
 {# Sidebar Partial #}
-<aside id="sidebar" class="sidebar">
-    <div class="logo-area">
-        <a href="index.html" class="d-inline-flex">
-            <img src="/images/logo-icon.svg" alt="" width="24">
+<aside id="sidebar" class="sidebar" style="background-color: #f8f9fb; border-right: 1px solid #e9ecef;">
+    <div class="logo-area" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <a href="{{ path('app_home') }}" class="d-inline-flex align-items-center text-decoration-none">
+            <img src="/images/logo-icon.svg" alt="" width="28">
             <span class="logo-text ms-2"><img src="/images/logo.svg" alt=""></span>
         </a>
     </div>
-    <ul class="nav flex-column">
+
+    <ul class="nav flex-column py-3" style="gap: 2px;">
+
+
         <li>
-            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}" 
-               href="{{ path('app_home') }}">
-                <i class="ti ti-home"></i><span class="nav-text">Dashboard</span>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2
+               {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}"
+               href="{{ path('app_home') }}"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-home fs-5"></i>
+                <span class="nav-text">Dashboard</span>
             </a>
-        </li> 
-        <li><a class="nav-link" href="inventory.html"><i class="ti ti-box-seam"></i><span class="nav-text">Services</span></a></li>
-        <li><a class="nav-link" href="create-product.html"><i class="ti ti-plus"></i><span class="nav-text">Categories</span></a></li>
-        <li><a class="nav-link" href="reports.html"><i class="ti ti-receipt"></i><span class="nav-text">Produit</span></a></li>
-        <li><a class="nav-link" href="404-error.html"><i class="ti ti-alert-circle"></i><span class="nav-text">Ressources</span></a></li>
-        <li><a class="nav-link" href="docs.html"><i class="ti ti-file-text"></i><span class="nav-text">Projets</span></a></li>
-        <li><a class="nav-link" href="docs.html"><i class="ti ti-file-text"></i><span class="nav-text">Taches et Planning</span></a></li>
+        </li>
+
         <li>
-            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'resp_event' ? 'active' : '' }}" 
-               href="{{ path('resp_event_index') }}">
-                <i class="ti ti-calendar-event"></i><span class="nav-text">Evenements</span>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="#"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-box-seam fs-5"></i>
+                <span class="nav-text">Services</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="#"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-plus fs-5"></i>
+                <span class="nav-text">Catégories</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="#"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-receipt fs-5"></i>
+                <span class="nav-text">Produit</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="#"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-alert-circle fs-5"></i>
+                <span class="nav-text">Ressources</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="{{ path('app_projet_index') }}"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-file-text fs-5"></i>
+                <span class="nav-text">Projets</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
+               href="#"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-checklist fs-5"></i>
+                <span class="nav-text">Tâches et Planning</span>
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2
+               {{ app.request.attributes.get('_route') starts with 'resp_event' ? 'active' : '' }}"
+               href="{{ path('resp_event_index') }}"
+               style="color: #4a5568; transition: all 0.2s;">
+                <i class="ti ti-calendar-event fs-5"></i>
+                <span class="nav-text">Événements</span>
             </a>
         </li>
     </ul>
+
+    <style>
+        #sidebar .nav-link {
+            color: #4a5568 !important;
+        }
+        #sidebar .nav-link:hover {
+            background-color: #ede9fe !important;
+            color: #7c3aed !important;
+        }
+        #sidebar .nav-link:hover i {
+            color: #7c3aed !important;
+        }
+        #sidebar .nav-link.active {
+            background-color: #ede9fe !important;
+            color: #7c3aed !important;
+            font-weight: 600;
+        }
+        #sidebar .nav-link.active i {
+            color: #7c3aed !important;
+        }
+        #sidebar small {
+            color: #94a3b8 !important;
+        }
+    </style>
 </aside>
