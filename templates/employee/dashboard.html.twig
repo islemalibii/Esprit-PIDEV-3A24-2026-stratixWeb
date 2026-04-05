@@ -1,0 +1,190 @@
+{# templates/employee/dashboard.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Dashboard Employé{% endblock %}
+
+{% block employee_content %}
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-primary text-white" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);">
+            <div class="card-body">
+                <h2 class="mb-2">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Bonjour {% if employe %}{{ employe.prenom }} {{ employe.nom }}{% else %}Employé{% endif %} 👋
+                </h2>
+                <p class="mb-0">Bienvenue sur votre espace de travail STRATIX. Voici un aperçu de vos activités.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Total Tâches</h6>
+                        <h2 class="mb-0">{{ total }}</h2>
+                    </div>
+                    <i class="fas fa-tasks fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">À Faire</h6>
+                        <h2 class="mb-0">{{ aFaire }}</h2>
+                    </div>
+                    <i class="fas fa-clock fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">En Cours</h6>
+                        <h2 class="mb-0">{{ enCours }}</h2>
+                    </div>
+                    <i class="fas fa-spinner fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Terminées</h6>
+                        <h2 class="mb-0">{{ terminees }}</h2>
+                    </div>
+                    <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Priorities -->
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-danger"></i>Répartition par Priorité</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-circle text-danger me-1"></i> Haute</span>
+                            <span class="fw-bold">{{ haute }}</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-danger" style="width: {{ total > 0 ? (haute / total * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-circle text-warning me-1"></i> Moyenne</span>
+                            <span class="fw-bold">{{ moyenne }}</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-warning" style="width: {{ total > 0 ? (moyenne / total * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-circle text-success me-1"></i> Basse</span>
+                            <span class="fw-bold">{{ basse }}</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: {{ total > 0 ? (basse / total * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Tasks & Upcoming Plannings -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2 text-primary"></i>Tâches Récentes</h5>
+                <a href="{{ path('app_employee_taches') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+            </div>
+            <div class="card-body">
+                {% if hasTaches and tachesRecentes|length > 0 %}
+                    {% for tache in tachesRecentes %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ tache.titre }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Deadline: {{ tache.deadline ? tache.deadline|date('d/m/Y') : 'Non définie' }}
+                                </small>
+                            </div>
+                            <span class="badge {% if tache.statut == 'A_FAIRE' %}bg-warning{% elseif tache.statut == 'EN_COURS' %}bg-info{% else %}bg-success{% endif %}">
+                                {{ tache.statut|replace({'_': ' '}) }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-2"></i>
+                        <p>Aucune tâche pour le moment</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-success"></i>Plannings à Venir</h5>
+                <a href="{{ path('app_employee_plannings') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+            </div>
+            <div class="card-body">
+                {% if planningsAVenir|length > 0 %}
+                    {% for planning in planningsAVenir %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ planning.titre }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ planning.date ? planning.date|date('d/m/Y') : 'Date non définie' }}
+                                </small>
+                            </div>
+                            <span class="badge bg-primary">{{ planning.type ?? 'Général' }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-calendar-times fa-3x mb-2"></i>
+                        <p>Aucun planning à venir</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
