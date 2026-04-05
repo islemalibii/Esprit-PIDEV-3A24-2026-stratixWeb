@@ -23,7 +23,12 @@ class AuthController extends AbstractController
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('admin_dashboard');
         }
-        return $this->render('auth/home.html.twig', ['user' => $user]);
+        // Responsables → espace admin
+        if (in_array($user->getRole(), ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {
+            return $this->redirectToRoute('admin_dashboard');
+        }
+        // Employés → espace employé
+        return $this->redirectToRoute('app_employee_dashboard');
     }
 
     #[Route('/login', name: 'app_login')]

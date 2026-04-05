@@ -18,12 +18,20 @@ class AdminController extends AbstractController
     #[Route('', name: 'admin_dashboard')]
     public function dashboard(UtilisateurRepository $repo): Response
     {
+        /** @var \App\Entity\Utilisateur $currentUser */
+        $currentUser = $this->getUser();
+        $role = $currentUser->getRole();
+
+        // Responsables → redirection directe vers tâches
+        if (!in_array($role, ['admin'])) {
+            return $this->redirectToRoute('app_tache_index');
+        }
+
         $total  = $repo->count([]);
         $actifs = $repo->count(['statut' => 'actif']);
         $locked = $repo->count(['account_locked' => true]);
         $admins = $repo->count(['role' => 'admin']);
 
-        // Répartition par rôle
         $rolesRaw = $repo->createQueryBuilder('u')
             ->select('u.role, COUNT(u.id) as total')
             ->groupBy('u.role')
@@ -39,10 +47,10 @@ class AdminController extends AbstractController
 
         return $this->render('admin/dashboard.html.twig', [
             'stats' => [
-                'total'  => $total,
-                'actifs' => $actifs,
-                'locked' => $locked,
-                'admins' => $admins,
+                'total'       => $total,
+                'actifs'      => $actifs,
+                'locked'      => $locked,
+                'admins'      => $admins,
                 'taux_actifs' => $total > 0 ? round($actifs / $total * 100) : 0,
             ],
             'roles'       => $roles,

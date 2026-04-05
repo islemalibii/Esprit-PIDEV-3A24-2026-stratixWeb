@@ -1,8 +1,9 @@
-{% extends 'base_ryhabbb.html.twig' %}
+{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}Calendrier - STRATIX{% endblock %}
 
 {% block stylesheets %}
+{{ parent() }}
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <style>
         .fc-event {
@@ -170,7 +171,7 @@
     </style>
 {% endblock %}
 
-{% block body %}
+{% block admin_content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -480,3 +481,4 @@
         });
     </script>
 {% endblock %}
+

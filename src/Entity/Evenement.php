@@ -163,7 +163,7 @@ class Evenement
     private ?string $image_url = null;
 
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
     private ?float $latitude = null;
 
     public function getLatitude(): ?float
@@ -177,7 +177,7 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
     private ?float $longitude = null;
 
     public function getLongitude(): ?float

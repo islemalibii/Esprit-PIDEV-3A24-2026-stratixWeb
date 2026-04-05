@@ -1,0 +1,50 @@
+{% extends 'employee/base_employee.html.twig' %}
+{% block title %}Mon profil{% endblock %}
+
+{% block employee_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm" style="border-radius:16px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 pb-4 mb-4 border-bottom">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                         style="width:64px;height:64px;font-size:1.4rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);flex-shrink:0;">
+                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-1">{{ user.prenom }} {{ user.nom }}</h3>
+                        <div class="text-secondary small">{{ user.email }}</div>
+                        <span class="badge bg-info-subtle text-info border border-info border-opacity-25 mt-1">
+                            {{ user.role|upper }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    {% set infos = [
+                        ['Nom complet',      user.prenom ~ ' ' ~ user.nom],
+                        ['Email',            user.email],
+                        ['Téléphone',        user.tel ?: '-'],
+                        ['CIN',              user.cin],
+                        ['Département',      user.department ?: '-'],
+                        ['Poste',            user.poste ?: '-'],
+                        ['Date d\'embauche', user.dateEmbauche ? user.dateEmbauche|date('d/m/Y') : '-'],
+                        ['Membre depuis',    user.dateAjout ? user.dateAjout|date('d/m/Y') : '-'],
+                    ] %}
+                    {% for info in infos %}
+                    <div class="col-md-6">
+                        <div class="text-secondary small">{{ info[0] }}</div>
+                        <div class="fw-semibold">{{ info[1] }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer bg-white px-4 py-3" style="border-radius:0 0 16px 16px;">
+                <a href="{{ path('employee_profile_edit') }}" class="btn btn-primary btn-sm">
+                    <i class="ti ti-edit me-1"></i> Modifier mon profil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

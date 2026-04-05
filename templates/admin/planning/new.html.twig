@@ -1,12 +1,14 @@
-{% extends 'base_ryhabbb.html.twig' %}
+{% extends 'admin/base_admin.html.twig' %}
 
 
 {% block title %}New Planning{% endblock %}
 
-{% block body %}
+{% block admin_content %}
     <h1>Create new Planning</h1>
 
     {{ include('planning/_form.html.twig') }}
 
     <a href="{{ path('app_planning_index') }}">back to list</a>
 {% endblock %}
+
+

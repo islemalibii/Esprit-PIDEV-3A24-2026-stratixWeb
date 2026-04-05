@@ -25,7 +25,9 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         - { path: ^/signup, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin/users, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_RESPONSABLE_RH, ROLE_RESPONSABLE_PROJET, ROLE_RESPONSABLE_PRODUCTION, ROLE_CEO] }
+        - { path: ^/employee, roles: ROLE_EMPLOYE }
         - { path: ^/, roles: PUBLIC_ACCESS }
 
 when@test:

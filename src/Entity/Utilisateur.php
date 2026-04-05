@@ -227,7 +227,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le salaire doit être positif.')]
     private ?float $salaire = null;
 
