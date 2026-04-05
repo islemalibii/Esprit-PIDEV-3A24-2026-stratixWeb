@@ -96,18 +96,18 @@ class EventController extends AbstractController
     #[Route('/employee/events', name: 'emp_event_list')]
     public function employeeIndex(Request $request, EvenementRepository $repo): Response
     {
-        $type = $request->query->get('type');
-        $search = $request->query->get('search'); 
+        $type   = $request->query->get('type');
+        $search = $request->query->get('search');
 
         if ($search) {
             $events = $repo->searchPlanifierByTitle($search);
         } elseif ($type) {
             $events = $repo->filterByTypeForEmployee($type);
         } else {
-            $events = $repo->findVisibleForEmployees(); 
+            $events = $repo->findVisibleForEmployees();
         }
 
-        return $this->render('employee/list.html.twig', [
+        return $this->render('employee/events/list.html.twig', [
             'events' => $events
         ]);
     }

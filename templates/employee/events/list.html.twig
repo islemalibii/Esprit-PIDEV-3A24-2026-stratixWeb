@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Événements{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-20">
+    <div class="container-fluid">
+
+        {# Header #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fs-4 fw-semibold text-dark mb-1">Évenements</h1>
+            </div>
+        </div>
+
+        {# Search & Filter #}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body py-3 px-4">
+                <form method="GET" action="{{ path('emp_event_list') }}" id="filterForm"
+                      class="row g-2 align-items-center">
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="ti ti-search"></i>
+                            </span>
+                            <input type="text"
+                                   name="search"
+                                   id="searchInput"
+                                   value="{{ app.request.query.get('search') }}"
+                                   class="form-control border-start-0 ps-0"
+                                   placeholder="Rechercher par titre..."
+                                   autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <select name="type" id="typeFilter" class="form-select form-select-sm">
+                            <option value="">— Tous les types —</option>
+                            <option value="reunion"          {{ app.request.query.get('type') == 'reunion'          ? 'selected' : '' }}>Réunion</option>
+                            <option value="formation"        {{ app.request.query.get('type') == 'formation'        ? 'selected' : '' }}>Formation</option>
+                            <option value="lancementProduit" {{ app.request.query.get('type') == 'lancementProduit' ? 'selected' : '' }}>Lancement Produit</option>
+                            <option value="seminaire"        {{ app.request.query.get('type') == 'seminaire'        ? 'selected' : '' }}>Séminaire</option>
+                            <option value="recrutement"      {{ app.request.query.get('type') == 'recrutement'      ? 'selected' : '' }}>Recrutement</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Cards grid #}
+        {% if events is empty %}
+            <div class="text-center py-6 text-muted">
+                <i class="ti ti-calendar-off fs-1 d-block mb-2"></i>
+                <p>Aucun événement disponible pour le moment.</p>
+            </div>
+        {% else %}
+            <div class="row g-4">
+                {% for event in events %}
+                {% set typeLabels = {
+                    'reunion':          ['Réunion',      '#3b82f6', '#eff6ff'],
+                    'formation':        ['Formation',    '#8b5cf6', '#f5f3ff'],
+                    'lancementProduit': ['Lancement',    '#10b981', '#ecfdf5'],
+                    'seminaire':        ['Séminaire',    '#f59e0b', '#fffbeb'],
+                    'recrutement':      ['Recrutement',  '#ef4444', '#fef2f2']
+                } %}
+                <div class="col-lg-4 col-md-6 col-12">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius:14px; overflow:hidden;">
+
+                        {# Image #}
+                        {% if event.imageUrl %}
+                            <img src="{{ asset('images/events/' ~ event.imageUrl) }}"
+                                 style="height:180px; object-fit:cover; width:100%;"
+                                 alt="{{ event.titre }}">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center"
+                                 style="height:180px; background:#ede9fe;">
+                                <i class="ti ti-calendar-event" style="font-size:3.5rem; color:#7c3aed;"></i>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body p-4">
+
+                            {# Type badge #}
+                            {% if event.typeEvent in typeLabels|keys %}
+                                {% set label = typeLabels[event.typeEvent] %}
+                                <span class="badge rounded-pill px-2 py-1 small fw-normal mb-2"
+                                      style="background:{{ label[2] }};color:{{ label[1] }};">
+                                    {{ label[0] }}
+                                </span>
+                            {% endif %}
+
+                            {# Title #}
+                            <h5 class="fw-semibold text-dark mb-2">{{ event.titre }}</h5>
+
+                            {# Description #}
+                            <p class="text-muted small mb-3" style="line-height:1.6;">
+                                {{ event.description|slice(0, 100) }}{% if event.description|length > 100 %}…{% endif %}
+                            </p>
+
+                            {# Meta info #}
+                            <div class="d-flex flex-column gap-1 mb-3">
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="ti ti-calendar" style="color:#7c3aed;"></i>
+                                    <span>{{ event.dateEvent ? event.dateEvent|date('d/m/Y') : '—' }}</span>
+                                </div>
+                                {% if event.lieu %}
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="ti ti-map-pin" style="color:#7c3aed;"></i>
+                                    <span>{{ event.lieu }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {# Status #}
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if event.statut == 'planifier' %}
+                                    <span class="badge rounded-pill fw-normal small"
+                                          style="background:#dcfce7;color:#16a34a;">
+                                        <i class="ti ti-circle-check me-1"></i>Planifié
+                                    </span>
+                                {% elseif event.statut == 'terminer' %}
+                                    <span class="badge rounded-pill fw-normal small"
+                                          style="background:#fef9c3;color:#ca8a04;">
+                                        <i class="ti ti-flag me-1"></i>Terminé
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <footer class="text-center py-3 mt-5 text-muted small">
+            Copyright © 2026 InApp Inventory Dashboard.
+        </footer>
+
+    </div>
+</main>
+
+<script>
+    document.getElementById('typeFilter').addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+
+    let debounceTimer;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 400);
+    });
+</script>
+{% endblock %}

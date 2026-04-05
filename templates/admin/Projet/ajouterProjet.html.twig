@@ -3,8 +3,6 @@
 {% block title %}STRATIX - Nouveau Projet{% endblock %}
 
 {% block body %}
-<main id="content" class="content py-4">
-
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
@@ -33,7 +31,6 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">STATUT PAR DÉFAUT</label>
-                            {# On affiche un simple texte informatif plutôt qu'un champ de formulaire #}
                             <input type="text" class="form-control border-0 bg-light p-3 rounded-3 fw-bold text-muted" value="Planifié" readonly>
                         </div>
                     </div>
@@ -54,6 +51,26 @@
                             <label class="form-label fw-bold small text-muted">DATE DE FIN</label>
                             {{ form_widget(form.dateFin, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3'}}) }}
                             <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
+                        </div>
+                    </div>
+
+                    {# --- AJOUT : Responsable et Équipe --- #}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">RESPONSABLE DU PROJET</label>
+                            {{ form_widget(form.responsable, {'attr': {'class': 'form-select border-0 bg-light p-3 rounded-3'}}) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.responsable) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">ÉQUIPE (MEMBRES)</label>
+                            {{ form_widget(form.membres, {'attr': {
+                                'class': 'form-select border-0 bg-light p-3 rounded-3',
+                                'style': 'height: 58px;'
+                            }}) }}
+                            <div class="text-muted mt-1" style="font-size: 0.7rem;">
+                                <i class="ti ti-info-circle"></i> Maintenez Ctrl pour plusieurs choix.
+                            </div>
+                            <div class="text-danger mt-1 small">{{ form_errors(form.membres) }}</div>
                         </div>
                     </div>
 
@@ -78,17 +95,12 @@
                         </div>
                     </div>
 
-                {# 1. On dit à Symfony que le champ statut est "traité" pour qu'il ne l'affiche pas en bas #}
+                {# Gestion des champs restants et cachés #}
                 {% do form.statut.setRendered() %}
-
-                {# 2. form_rest affiche les champs cachés indispensables (comme le jeton CSRF) #}
                 {{ form_rest(form) }}
-
                 {{ form_end(form) }}
             </div>
         </div>
     </div>
 </div>
-</main>
-
 {% endblock %}

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Projet;
+use App\Entity\Utilisateur; 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -25,7 +26,7 @@ class ProjetRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.isArchived = :val')
             ->setParameter('val', false)
-            ->orderBy('p.id', 'DESC') // Les plus récents en premier
+            ->orderBy('p.id', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -40,6 +41,24 @@ class ProjetRepository extends ServiceEntityRepository
             ->andWhere('p.isArchived = :val')
             ->setParameter('val', true)
             ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les projets où l'utilisateur est soit responsable, soit membre
+     * @return Projet[]
+     */
+    public function findProjetsPourEmploye(Utilisateur $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.membres', 'm') 
+            ->where('p.responsable = :user')
+            ->orWhere('m = :user') 
+            ->setParameter('user', $user)
+            ->andWhere('p.isArchived = :archived') 
+            ->setParameter('archived', false)
+            ->orderBy('p.dateDebut', 'DESC')
             ->getQuery()
             ->getResult();
     }

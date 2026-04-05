@@ -1,22 +1,14 @@
+<<<<<<< HEAD
 <aside id="sidebar" class="sidebar" style="background-color: #f8f9fb; border-right: 1px solid #e9ecef;">
-<div class="logo-area" style="padding: 2rem 1.5rem 0.5rem 0.2rem; border-bottom: 1px solid #e9ecef;">
-        <a href="{{ path('app_home') }}" class="d-inline-flex align-items-center text-decoration-none">
-            <img src="/images/logo.png" alt="" width="200">
+<div class="logo-area" style="padding: 2rem 1.5rem 1rem 0.2rem; border-bottom: 1px solid #e9ecef;">
+        <a href="{{ path('resp_event_index') }}" class="d-inline-flex align-items-center text-decoration-none">
+            <img src="/images/logo.png" alt="" width="180">
         </a>
     </div>
 
     <ul class="nav flex-column py-3" style="gap: 2px;">
 
 
-        <li>
-            <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2
-               {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}"
-               href="{{ path('app_home') }}"
-               style="color: #4a5568; transition: all 0.2s;">
-                <i class="ti ti-home fs-5"></i>
-                <span class="nav-text">Dashboard</span>
-            </a>
-        </li>
 
         <li>
             <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 mx-2 rounded-2"
@@ -81,6 +73,41 @@
                 <span class="nav-text">Événements</span>
             </a>
         </li>
+
+
+        
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') == 'admin_dashboard' %}active{% endif %}"
+               href="{{ path('admin_dashboard') }}">
+                <i class="ti ti-home"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'admin_user' %}active{% endif %}"
+               href="{{ path('admin_users') }}">
+                <i class="ti ti-users"></i>
+                <span class="nav-text">Utilisateurs</span>
+            </a>
+        </li>
+
+        <li class="px-4 pt-4 pb-2"><small class="nav-text text-uppercase" style="font-size:.7rem;letter-spacing:.8px;color:#9ca3af;">Compte</small></li>
+
+        <li>
+            <a class="nav-link {% if app.request.attributes.get('_route') starts with 'admin_profile' %}active{% endif %}"
+               href="{{ path('admin_profile') }}">
+                <i class="ti ti-user-circle"></i>
+                <span class="nav-text">Mon profil</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link text-danger" href="{{ path('app_logout') }}">
+                <i class="ti ti-logout"></i>
+                <span class="nav-text">Déconnexion</span>
+
+            </a>
+        </li>
+
     </ul>
 
     <style>

@@ -3,9 +3,10 @@
 namespace App\Form;
 
 use App\Entity\Projet;
+use App\Entity\Utilisateur;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -17,48 +18,30 @@ class ProjetType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nom', TextType::class, [
-                'attr' => ['placeholder' => 'Nom du projet...'],
-                'label' => false,
-                'required' => true
+            ->add('nom', TextType::class)
+            ->add('description', TextareaType::class)
+            ->add('dateDebut', DateTimeType::class, ['widget' => 'single_text'])
+            ->add('dateFin', DateTimeType::class, ['widget' => 'single_text'])
+            ->add('budget', NumberType::class)
+            ->add('statut', TextType::class, [
+                'required' => false,
+                'empty_data' => 'Planifié',
             ])
-            ->add('description', TextareaType::class, [
-                'attr' => ['placeholder' => 'Description...', 'rows' => 3],
-                'label' => false,
-                'required' => false
+            ->add('responsable', EntityType::class, [
+                'class' => Utilisateur::class,
+                'choice_label' => fn(Utilisateur $u) => $u->getPrenom() . ' ' . $u->getNom(),
+                'placeholder' => 'Choisir un responsable',
             ])
-            ->add('dateDebut', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date de Début',
-                'required' => true
-            ])
-            ->add('dateFin', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date de Fin',
-                'required' => true
-            ])
-            ->add('budget', NumberType::class, [
-                'attr' => ['placeholder' => '0.00'],
-                'label' => false,
-                'required' => true
-            ])
-            ->add('statut', ChoiceType::class, [
-                'choices'  => [
-                    'Planifié' => 'Planifié',
-                    'En cours' => 'En cours',
-                    'Terminé' => 'Terminé',
-                    'Annulé' => 'Annulé',
-                ],
-                'attr' => ['class' => 'form-select'],
-                'disabled' => $builder->getData()->getId() === null,
-            ])
-        ;
+            ->add('membres', EntityType::class, [
+                'class' => Utilisateur::class,
+                'choice_label' => fn(Utilisateur $u) => $u->getPrenom() . ' ' . $u->getNom(),
+                'multiple' => true,
+                'required' => false,
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            'data_class' => Projet::class,
-        ]);
+        $resolver->setDefaults(['data_class' => Projet::class]);
     }
 }

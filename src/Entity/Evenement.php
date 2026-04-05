@@ -95,7 +95,7 @@ class Evenement
         choices: ['planifier', 'annuler', 'terminer'],
         message: "Statut invalide."
     )]
-    private ?string $statut = null;
+    private ?string $statut = 'planifier';
 
     public function getStatut(): ?string
     {

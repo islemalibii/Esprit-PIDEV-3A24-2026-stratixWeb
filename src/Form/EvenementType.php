@@ -48,6 +48,8 @@ class EvenementType extends AbstractType
                 ],
                 'expanded' => true,  
                 'multiple' => false,
+                'data' => 'planifier',
+
             ])
 
             ->add('imageUrl', TextType::class, [
