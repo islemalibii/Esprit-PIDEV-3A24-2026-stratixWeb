@@ -22,21 +22,7 @@
                         <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
                     </div>
 
-                    {# Responsable et Membres de l'équipe #}
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">RESPONSABLE DU PROJET</label>
-                            {{ form_widget(form.responsable, {'attr': {'class': 'form-select border-0 bg-light p-3 rounded-3'}}) }}
-                            <div class="text-danger mt-1 small">{{ form_errors(form.responsable) }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">MEMBRES DE L'ÉQUIPE</label>
-                            {{ form_widget(form.membres, {'attr': {'class': 'form-select border-0 bg-light p-3 rounded-3'}}) }}
-                            <div class="text-danger mt-1 small">{{ form_errors(form.membres) }}</div>
-                        </div>
-                    </div>
-
-                    {# Budget et Statut Statique #}
+                    {# Budget et Affichage Statut #}
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">BUDGET (DT)</label>
@@ -45,6 +31,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">STATUT PAR DÉFAUT</label>
+                            {# On affiche un simple texte informatif plutôt qu'un champ de formulaire #}
                             <input type="text" class="form-control border-0 bg-light p-3 rounded-3 fw-bold text-muted" value="Planifié" readonly>
                         </div>
                     </div>
@@ -89,8 +76,12 @@
                         </div>
                     </div>
 
+                {# 1. On dit à Symfony que le champ statut est "traité" pour qu'il ne l'affiche pas en bas #}
                 {% do form.statut.setRendered() %}
+
+                {# 2. form_rest affiche les champs cachés indispensables (comme le jeton CSRF) #}
                 {{ form_rest(form) }}
+
                 {{ form_end(form) }}
             </div>
         </div>
