@@ -6,7 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\EvenementRepository;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
@@ -30,6 +30,11 @@ class Evenement
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['reunion', 'formation', 'lancementProduit', 'seminaire', 'recrutement'],
+        message: "Type d'événement invalide."
+    )]
     private ?string $type_event = null;
 
     public function getType_event(): ?string
@@ -44,6 +49,11 @@ class Evenement
     }
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotBlank(message: "La date est obligatoire.")]
+    #[Assert\GreaterThanOrEqual(
+        "today",
+        message: "La date de l'événement ne peut pas être dans le passé."
+    )]
     private ?\DateTimeInterface $date_event = null;
 
     public function getDate_event(): ?\DateTimeInterface
@@ -58,6 +68,8 @@ class Evenement
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: "Veuillez fournir une description.")]
+    #[Assert\Length(min: 10, minMessage: "La description est trop courte.")]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -72,6 +84,11 @@ class Evenement
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['planifier', 'annuler', 'terminer'],
+        message: "Statut invalide."
+    )]
     private ?string $statut = null;
 
     public function getStatut(): ?string
@@ -99,7 +116,14 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire")]
+    #[Assert\Length(
+        min: 5,
+        max: 100,
+        minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -113,7 +137,7 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'isArchived', type: 'boolean', nullable: true)]
     private ?bool $isArchived = null;
 
     public function isIsArchived(): ?bool

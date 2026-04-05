@@ -1,0 +1,264 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Événements{% endblock %}
+
+{% block body %}
+<div id="overlay" class="overlay"></div>
+
+{{ include('admin/partials/navbar.html.twig') }}
+{{ include('admin/partials/sidebar.html.twig') }}
+
+<main id="content" class="content py-10">
+    <div class="container-fluid">
+
+        {# Page header #}
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fs-4 mb-1 fw-semibold text-dark">Gestion des Événements</h1>
+                    <p class="text-muted mb-0 small">Liste de tous les événements actifs</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('resp_event_archives') }}" class="btn btn-outline-secondary btn-sm px-3">
+                        <i class="ti ti-archive me-1"></i> Archives
+                        <span class="badge bg-secondary ms-1">{{ archived|length }}</span>
+                    </a>
+                    <a href="{{ path('resp_event_new') }}" class="btn btn-primary btn-sm px-3">
+                        <i class="ti ti-plus me-1"></i> Nouvel Événement
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Stats cards - toned down #}
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="rounded-2 p-2" style="background:#ede9fe;">
+                            <i class="ti ti-calendar-event fs-5" style="color:#7c3aed;"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-muted small">Total</p>
+                            <h3 class="fw-bold mb-0 fs-5">{{ evenements|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="rounded-2 p-2" style="background:#dcfce7;">
+                            <i class="ti ti-circle-check fs-5" style="color:#16a34a;"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-muted small">Planifiés</p>
+                            <h3 class="fw-bold mb-0 fs-5">{{ evenements|filter(e => e.statut == 'planifier')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="rounded-2 p-2" style="background:#fef9c3;">
+                            <i class="ti ti-flag fs-5" style="color:#ca8a04;"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-muted small">Terminés</p>
+                            <h3 class="fw-bold mb-0 fs-5">{{ evenements|filter(e => e.statut == 'terminer')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="rounded-2 p-2" style="background:#fee2e2;">
+                            <i class="ti ti-ban fs-5" style="color:#dc2626;"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-muted small">Annulés</p>
+                            <h3 class="fw-bold mb-0 fs-5">{{ evenements|filter(e => e.statut == 'annuler')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Search & Filter bar #}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-3 px-4">
+                <form method="GET" action="{{ path('resp_event_index') }}" id="filterForm" class="row g-2 align-items-center">
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="ti ti-search"></i>
+                            </span>
+                            <input type="text"
+                                name="search"
+                                id="searchInput"
+                                value="{{ app.request.query.get('search') }}"
+                                class="form-control border-start-0 ps-0"
+                                placeholder="Rechercher par titre..."
+                                autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <select name="type_event" id="typeFilter" class="form-select form-select-sm">
+                            <option value="">— Tous les types —</option>
+                            <option value="reunion"          {{ app.request.query.get('type_event') == 'reunion'          ? 'selected' : '' }}>Réunion</option>
+                            <option value="formation"        {{ app.request.query.get('type_event') == 'formation'        ? 'selected' : '' }}>Formation</option>
+                            <option value="lancementProduit" {{ app.request.query.get('type_event') == 'lancementProduit' ? 'selected' : '' }}>Lancement Produit</option>
+                            <option value="seminaire"        {{ app.request.query.get('type_event') == 'seminaire'        ? 'selected' : '' }}>Séminaire</option>
+                            <option value="recrutement"      {{ app.request.query.get('type_event') == 'recrutement'      ? 'selected' : '' }}>Recrutement</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Events table #}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                {% if evenements is empty %}
+                    <div class="text-center py-6 text-muted">
+                        <i class="ti ti-calendar-off fs-1 d-block mb-2"></i>
+                        <p>Aucun événement trouvé.</p>
+                        <a href="{{ path('resp_event_new') }}" class="btn btn-sm btn-primary">Créer un événement</a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background:#f8f9fb;">
+                                <tr>
+                                    <th class="px-4 py-3 text-muted fw-semibold small">TITRE</th>
+                                    <th class="py-3 text-muted fw-semibold small">TYPE</th>
+                                    <th class="py-3 text-muted fw-semibold small">DATE</th>
+                                    <th class="py-3 text-muted fw-semibold small">LIEU</th>
+                                    <th class="py-3 text-muted fw-semibold small">STATUT</th>
+                                    <th class="py-3 text-muted fw-semibold small text-end pe-4">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for evenement in evenements %}
+                                {% set typeLabels = {
+                                    'reunion':          ['Réunion',   '#3b82f6', '#eff6ff'],
+                                    'formation':        ['Formation', '#8b5cf6', '#f5f3ff'],
+                                    'lancementProduit': ['Lancement', '#10b981', '#ecfdf5'],
+                                    'seminaire':        ['Séminaire', '#f59e0b', '#fffbeb'],
+                                    'recrutement':      ['Recrutement','#ef4444','#fef2f2']
+                                } %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if evenement.imageUrl %}
+                                                <img src="{{ asset('images/events/' ~ evenement.imageUrl) }}"
+                                                     class="rounded-2" width="70" height="70" style="object-fit:cover;">
+                                            {% else %}
+                                                <div class="rounded-2 d-flex align-items-center justify-content-center"
+                                                     style="width:44px;height:44px;background:#ede9fe;">
+                                                    <i class="ti ti-calendar-event" style="color:#7c3aed;"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <p class="mb-0 fw-semibold text-dark small">{{ evenement.titre }}</p>
+                                                <small class="text-muted">{{ evenement.description|slice(0, 45) }}{% if evenement.description|length > 45 %}…{% endif %}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if evenement.typeEvent in typeLabels|keys %}
+                                            {% set label = typeLabels[evenement.typeEvent] %}
+                                            <span class="badge rounded-pill px-2 py-1 small fw-normal"
+                                                  style="background:{{ label[2] }};color:{{ label[1] }};">
+                                                {{ label[0] }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ evenement.typeEvent }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">
+                                            <i class="ti ti-calendar me-1"></i>
+                                            {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y') : '—' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if evenement.lieu %}
+                                            <span class="text-muted small">
+                                                <i class="ti ti-map-pin me-1"></i>{{ evenement.lieu }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if evenement.statut == 'planifier' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#dcfce7;color:#16a34a;">Planifié</span>
+                                        {% elseif evenement.statut == 'annuler' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#fee2e2;color:#dc2626;">Annulé</span>
+                                        {% elseif evenement.statut == 'terminer' %}
+                                            <span class="badge rounded-pill px-2 py-1 fw-normal small" style="background:#fef9c3;color:#ca8a04;">Terminé</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill small">{{ evenement.statut }}</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-2">
+
+                                            {# Details #}
+                                            <a href="{{ path('resp_event_show', {'id': evenement.id}) }}"
+                                            class="btn btn-sm rounded-2"
+                                            style="background:#ede9fe; color:#7c3aed; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;"
+                                            title="Voir les détails">
+                                                <i class="ti ti-eye"></i>
+                                            </a>
+
+                                            {# Archive / Restore #}
+                                            <a href="{{ path('resp_event_archive', {'id': evenement.id}) }}"
+                                            class="btn btn-sm rounded-2"
+                                            style="background:#f1f5f9; color:#64748b; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;"
+                                            title="{{ evenement.isArchived ? 'Restaurer' : 'Archiver' }}"
+                                            onclick="return confirm('{{ evenement.isArchived ? 'Restaurer' : 'Archiver' }} cet événement ?')">
+                                                <i class="ti ti-{{ evenement.isArchived ? 'archive-off' : 'archive' }}"></i>
+                                            </a>
+
+                                        </div>
+                                    </td>
+                 
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Footer #}
+        <footer class="text-center py-3 mt-5 text-muted small">
+            Copyright © 2026 InApp Inventory Dashboard.
+        </footer>
+
+    </div>
+</main>
+<script>
+    // Auto-submit on type filter change
+    document.getElementById('typeFilter').addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+
+    // Auto-submit on search with debounce (waits 400ms after user stops typing)
+    let debounceTimer;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 400);
+    });
+</script>
+
+{% endblock %}
+

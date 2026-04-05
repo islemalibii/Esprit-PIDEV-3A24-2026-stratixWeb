@@ -7,14 +7,23 @@
         </a>
     </div>
     <ul class="nav flex-column">
-        <li class="px-4 py-2"><small class="nav-text">Menu Principale</small></li>
-        <li><a class="nav-link active" href="index.html"><i class="ti ti-home"></i><span class="nav-text">Dashboard</span></a></li>
+        <li>
+            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}" 
+               href="{{ path('app_home') }}">
+                <i class="ti ti-home"></i><span class="nav-text">Dashboard</span>
+            </a>
+        </li> 
         <li><a class="nav-link" href="inventory.html"><i class="ti ti-box-seam"></i><span class="nav-text">Services</span></a></li>
         <li><a class="nav-link" href="create-product.html"><i class="ti ti-plus"></i><span class="nav-text">Categories</span></a></li>
         <li><a class="nav-link" href="reports.html"><i class="ti ti-receipt"></i><span class="nav-text">Produit</span></a></li>
         <li><a class="nav-link" href="404-error.html"><i class="ti ti-alert-circle"></i><span class="nav-text">Ressources</span></a></li>
         <li><a class="nav-link" href="docs.html"><i class="ti ti-file-text"></i><span class="nav-text">Projets</span></a></li>
         <li><a class="nav-link" href="docs.html"><i class="ti ti-file-text"></i><span class="nav-text">Taches et Planning</span></a></li>
-        <li><a class="nav-link" href="docs.html"><i class="ti ti-file-text"></i><span class="nav-text">Evenements</span></a></li>
+        <li>
+            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'resp_event' ? 'active' : '' }}" 
+               href="{{ path('resp_event_index') }}">
+                <i class="ti ti-calendar-event"></i><span class="nav-text">Evenements</span>
+            </a>
+        </li>
     </ul>
 </aside>
