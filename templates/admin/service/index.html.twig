@@ -9,7 +9,6 @@
         </a>
     </div>
 
-    <!-- Flash Messages -->
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ message }}
@@ -17,7 +16,67 @@
         </div>
     {% endfor %}
 
-    <!-- Search and Filter Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-exchange-alt"></i> Convertisseur de Devises
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Montant en TND</label>
+                            <div class="input-group">
+                                <input type="number" 
+                                       id="montant-tnd" 
+                                       class="form-control" 
+                                       placeholder="Saisir le montant"
+                                       step="0.01"
+                                       value="">
+                                <span class="input-group-text">DT</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">USD (Dollar Américain)</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       id="montant-usd" 
+                                       class="form-control bg-light" 
+                                       readonly>
+                                <span class="input-group-text">$</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">EUR (Euro)</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       id="montant-eur" 
+                                       class="form-control bg-light" 
+                                       readonly>
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" id="btnConvertir">
+                                <i class="fas fa-sync-alt"></i> Convertir
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Taux de change mis à jour automatiquement
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Recherche et Filtrage</h6>
@@ -59,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Services Grid -->
     <div class="row">
         {% for service in services %}
             <div class="col-xl-4 col-md-6 mb-4">
@@ -137,4 +195,87 @@
         {% endfor %}
     </div>
 </div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tndInput = document.getElementById('montant-tnd');
+    const usdInput = document.getElementById('montant-usd');
+    const eurInput = document.getElementById('montant-eur');
+    const btnConvertir = document.getElementById('btnConvertir');
+    
+    let tauxUSD = null;
+    let tauxEUR = null;
+    
+  
+    const DEFAULT_TND_TO_USD = 3.0;
+    const DEFAULT_TND_TO_EUR = 3.2;
+    
+    function fetchExchangeRates() {
+      
+        fetch('{{ path('api_exchange_rates') }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tauxUSD = data.rates.USD;
+                    tauxEUR = data.rates.EUR;
+                    console.log('Taux chargés avec succès:', tauxUSD, tauxEUR);
+                    convertCurrency();
+                } else {
+                    throw new Error('API error');
+                }
+            })
+            .catch(error => {
+                console.log('Utilisation des taux par défaut');
+              
+                tauxUSD = DEFAULT_TND_TO_USD;
+                tauxEUR = DEFAULT_TND_TO_EUR;
+                convertCurrency();
+            });
+    }
+    
+    
+    function convertCurrency() {
+        let montantTND = parseFloat(tndInput.value);
+        
+        if (isNaN(montantTND)) {
+            montantTND = 0;
+        }
+        
+        if (tauxUSD && tauxEUR) {
+           
+            usdInput.value = (montantTND / tauxUSD).toFixed(2);
+            eurInput.value = (montantTND / tauxEUR).toFixed(2);
+        } else {
+            usdInput.value = (montantTND / DEFAULT_TND_TO_USD).toFixed(2);
+            eurInput.value = (montantTND / DEFAULT_TND_TO_EUR).toFixed(2);
+        }
+    }
+    
+    btnConvertir.addEventListener('click', convertCurrency);
+    tndInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            convertCurrency();
+        }
+    });
+    
+   
+    let autoConvertInterval;
+    tndInput.addEventListener('focus', function() {
+        autoConvertInterval = setInterval(convertCurrency, 30000);
+    });
+    
+    tndInput.addEventListener('blur', function() {
+        if (autoConvertInterval) {
+            clearInterval(autoConvertInterval);
+        }
+    });
+    
+    fetchExchangeRates();
+    
+    setInterval(fetchExchangeRates, 3600000);
+});
+</script>
+{% endblock %}
 {% endblock %}
