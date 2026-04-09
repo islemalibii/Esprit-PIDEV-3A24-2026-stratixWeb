@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use App\Service\ExchangeRateService;
 use App\Entity\Service;
 use App\Entity\CategorieService;
 use App\Entity\Utilisateur;
@@ -129,5 +129,27 @@ final class ServiceController extends AbstractController
         }
 
         return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
+    }
+     #[Route('/api/exchange-rates', name: 'api_exchange_rates', methods: ['GET'])]
+    public function getExchangeRates(ExchangeRateService $exchangeRateService): JsonResponse
+    {
+        try {
+            $usd = $exchangeRateService->convertir(1, 'TND', 'USD');
+            $eur = $exchangeRateService->convertir(1, 'TND', 'EUR');
+            
+            return $this->json([
+                'success' => true,
+                'base' => 'TND',
+                'rates' => [
+                    'USD' => $usd,
+                    'EUR' => $eur
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
