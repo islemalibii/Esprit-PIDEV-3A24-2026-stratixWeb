@@ -81,9 +81,10 @@
                     <button type="submit" class="btn btn-outline-primary me-2">
                         <i class="fas fa-search"></i> Rechercher
                     </button>
-                    <a href="{{ path('app_service_index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Réinitialiser
-                    </a>
+                    
+                     <button type="button" class="btn btn-outline-danger" id="exportPdfBtn">
+        <i class="fas fa-file-pdf"></i> Exporter PDF
+    </button>
                 </div>
             </form>
         </div>
@@ -240,7 +241,6 @@
         gap: 10px;
     }
     
-    /* Custom scrollbar */
     .chat-messages::-webkit-scrollbar { width: 6px; }
     .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
     .chat-messages::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
@@ -481,5 +481,8 @@
         if (tnd) tnd.addEventListener('keypress', e => { if(e.key === 'Enter') convert(); });
         convert();
     });
+    document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
+    window.open('/admin/services/api/export-pdf', '_blank');
+});
 </script>
 {% endblock %}
