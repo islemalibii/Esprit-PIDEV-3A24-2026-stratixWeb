@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-use App\Service\ExchangeRateService;
+
 use App\Entity\Service;
 use App\Entity\CategorieService;
 use App\Entity\Utilisateur;
@@ -9,10 +9,13 @@ use App\Form\ServiceType;
 use App\Repository\ServiceRepository;
 use App\Repository\CategorieServiceRepository;
 use App\Repository\UtilisateurRepository;
+use App\Service\ExchangeRateService;
+use App\Service\GroqService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/admin/services')]
@@ -41,7 +44,6 @@ final class ServiceController extends AbstractController
         }
 
         $services = $queryBuilder->orderBy('s.id', 'DESC')->getQuery()->getResult();
-
         $categories = $categorieServiceRepository->findBy(['archive' => false]);
 
         return $this->render('admin/service/index.html.twig', [
@@ -130,7 +132,8 @@ final class ServiceController extends AbstractController
 
         return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
     }
-     #[Route('/api/exchange-rates', name: 'api_exchange_rates', methods: ['GET'])]
+
+    #[Route('/api/exchange-rates', name: 'api_exchange_rates', methods: ['GET'])]
     public function getExchangeRates(ExchangeRateService $exchangeRateService): JsonResponse
     {
         try {
@@ -152,4 +155,61 @@ final class ServiceController extends AbstractController
             ], 500);
         }
     }
+
+    #[Route('/api/assistant/ask', name: 'api_assistant_ask', methods: ['POST'])]
+    public function assistantAsk(Request $request, ServiceRepository $serviceRepository, GroqService $groqService): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $question = $data['question'] ?? '';
+        
+        if (empty($question)) {
+            return $this->json(['error' => 'Question vide'], 400);
+        }
+
+        try {
+            $services = $serviceRepository->findBy(['archive' => false]);
+            $groqService->setServices($services);
+            $response = $groqService->ask($question);
+            
+            return $this->json(['response' => $response]);
+            
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+#[Route('/api/test-groq', name: 'api_test_groq', methods: ['GET'])]
+public function testGroq(): JsonResponse
+{
+    $apiKey = '';
+    
+    $data = [
+        'model' => 'llama-3.3-70b-versatile',
+        'messages' => [
+            ['role' => 'user', 'content' => 'Dis "API Groq fonctionne parfaitement" en français']
+        ]
+    ];
+    
+    $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $apiKey,
+        'Content-Type: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    return $this->json([
+        'http_code' => $httpCode,
+        'curl_error' => $curlError,
+        'response' => json_decode($response, true)
+    ]);
+}
 }
