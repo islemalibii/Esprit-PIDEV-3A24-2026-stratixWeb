@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Service;
 use App\Entity\CategorieService;
 use App\Entity\Utilisateur;
+use App\Service\PDFExportService; 
 use App\Form\ServiceType;
 use App\Repository\ServiceRepository;
 use App\Repository\CategorieServiceRepository;
@@ -211,5 +212,22 @@ public function testGroq(): JsonResponse
         'curl_error' => $curlError,
         'response' => json_decode($response, true)
     ]);
+}
+#[Route('/api/export-pdf', name: 'api_export_pdf', methods: ['GET'])]
+public function exportPDF(ServiceRepository $serviceRepository, PDFExportService $pdfExportService): Response
+{
+    try {
+        $services = $serviceRepository->findBy(['archive' => false]);
+        
+        $pdfContent = $pdfExportService->exportServicesToPDF($services, 'Liste des Services');
+        
+        return new Response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="services_' . date('Y-m-d') . '.pdf"',
+        ]);
+        
+    } catch (\Exception $e) {
+        return $this->json(['error' => $e->getMessage()], 500);
+    }
 }
 }
