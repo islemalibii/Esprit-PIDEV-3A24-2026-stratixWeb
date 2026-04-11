@@ -145,6 +145,16 @@ class ProjetController extends AbstractController
         return $this->redirectToRoute('app_projet_archives');
     }
 
+    #[Route('/projet/{id}/chat', name: 'app_projet_chat')]
+    public function chat(Projet $projet): Response
+    {
+        return $this->render('admin/Projet/chat.html.twig', [
+            'projet' => $projet,
+            // On passe l'utilisateur actuel pour le nom de l'expéditeur
+            'userName' => $this->getUser()->getNom() . ' ' . $this->getUser()->getPrenom(),
+        ]);
+    }
+
     // ─────────────────────────────────────────────
     //  VUE EMPLOYÉ
     // ─────────────────────────────────────────────
@@ -168,6 +178,22 @@ class ProjetController extends AbstractController
     public function show(Projet $projet): Response
     {
         return $this->render('admin/Projet/detailsProjet.html.twig', [
+            'projet' => $projet,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────
+    //  DÉTAILS VUE EMPLOYÉ
+    // ─────────────────────────────────────────────
+    #[Route('/employee/projet/{id}', name: 'app_projet_employe_show', methods: ['GET'])]
+    public function showEmployee(Projet $projet): Response
+    {
+        // Optionnel : vérifier si l'employé fait bien partie du projet pour plus de sécurité
+        if (!$projet->getMembres()->contains($this->getUser()) && $projet->getResponsable() !== $this->getUser()) {
+            // Tu peux choisir de rediriger ou d'afficher une erreur si l'employé n'est pas lié au projet
+        }
+
+        return $this->render('employee/employeProjetDetails.html.twig', [
             'projet' => $projet,
         ]);
     }

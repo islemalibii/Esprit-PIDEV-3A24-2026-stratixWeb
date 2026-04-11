@@ -1,0 +1,160 @@
+{# templates/employee/employeProjetDetails.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}STRATIX - Détails {{ projet.nom }}{% endblock %}
+
+{% block employee_content %}
+<div class="container-fluid py-4 px-4">
+
+    {# ── En-tête (Style Collaborateur) ──────────────── #}
+    <div class="row g-3 align-items-center mb-4 mt-2">
+        <div class="col-lg-7">
+            <h2 class="fw-bold mb-1" style="color: #64748b; font-size: 24px;">
+                <i class="ti ti-folder me-2 text-primary"></i>Détails du projet
+            </h2>
+            <p style="color: #94a3b8; font-size: 14px;">Consultation des informations de mission</p>
+        </div>
+        <div class="col-lg-5 text-end">
+            <div class="d-inline-flex gap-2">
+                <a href="{{ path('app_projet_chat', {'id': projet.id}) }}"
+                   class="btn btn-primary shadow-sm fw-bold rounded-3 px-4">
+                    <i class="ti ti-messages me-1"></i> Ouvrir le Chat
+                </a>
+                <a href="{{ path('app_projet_index') }}"
+                   class="btn btn-outline-secondary bg-white shadow-sm fw-bold rounded-3 px-3">
+                    <i class="ti ti-arrow-back-up me-1"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        {# ── Colonne Gauche : Description et Équipe ──────────────── #}
+        <div class="col-lg-8">
+            
+            {# Carte Description #}
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">{{ projet.nom }}</h5>
+                        <span class="badge rounded-pill px-3 py-2 border 
+                            {% if projet.statut == 'En cours' %}bg-success-subtle text-success
+                            {% else %}bg-primary-subtle text-primary{% endif %}">
+                            {{ projet.statut }}
+                        </span>
+                    </div>
+                    <hr class="text-faded">
+                    <p class="text-muted leading-relaxed">
+                        {{ projet.description|default('Aucune description détaillée fournie pour ce projet.') }}
+                    </p>
+                    
+                    <div class="mt-4 p-3 rounded-3 border bg-light-subtle">
+                        <h6 class="small fw-bold text-uppercase text-muted mb-3" style="letter-spacing: 1px;">Documents joints</h6>
+                        {% if projet.cahierDesCharges %}
+                            <a href="{{ asset('uploads/cahiers/' ~ projet.cahierDesCharges) }}" target="_blank" class="text-decoration-none d-flex align-items-center text-danger fw-bold">
+                                <i class="ti ti-file-text fs-4 me-2"></i>
+                                <span>Cahier des charges.pdf</span>
+                                <i class="ti ti-download ms-auto"></i>
+                            </a>
+                        {% else %}
+                            <span class="text-muted small fst-italic">Aucun document disponible.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# Carte Équipe #}
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="ti ti-users me-2 text-primary"></i>Mes collègues sur ce projet
+                    </h6>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-3">
+                        {% for membre in projet.membres %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-2 border-bottom">
+                                    <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold"
+                                         style="width:38px; height:38px; font-size:0.8rem;">
+                                        {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 fw-bold text-dark small">{{ membre.prenom }} {{ membre.nom }}</p>
+                                        <span class="text-muted" style="font-size:0.7rem;">Membre d'équipe</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Colonne Droite : Infos clés ──────────────── #}
+        <div class="col-lg-4">
+            
+            {# Chef de Projet #}
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3"
+                         style="width:60px; height:60px;">
+                        <i class="ti ti-crown fs-2"></i>
+                    </div>
+                    <label class="text-muted small fw-bold d-block text-uppercase">Responsable</p>
+                    <h6 class="fw-bold text-dark mb-0">
+                        {{ projet.responsable ? projet.responsable.prenom ~ ' ' ~ projet.responsable.nom : 'Non assigné' }}
+                    </h6>
+                </div>
+            </div>
+
+            {# Dates et Deadlines #}
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-4">Planning & Échéance</h6>
+                    
+                    <div class="d-flex mb-4">
+                        <div class="me-3 text-primary"><i class="ti ti-calendar-event fs-3"></i></div>
+                        <div>
+                            <span class="text-muted small d-block">Début</span>
+                            <span class="fw-bold">{{ projet.dateDebut ? projet.dateDebut|date('d/m/Y') : '--/--/----' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-4">
+                        <div class="me-3 text-danger"><i class="ti ti-calendar-check fs-3"></i></div>
+                        <div>
+                            <span class="text-muted small d-block">Fin prévue</span>
+                            <span class="fw-bold">{{ projet.dateFin ? projet.dateFin|date('d/m/Y') : '--/--/----' }}</span>
+                        </div>
+                    </div>
+
+                    {# Calcul du temps restant #}
+                    {% if projet.dateFin %}
+                        {% set today = "now"|date("U") %}
+                        {% set fin   = projet.dateFin|date("U") %}
+                        {% set diff  = (fin - today) / 86400 %}
+
+                        <div class="p-3 rounded-3 {% if diff < 0 %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %} text-center">
+                            {% if diff < 0 %}
+                                <i class="ti ti-alert-triangle me-1"></i> <strong>Retard de {{ (-diff)|round }} jours</strong>
+                            {% else %}
+                                <i class="ti ti-clock me-1"></i> <strong>{{ diff|round }} jours restants</strong>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light-subtle { background-color: #f8fafc; }
+    .text-faded { opacity: 0.5; }
+    .btn-primary { background-color: #3b82f6; border: none; }
+    .btn-primary:hover { background-color: #2563eb; }
+</style>
+{% endblock %}

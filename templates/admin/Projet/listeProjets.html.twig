@@ -93,6 +93,11 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="btn-group shadow-sm rounded-3 border bg-white">
+                                    {# BOUTON CHAT (Nouveau) #}
+                                    <a href="{{ path('app_projet_chat', {'id': projet.id}) }}" class="btn btn-sm btn-white text-info" title="Ouvrir le Chat">
+                                        <i class="ti ti-messages" style="font-size: 1.1rem;"></i>
+                                    </a>
+                                    
                                     <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Voir">
                                         <i class="ti ti-eye text-primary"></i>
                                     </a>
@@ -119,52 +124,4 @@
         </div>
     </div>
 </main>
-
-<style>
-    .cursor-pointer { cursor: pointer; transition: 0.2s; }
-    .cursor-pointer:hover { background-color: #f8f9fa !important; }
-    .project-title-link:hover { color: #dc3545 !important; text-decoration: underline !important; }
-    .projet-row:hover { background-color: #fcfcfc; }
-    .btn-white { background: #fff; border: 1px solid #eee; }
-    .btn-white:hover { background: #f8f9fa; }
-</style>
-
-<script>
-    // Soumission automatique de la recherche après un court délai (Debounce)
-    let searchTimer;
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => {
-                document.getElementById('filterForm').submit();
-            }, 800); // Attend 800ms après la fin de la frappe
-        });
-    }
-
-    // --- LOGIQUE DE TRI DU TABLEAU (CLIENT) ---
-    let sortOrder = true;
-    function sortTable(idx) {
-        const body = document.getElementById("projetTableBody");
-        const rows = Array.from(body.querySelectorAll(".projet-row"));
-
-        if (rows.length === 0) return;
-
-        rows.sort((a, b) => {
-            let aVal, bVal;
-            if (idx === 2) { // Colonne Budget
-                aVal = parseFloat(a.querySelector(".projet-budget").dataset.value) || 0;
-                bVal = parseFloat(b.querySelector(".projet-budget").dataset.value) || 0;
-            } else { // Colonne Nom
-                aVal = a.children[idx].innerText.toLowerCase();
-                bVal = b.children[idx].innerText.toLowerCase();
-            }
-            return sortOrder ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
-        });
-
-        sortOrder = !sortOrder;
-        rows.forEach(r => body.appendChild(r));
-    }
-</script>
 {% endblock %}

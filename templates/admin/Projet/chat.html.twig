@@ -1,0 +1,162 @@
+{# templates/projet/chat.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}STRATIX - Chat {{ projet.nom }}{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-4">
+    <div class="container-fluid px-4">
+        
+        {# --- EN-TÊTE DE PAGE (Même style que l'index et archives) --- #}
+        <div class="row g-3 align-items-center mb-4 mt-2">
+            <div class="col-lg-8">
+                <h2 class="fs-4 mb-0 fw-bold text-dark">
+                    <i class="ti ti-messages me-2 text-danger"></i>Discussion de groupe
+                </h2>
+                <p class="text-muted small mb-0">Projet : <span class="fw-bold text-dark">{{ projet.nom }}</span></p>
+            </div>
+            
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_projet_index') }}" class="btn btn-outline-secondary shadow-sm px-4 fw-bold rounded-3">
+                    <i class="ti ti-arrow-back-up me-1"></i> Retour aux projets
+                </a>
+            </div>
+        </div>
+
+        {# --- ZONE DE CHAT --- #}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background-color: #f8fafc;">
+            <div class="card-body p-0">
+                
+                {# Conteneur des messages (Scrolling) #}
+                <div id="chat-container" class="p-4" style="height: 550px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                    </div>
+
+                {# Zone de saisie (Style moderne et propre) #}
+                <div class="p-3 bg-white border-top">
+                    <div class="input-group shadow-sm rounded-3 overflow-hidden border">
+                        <input type="text" id="msgInput" class="form-control border-0 ps-3 py-2" 
+                               placeholder="Écrivez votre message ici..." 
+                               style="focus: none; outline: none;">
+                        <button class="btn btn-danger px-4" id="btnSend">
+                            <i class="ti ti-send"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Style spécifique pour les bulles de chat pour correspondre à Stratix */
+    #chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    #chat-container::-webkit-scrollbar-thumb {
+        background-color: #e2e8f0;
+        border-radius: 10px;
+    }
+    
+    .chat-bubble {
+        max-width: 75%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Config (Vérifie bien cette URL !)
+            const firebaseConfig = {
+                databaseURL: "https://stratixchat-default-rtdb.firebaseio.com/"
+            };
+
+            // Initialisation avec vérification
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            
+            const database = firebase.database();
+            const projetId = "{{ projet.id }}";
+            const myName = "{{ app.user.nom }} {{ app.user.prenom }}"; 
+            
+            // On pointe sur le même nœud que ton code Java
+            const chatRef = database.ref('projet-' + projetId);
+
+            const chatContainer = document.getElementById('chat-container');
+            const msgInput = document.getElementById('msgInput');
+            const btnSend = document.getElementById('btnSend');
+
+            // --- ENVOI ---
+            function sendMessage() {
+                const text = msgInput.value.trim();
+                if (text === "") return;
+
+                console.log("Tentative d'envoi de :", text); // Debug console
+
+                chatRef.push({
+                    sender: myName,
+                    text: text,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP // Utilisation du temps serveur
+                }).then(() => {
+                    console.log("Message enregistré !");
+                    msgInput.value = "";
+                }).catch((error) => {
+                    console.error("Erreur d'enregistrement :", error);
+                    alert("Erreur Firebase : " + error.message);
+                });
+            }
+
+            btnSend.addEventListener('click', sendMessage);
+            msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+
+            // --- RÉCEPTION ---
+            console.log("Écoute active sur le projet :", projetId);
+            
+            chatRef.on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                console.log("Nouveau message reçu :", msg);
+                displayMessage(msg.sender, msg.text, msg.timestamp);
+            });
+
+            function displayMessage(sender, text, timestamp) {
+                const isMe = (sender === myName);
+                const date = new Date(timestamp);
+                const heure = date.getHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0');
+
+                const msgHtml = `
+                    <div style="align-self: ${isMe ? 'flex-end' : 'flex-start'}; display: flex; flex-direction: column;">
+                        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px; text-align: ${isMe ? 'right' : 'left'}">
+                            <span class="fw-bold">${isMe ? 'Moi' : sender}</span> • ${heure}
+                        </div>
+                        <div class="chat-bubble" style="
+                            background-color: ${isMe ? '#dc3545' : '#ffffff'};
+                            color: ${isMe ? '#ffffff' : '#1e293b'};
+                            border: ${isMe ? 'none' : '1px solid #e2e8f0'};
+                            border-radius: 18px;
+                            border-bottom-${isMe ? 'right' : 'left'}-radius: 2px;
+                            padding: 10px 15px;
+                            max-width: fit-content;
+                        ">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+                
+                chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        });
+    </script>
+{% endblock %}
