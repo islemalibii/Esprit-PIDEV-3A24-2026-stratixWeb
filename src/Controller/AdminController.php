@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/admin')]
 class AdminController extends AbstractController
@@ -97,13 +98,22 @@ class AdminController extends AbstractController
                 $user->setPassword($hasher->hashPassword($user, $plain));
             }
             $user->setDateAjout(new \DateTime());
+
+            /** @var UploadedFile|null $avatarFile */
+            $avatarFile = $request->files->get('avatar');
+            if ($avatarFile && $request->request->get('face_validated') === '1') {
+                $filename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
+                $avatarFile->move($this->getParameter('kernel.project_dir') . '/public/images/avatar', $filename);
+                $user->setAvatar($filename);
+            }
+
             $em->persist($user);
             $em->flush();
             $this->addFlash('success', 'Utilisateur créé.');
             return $this->redirectToRoute('admin_users');
         }
 
-        return $this->render('admin/user_form.html.twig', ['form' => $form, 'title' => 'Nouvel utilisateur']);
+        return $this->render('admin/user_form.html.twig', ['form' => $form, 'title' => 'Nouvel utilisateur', 'editUser' => null]);
     }
 
     #[Route('/users/{id}/edit', name: 'admin_user_edit', methods: ['GET', 'POST'])]
@@ -117,12 +127,21 @@ class AdminController extends AbstractController
             if ($plain) {
                 $user->setPassword($hasher->hashPassword($user, $plain));
             }
+
+            /** @var UploadedFile|null $avatarFile */
+            $avatarFile = $request->files->get('avatar');
+            if ($avatarFile && $request->request->get('face_validated') === '1') {
+                $filename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
+                $avatarFile->move($this->getParameter('kernel.project_dir') . '/public/images/avatar', $filename);
+                $user->setAvatar($filename);
+            }
+
             $em->flush();
             $this->addFlash('success', 'Utilisateur mis à jour.');
             return $this->redirectToRoute('admin_users');
         }
 
-        return $this->render('admin/user_form.html.twig', ['form' => $form, 'title' => 'Modifier l\'utilisateur']);
+        return $this->render('admin/user_form.html.twig', ['form' => $form, 'title' => 'Modifier l\'utilisateur', 'editUser' => $user]);
     }
 
     #[Route('/users/{id}/delete', name: 'admin_user_delete', methods: ['POST'])]
