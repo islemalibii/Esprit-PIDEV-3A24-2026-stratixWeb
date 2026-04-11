@@ -15,12 +15,21 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProjetController extends AbstractController
 {
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
-    public function index(ProjetRepository $repo): Response
-    {
-        return $this->render('admin/Projet/listeProjets.html.twig', [
-            'projets' => $repo->findAllActive(),
-        ]);
-    }
+public function index(Request $request, ProjetRepository $repo): Response
+{
+    // On récupère les valeurs des inputs HTML (name="search" et name="statut")
+    $search = $request->query->get('search');
+    $statut = $request->query->get('statut');
+
+    // On utilise notre nouvelle méthode de filtrage
+    $projets = $repo->findActiveWithFilters($search, $statut);
+
+    return $this->render('admin/Projet/listeProjets.html.twig', [
+        'projets' => $projets,
+        'currentSearch' => $search, // Utile pour garder la valeur dans l'input après validation
+        'currentStatut' => $statut,
+    ]);
+}
 
     #[Route('/archives', name: 'app_projet_archives', methods: ['GET'])]
     public function archives(ProjetRepository $repo): Response
@@ -73,9 +82,7 @@ class ProjetController extends AbstractController
         return $this->redirectToRoute('app_projet_index');
     }
 
-    /**
-     * MÉTHODE AJOUTÉE : Pour désarchiver un projet
-     */
+    
     #[Route('/{id}/desarchiver', name: 'app_projet_unarchive_action')]
     public function desarchiver(Projet $p, EntityManagerInterface $em): Response
     {

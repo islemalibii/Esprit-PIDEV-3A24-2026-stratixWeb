@@ -4,144 +4,146 @@
 
 {% block body %}
 <main id="content" class="content py-4">
-<div class="container-fluid px-4">
-    
-    <div class="row g-3 align-items-center mb-4 mt-2">
-        <div class="col-lg-3">
-            <h2 class="fs-4 mb-0 fw-bold text-dark">Gestion des Projets</h2>
-            <p class="text-muted small mb-0">Suivi en temps réel de vos développements.</p>
-        </div>
+    <div class="container-fluid px-4">
         
-        <div class="col-lg-4">
-            <div class="input-group shadow-sm border rounded-3 overflow-hidden bg-white">
-                <span class="input-group-text bg-white border-0"><i class="ti ti-search text-muted"></i></span>
-                <input type="text" id="searchInput" class="form-control border-0 ps-0" placeholder="Rechercher un projet...">
+        {# --- FORMULAIRE DE FILTRAGE (SERVEUR) --- #}
+        <form method="get" action="{{ path('app_projet_index') }}" id="filterForm" class="row g-3 align-items-center mb-4 mt-2">
+            <div class="col-lg-3">
+                <h2 class="fs-4 mb-0 fw-bold text-dark">Gestion des Projets</h2>
+                <p class="text-muted small mb-0">Suivi en temps réel de vos développements.</p>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="input-group shadow-sm border rounded-3 overflow-hidden bg-white">
+                    <span class="input-group-text bg-white border-0"><i class="ti ti-search text-muted"></i></span>
+                    <input type="text" 
+                           name="search" 
+                           id="searchInput" 
+                           class="form-control border-0 ps-0" 
+                           placeholder="Rechercher un projet..." 
+                           value="{{ currentSearch ?? '' }}">
+                </div>
+            </div>
+            
+            <div class="col-lg-2">
+                <select name="statut" 
+                        id="statutFilter" 
+                        class="form-select border-0 shadow-sm fw-semibold text-danger" 
+                        onchange="this.form.submit()">
+                    <option value="">Tous les statuts</option>
+                    {% set statuts = ['Planifié', 'En cours', 'Terminé', 'Annulé'] %}
+                    {% for s in statuts %}
+                        <option value="{{ s }}" {{ (currentStatut ?? '') == s ? 'selected' : '' }}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-lg-3 text-end d-flex gap-2 justify-content-end">
+                <a href="{{ path('app_projet_archives') }}" class="btn btn-outline-secondary shadow-sm px-3 fw-bold rounded-3">
+                    <i class="ti ti-archive me-1"></i> Archives
+                </a>
+
+                <a href="{{ path('app_projet_new') }}" class="btn btn-danger shadow-sm px-4 fw-bold rounded-3">
+                    <i class="ti ti-plus me-1"></i> Nouveau Projet
+                </a>
+            </div>
+        </form>
+
+        {# --- TABLEAU DES PROJETS --- #}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="projetTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted small fw-bold" style="width: 70px;">ICÔNE</th>
+                            <th class="py-3 text-muted small fw-bold cursor-pointer" onclick="sortTable(1)">
+                                NOM DU PROJET <i class="ti ti-arrows-sort ms-1"></i>
+                            </th>
+                            <th class="py-3 text-muted small fw-bold text-center cursor-pointer" onclick="sortTable(2)">
+                                BUDGET <i class="ti ti-arrows-sort ms-1"></i>
+                            </th>
+                            <th class="py-3 text-muted small fw-bold text-center">STATUT</th>
+                            <th class="text-end pe-4 py-3 text-muted small fw-bold">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projetTableBody">
+                    {% for projet in projets %}
+                        <tr class="projet-row">
+                            <td class="ps-4">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width: 38px; height: 38px;">
+                                    <i class="ti ti-folder text-danger" style="font-size: 1.2rem;"></i>
+                                </div>
+                            </td>
+                            <td class="fw-bold projet-nom">
+                                <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="text-dark text-decoration-none project-title-link">
+                                    {{ projet.nom }}
+                                </a>
+                            </td>
+                            <td class="text-success fw-bold text-center projet-budget" data-value="{{ projet.budget }}">
+                                {{ projet.budget|number_format(2, ',', ' ') }} DT
+                            </td>
+                            <td class="text-center">
+                                <span class="badge projet-statut-badge rounded-pill px-3 py-2 
+                                    {% if projet.statut == 'En cours' %}bg-warning text-dark
+                                    {% elseif projet.statut == 'Terminé' %}bg-success
+                                    {% elseif projet.statut == 'Annulé' %}bg-danger
+                                    {% else %}bg-info text-white{% endif %}">
+                                    {{ projet.statut }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm rounded-3 border bg-white">
+                                    <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Voir">
+                                        <i class="ti ti-eye text-primary"></i>
+                                    </a>
+                                    <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Modifier">
+                                        <i class="ti ti-edit text-warning"></i>
+                                    </a>
+                                    <a href="{{ path('app_projet_archive_action', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Archiver" onclick="return confirm('Voulez-vous archiver ce projet ?');">
+                                        <i class="ti ti-archive text-secondary"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="ti ti-folder-off fs-1 d-block mb-2"></i>
+                                Aucun projet trouvé pour ces critères.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        
-        <div class="col-lg-2">
-            <select id="statutFilter" class="form-select border-0 shadow-sm fw-semibold text-danger">
-                <option value="">Tous les statuts</option>
-                <option value="Planifié">Planifié</option>
-                <option value="En cours">En cours</option>
-                <option value="Terminé">Terminé</option>
-                <option value="Annulé">Annulé</option>
-            </select>
-        </div>
-        
-        <div class="col-lg-3 text-end d-flex gap-2 justify-content-end">
-            {# BOUTON ARCHIVES #}
-            <a href="{{ path('app_projet_archives') }}" class="btn btn-outline-secondary shadow-sm px-3 fw-bold rounded-3">
-                <i class="ti ti-archive me-1"></i> Archives
-            </a>
-
-            {# BOUTON NOUVEAU PROJET #}
-            <a href="{{ path('app_projet_new') }}" class="btn btn-danger shadow-sm px-4 fw-bold rounded-3">
-                <i class="ti ti-plus me-1"></i> Nouveau Projet
-            </a>
-        </div>
     </div>
-
-    {# LE RESTE DU TABLEAU RESTE IDENTIQUE #}
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0" id="projetTable">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 py-3 text-muted small fw-bold" style="width: 70px;">ICÔNE</th>
-                        <th class="py-3 text-muted small fw-bold cursor-pointer" onclick="sortTable(1)">
-                            NOM DU PROJET <i class="ti ti-arrows-sort ms-1"></i>
-                        </th>
-                        <th class="py-3 text-muted small fw-bold text-center cursor-pointer" onclick="sortTable(2)">
-                            BUDGET <i class="ti ti-arrows-sort ms-1"></i>
-                        </th>
-                        <th class="py-3 text-muted small fw-bold text-center">STATUT</th>
-                        <th class="text-end pe-4 py-3 text-muted small fw-bold">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="projetTableBody">
-                {% for projet in projets %}
-                    <tr class="projet-row">
-                        <td class="ps-4">
-                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width: 38px; height: 38px;">
-                                <i class="ti ti-folder text-danger" style="font-size: 1.2rem;"></i>
-                            </div>
-                        </td>
-                        <td class="fw-bold projet-nom">
-                            <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="text-dark text-decoration-none project-title-link">
-                                {{ projet.nom }}
-                            </a>
-                        </td>
-                        <td class="text-success fw-bold text-center projet-budget" data-value="{{ projet.budget }}">
-                            {{ projet.budget|number_format(2, ',', ' ') }} DT
-                        </td>
-                        <td class="text-center">
-                            <span class="badge projet-statut-badge rounded-pill px-3 py-2 
-                                {% if projet.statut == 'En cours' %}bg-warning text-dark
-                                {% elseif projet.statut == 'Terminé' %}bg-success
-                                {% elseif projet.statut == 'Annulé' %}bg-danger
-                                {% else %}bg-info text-white{% endif %}">
-                                {{ projet.statut }}
-                            </span>
-                        </td>
-                        <td class="text-end pe-4">
-                            <div class="btn-group shadow-sm rounded-3 border bg-white">
-                                <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Voir">
-                                    <i class="ti ti-eye text-primary"></i>
-                                </a>
-                                <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Modifier">
-                                    <i class="ti ti-edit text-warning"></i>
-                                </a>
-                                {# Optionnel : tu peux aussi ajouter une icône pour archiver directement ici #}
-                                <a href="{{ path('app_projet_archive_action', {'id': projet.id}) }}" class="btn btn-sm btn-white" title="Archiver" onclick="return confirm('Voulez-vous archiver ce projet ?');">
-                                    <i class="ti ti-archive text-secondary"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <i class="ti ti-folder-off fs-1 d-block mb-2"></i>
-                            Aucun projet trouvé.
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 </main>
 
+<style>
+    .cursor-pointer { cursor: pointer; transition: 0.2s; }
+    .cursor-pointer:hover { background-color: #f8f9fa !important; }
+    .project-title-link:hover { color: #dc3545 !important; text-decoration: underline !important; }
+    .projet-row:hover { background-color: #fcfcfc; }
+    .btn-white { background: #fff; border: 1px solid #eee; }
+    .btn-white:hover { background: #f8f9fa; }
+</style>
 
-{# LE SCRIPT RESTE LE MÊME #}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const statutFilter = document.getElementById('statutFilter');
+    // Soumission automatique de la recherche après un court délai (Debounce)
+    let searchTimer;
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                document.getElementById('filterForm').submit();
+            }, 800); // Attend 800ms après la fin de la frappe
+        });
+    }
 
-        function filterData() {
-            const search = searchInput.value.toLowerCase();
-            const statut = statutFilter.value;
-            const rows = document.querySelectorAll('.projet-row');
-
-            rows.forEach(row => {
-                const nom = row.querySelector('.projet-nom').textContent.toLowerCase();
-                const badgeElement = row.querySelector('.projet-statut-badge');
-                const badgeText = badgeElement ? badgeElement.textContent.trim() : "";
-                
-                const matchSearch = nom.includes(search);
-                const matchStatut = (statut === "") || (badgeText === statut);
-
-                row.style.display = (matchSearch && matchStatut) ? "" : "none";
-            });
-        }
-
-        if(searchInput) searchInput.addEventListener('input', filterData);
-        if(statutFilter) statutFilter.addEventListener('change', filterData);
-    });
-
+    // --- LOGIQUE DE TRI DU TABLEAU (CLIENT) ---
     let sortOrder = true;
     function sortTable(idx) {
         const body = document.getElementById("projetTableBody");
@@ -151,10 +153,10 @@
 
         rows.sort((a, b) => {
             let aVal, bVal;
-            if (idx === 2) { 
+            if (idx === 2) { // Colonne Budget
                 aVal = parseFloat(a.querySelector(".projet-budget").dataset.value) || 0;
                 bVal = parseFloat(b.querySelector(".projet-budget").dataset.value) || 0;
-            } else { 
+            } else { // Colonne Nom
                 aVal = a.children[idx].innerText.toLowerCase();
                 bVal = b.children[idx].innerText.toLowerCase();
             }
@@ -165,13 +167,4 @@
         rows.forEach(r => body.appendChild(r));
     }
 </script>
-
-<style>
-    .cursor-pointer { cursor: pointer; transition: 0.2s; }
-    .cursor-pointer:hover { background-color: #f8f9fa !important; }
-    .project-title-link:hover { color: #dc3545 !important; text-decoration: underline !important; }
-    .projet-row:hover { background-color: #fcfcfc; }
-    .btn-white { background: #fff; border: 1px solid #eee; }
-    .btn-white:hover { background: #f8f9fa; }
-</style>
 {% endblock %}

@@ -103,6 +103,7 @@ final class TacheController extends AbstractController
     #[Route('/{id}', name: 'app_tache_delete', methods: ['POST'])]
     public function delete(Request $request, Tache $tache, EntityManagerInterface $entityManager): Response
     {
+        // Vérification du token CSRF
         if ($this->isCsrfTokenValid('delete'.$tache->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($tache);
             $entityManager->flush();
@@ -112,7 +113,8 @@ final class TacheController extends AbstractController
             $this->addFlash('danger', '❌ Erreur lors de la suppression !');
         }
 
-        return $this->redirectToRoute('admin/app_tache_index', [], Response::HTTP_SEE_OTHER);
+        // CORRECTION : On retire le "admin/" qui n'a rien à faire dans un nom de route
+        return $this->redirectToRoute('app_tache_index', [], Response::HTTP_SEE_OTHER);
     }
     
     // API pour les statistiques (AJAX)

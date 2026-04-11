@@ -6,7 +6,6 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        /* Ajustements pour correspondre au look SaaS Dashboard */
         .event-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             border: none !important;
@@ -28,7 +27,6 @@
 {% block employee_content %}
 <div class="container-fluid">
 
-    {# Header simplifié sans padding excessif #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h4 fw-bold text-dark mb-1">Événements</h1>
@@ -36,7 +34,6 @@
         </div>
     </div>
 
-    {# Search & Filter #}
     <div class="search-container mb-4">
         <form method="GET" action="{{ path('emp_event_list') }}" id="filterForm" class="row g-3 align-items-center">
             <div class="col-md-8">
@@ -66,7 +63,6 @@
         </form>
     </div>
 
-    {# Grid #}
     {% if events is empty %}
         <div class="text-center py-5 bg-white rounded-3 shadow-sm">
             <i class="fas fa-calendar-times fa-3x text-light mb-3"></i>
@@ -84,7 +80,6 @@
                 } %}
                 <div class="col-lg-4 col-md-6">
                     <div class="card event-card shadow-sm h-100 overflow-hidden">
-                        {# Image #}
                         {% if event.imageUrl %}
                             <img src="{{ asset('images/events/' ~ event.imageUrl) }}" 
                                  class="card-img-top" 

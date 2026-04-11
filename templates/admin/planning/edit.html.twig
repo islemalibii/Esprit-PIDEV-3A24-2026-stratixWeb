@@ -1,15 +1,24 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Edit Planning{% endblock %}
+{% block title %}Modifier le Planning{% endblock %}
 
 {% block admin_content %}
-    <h1>Edit Planning</h1>
+    <div class="container-fluid mt-4">
+        <h1>Modifier le Planning</h1>
 
-    {{ include('planning/_form.html.twig', {'button_label': 'Update'}) }}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                {# CORRECTION DU CHEMIN ICI #}
+                {{ include('admin/planning/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+            </div>
+        </div>
 
-    <a href="{{ path('app_planning_index') }}">back to list</a>
+        <div class="d-flex justify-content-between">
+            <a href="{{ path('app_planning_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
 
-    {{ include('admin/planning/_delete_form.html.twig') }}
+            {{ include('admin/planning/_delete_form.html.twig') }}
+        </div>
+    </div>
 {% endblock %}
-
-

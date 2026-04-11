@@ -66,7 +66,7 @@ class WhiteboardController extends AbstractController
             $entityManager->flush();
         }
 
-        // Drag & drop AJAX request → return JSON
+        //  AJAX 
         if ($request->isXmlHttpRequest()) {
             return $this->json(['success' => true]);
         }

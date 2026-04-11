@@ -73,7 +73,6 @@
 <main id="content" class="content py-10">
     <div class="container-fluid">
 
-        {# Header #}
         <div class="row mb-4">
             <div class="col-12">
                 <a href="{{ path('resp_event_index') }}"
@@ -104,15 +103,12 @@
         }}
         <div class="row g-4">
 
-            {# LEFT column #}
             <div class="col-lg-8 d-flex flex-column gap-4">
 
-                {# General info card #}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <p class="section-label">Informations générales</p>
 
-                        {# Titre #}
                         <div class="mb-4">
                             <label class="form-label small fw-semibold text-dark mb-1">
                                 Titre <span class="text-danger">*</span>
@@ -131,7 +127,6 @@
                             {{ form_errors(form.titre) }}
                         </div>
 
-                        {# Description #}
                         <div class="mb-4">
                             <label class="form-label small fw-semibold text-dark mb-1">
                                 Description <span class="text-danger">*</span>
@@ -146,7 +141,6 @@
                             {{ form_errors(form.description) }}
                         </div>
 
-                        {# Date + Lieu #}
                         <div class="row g-3">
                             <div class="col-sm-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">
@@ -184,13 +178,11 @@
                     </div>
                 </div>
 
-                {# Image card #}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <p class="section-label">Image</p>
                         <div class="d-flex gap-3 align-items-start">
 
-                            {# Preview #}
                             <div id="imgPreview" class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
                                 style="width:80px; height:80px; background:#f1f5f9; border: 1.5px dashed #cbd5e1;">
                                 {% if evenement.imageUrl %}
@@ -224,10 +216,8 @@
                 </div>
             </div>
 
-            {# RIGHT column #}
             <div class="col-lg-4 d-flex flex-column gap-4">
 
-                {# Type card #}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <p class="section-label">Type d'événement <span class="text-danger">*</span></p>
@@ -260,7 +250,6 @@
                     </div>
                 </div>
 
-                {# Statut card #}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <p class="section-label">Statut <span class="text-danger">*</span></p>
@@ -297,7 +286,6 @@
                     </div>
                 </div>
 
-                {# Actions card #}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4 d-flex flex-column gap-2">
                         <p class="section-label mb-3">Actions</p>
@@ -325,7 +313,6 @@
 </main>
 
 <script>
-    // Live image preview from filename input
     const imgInput = document.getElementById('imageUrlInput');
     const imgPreview = document.getElementById('imgPreview');
 
@@ -342,7 +329,6 @@
         });
     }
 
-    // Type radio highlight
     document.querySelectorAll('.type-radio').forEach(radio => {
         const apply = () => {
             document.querySelectorAll('.type-option').forEach(l => {
@@ -358,7 +344,6 @@
         if (radio.checked) apply();
     });
 
-    // Statut radio highlight
     document.querySelectorAll('.statut-radio').forEach(radio => {
         const apply = () => {
             document.querySelectorAll('.statut-option').forEach(l => {

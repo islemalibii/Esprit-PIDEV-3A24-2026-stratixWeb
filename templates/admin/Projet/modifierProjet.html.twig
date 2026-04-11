@@ -78,7 +78,6 @@
                 
                 <div class="card edit-card shadow-lg p-2 p-md-4">
                     <div class="card-body">
-                        {# En-tête #}
                         <div class="d-flex align-items-center justify-content-between mb-5 pb-3 border-bottom border-2" style="border-color: var(--stratix-orange) !important;">
                             <div class="d-flex align-items-center">
                                 <div class="bg-warning-subtle p-3 rounded-circle me-3">
@@ -95,14 +94,12 @@
                         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
                             
                             <div class="row g-4">
-                                {# NOM #}
                                 <div class="col-12">
                                     <label class="form-label-custom">Nom du projet</label>
                                     {{ form_widget(form.nom, {'attr': {'class': 'form-control input-custom'}}) }}
                                     <div class="text-danger small mt-1">{{ form_errors(form.nom) }}</div>
                                 </div>
 
-                                {# BUDGET & STATUT #}
                                 <div class="col-md-6">
                                     <label class="form-label-custom">Budget estimé (DT)</label>
                                     {{ form_widget(form.budget, {'attr': {'class': 'form-control input-custom'}}) }}
@@ -112,7 +109,6 @@
                                     {{ form_widget(form.statut, {'attr': {'class': 'form-select input-custom fw-bold'}}) }}
                                 </div>
 
-                                {# DATES #}
                                 <div class="col-md-6">
                                     <label class="form-label-custom">Date de début</label>
                                     {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control input-custom'}}) }}
@@ -122,7 +118,6 @@
                                     {{ form_widget(form.dateFin, {'attr': {'class': 'form-control input-custom'}}) }}
                                 </div>
 
-                                {# RESPONSABLE & EQUIPE #}
                                 <div class="col-md-6">
                                     <label class="form-label-custom">Responsable</label>
                                     {{ form_widget(form.responsable, {'attr': {'class': 'form-select input-custom'}}) }}
@@ -137,13 +132,11 @@
                                     }) }}
                                 </div>
 
-                                {# DESCRIPTION #}
                                 <div class="col-12">
                                     <label class="form-label-custom">Description détaillée</label>
                                     {{ form_widget(form.description, {'attr': {'class': 'form-control input-custom', 'rows': '4'}}) }}
                                 </div>
 
-                                {# ACTIONS #}
                                 <div class="col-12 mt-5">
                                     <div class="row g-3">
                                         <div class="col-md-8">
@@ -173,7 +166,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Activation de Tom Select pour le champ membres dans la modification
             new TomSelect(".tom-select-edit", {
                 plugins: ['remove_button'],
                 persist: false,

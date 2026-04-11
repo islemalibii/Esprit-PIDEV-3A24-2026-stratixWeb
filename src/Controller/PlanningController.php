@@ -85,17 +85,19 @@ final class PlanningController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_planning_delete', methods: ['POST'])]
+   #[Route('/{id}', name: 'app_planning_delete', methods: ['POST'])]
     public function delete(Request $request, Planning $planning, EntityManagerInterface $entityManager): Response
     {
+        // On vérifie le token CSRF pour la sécurité
         if ($this->isCsrfTokenValid('delete' . $planning->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($planning);
             $entityManager->flush();
             $this->addFlash('success', '✅ Planning supprimé avec succès !');
         } else {
-            $this->addFlash('danger', '❌ Erreur lors de la suppression !');
+            $this->addFlash('danger', '❌ Erreur lors de la suppression (Token invalide) !');
         }
 
-        return $this->redirectToRoute('admin/app_planning_index', [], Response::HTTP_SEE_OTHER);
+        // CORRECTION ICI : Utilisez le nom exact de la route défini à la ligne 19
+        return $this->redirectToRoute('app_planning_index', [], Response::HTTP_SEE_OTHER);
     }
 }

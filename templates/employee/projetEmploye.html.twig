@@ -4,7 +4,6 @@
 
 {% block employee_content %}
 <div class="container-fluid py-4 px-4">
-    {# En-tête (équivalent au premier VBox/HBox du FXML) #}
     <div class="mb-4">
         <h2 class="fw-bold mb-1" style="color: #64748b; font-size: 24px;">
             Bonjour, {{ app.user.prenom }}
@@ -12,7 +11,6 @@
         <p style="color: #94a3b8; font-size: 14px;">Espace Collaborateur - Mes Projets</p>
     </div>
 
-    {# Barre de recherche (équivalent au TextField) #}
     <div class="mb-5">
         <div class="input-group shadow-sm rounded-3">
             <span class="input-group-text border-0 bg-white text-muted">🔍</span>
@@ -22,7 +20,6 @@
         </div>
     </div>
 
-    {# Grille de Projets (équivalent au ScrollPane + FlowPane) #}
     <div class="row g-4" id="projetsContainer">
         {% for projet in projets %}
             <div class="col-md-6 col-lg-4 projet-card">

@@ -9,7 +9,6 @@
         </a>
     </div>
 
-    <!-- Flash Messages -->
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ message }}
@@ -17,7 +16,6 @@
         </div>
     {% endfor %}
 
-    <!-- Search and Filter Form -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Recherche et Filtrage</h6>
@@ -59,7 +57,6 @@
         </div>
     </div>
 
-    <!-- Services Grid -->
     <div class="row">
         {% for service in services %}
             <div class="col-xl-4 col-md-6 mb-4">
