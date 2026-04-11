@@ -23,11 +23,9 @@ class AuthController extends AbstractController
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('admin_dashboard');
         }
-        // Responsables → espace admin
         if (in_array($user->getRole(), ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {
             return $this->redirectToRoute('admin_dashboard');
         }
-        // Employés → espace employé
         return $this->redirectToRoute('app_employee_dashboard');
     }
 
@@ -37,7 +35,6 @@ class AuthController extends AbstractController
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
         }
-
         return $this->render('auth/login.html.twig', [
             'last_username' => $authUtils->getLastUsername(),
             'error'         => $authUtils->getLastAuthenticationError(),
@@ -48,8 +45,11 @@ class AuthController extends AbstractController
     public function logout(): void {}
 
     #[Route('/signup', name: 'app_signup', methods: ['GET', 'POST'])]
-    public function signup(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
-    {
+    public function signup(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
         }
@@ -70,7 +70,7 @@ class AuthController extends AbstractController
             if (!$prenom) $errors['prenom'] = 'Le prénom est obligatoire.';
             elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\-]+$/', $prenom)) $errors['prenom'] = 'Lettres uniquement.';
 
-            if (!$email)  $errors['email']  = 'L\'email est obligatoire.';
+            if (!$email)  $errors['email']  = "L'email est obligatoire.";
             elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Email invalide.';
             elseif ($em->getRepository(Utilisateur::class)->findOneBy(['email' => $email])) $errors['email'] = 'Cet email est déjà utilisé.';
 
@@ -90,7 +90,7 @@ class AuthController extends AbstractController
                      ->setPrenom($prenom)
                      ->setEmail($email)
                      ->setCin((int)$cin)
-                     ->setRole('EMPLOYE')
+                     ->setRole('employe')
                      ->setStatut('actif')
                      ->setDateAjout(new \DateTime())
                      ->setPassword($hasher->hashPassword($user, $password));
