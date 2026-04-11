@@ -3,6 +3,7 @@
 namespace App\Security;
 
 use App\Entity\Utilisateur;
+use App\Service\RecaptchaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private RouterInterface $router,
         private EntityManagerInterface $em,
+        private RecaptchaService $recaptcha,
     ) {}
 
     public function authenticate(Request $request): Passport
@@ -32,6 +34,14 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
         $email    = $request->request->get('email', '');
         $password = $request->request->get('password', '');
         $token    = $request->request->get('_csrf_token', '');
+
+        // Vérification reCAPTCHA v3
+        $recaptchaToken = $request->request->get('recaptcha_token', '');
+        if ($recaptchaToken && !$this->recaptcha->isHuman($recaptchaToken)) {
+            throw new CustomUserMessageAuthenticationException(
+                'Activité suspecte détectée. Veuillez réessayer.'
+            );
+        }
 
         $user = $this->em->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
 

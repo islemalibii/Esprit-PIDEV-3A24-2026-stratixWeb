@@ -29,7 +29,7 @@
             </div>
         {% endif %}
 
-        <form method="post" action="{{ path('app_login') }}">
+        <form method="post" action="{{ path('app_login') }}" id="login-form">
             <div class="mb-3">
                 <label class="form-label fw-semibold">Email</label>
                 <input type="email" name="email" value="{{ last_username }}"
@@ -41,6 +41,7 @@
                        class="form-control form-control-lg" placeholder="Mot de passe" required>
             </div>
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <input type="hidden" name="recaptcha_token" id="recaptcha_token_login">
             <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase btn-lg" style="letter-spacing:1px;">
                 Se connecter
             </button>
@@ -57,9 +58,22 @@
     </div>{# fin wrapper relatif #}
 </div>
 
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
 <script>
 function setValid(el)   { el.classList.remove('is-invalid'); el.classList.add('is-valid'); }
 function setInvalid(el) { el.classList.remove('is-valid');   el.classList.add('is-invalid'); }
+
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const siteKey = '{{ recaptcha_site_key }}';
+    if (!siteKey || siteKey === 'your_site_key_here') { this.submit(); return; }
+    grecaptcha.ready(function() {
+        grecaptcha.execute(siteKey, {action: 'login'}).then(function(token) {
+            document.getElementById('recaptcha_token_login').value = token;
+            document.getElementById('login-form').submit();
+        });
+    });
+});
 
 document.querySelector('[name=email]').addEventListener('blur', function() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value) ? setValid(this) : setInvalid(this);

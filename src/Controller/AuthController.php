@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Service\RecaptchaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,7 +49,8 @@ class AuthController extends AbstractController
     public function signup(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $hasher
+        UserPasswordHasherInterface $hasher,
+        RecaptchaService $recaptcha
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -57,6 +59,12 @@ class AuthController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
+            // Vérification reCAPTCHA
+            $recaptchaToken = $request->request->get('recaptcha_token', '');
+            if ($recaptchaToken && !$recaptcha->isHuman($recaptchaToken)) {
+                $errors['recaptcha'] = 'Activité suspecte détectée. Veuillez réessayer.';
+            }
+
             $nom      = trim($request->request->get('nom', ''));
             $prenom   = trim($request->request->get('prenom', ''));
             $email    = trim($request->request->get('email', ''));
