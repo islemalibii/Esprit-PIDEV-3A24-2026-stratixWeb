@@ -13,6 +13,7 @@ use App\Repository\UtilisateurRepository;
 use App\Service\ExchangeRateService;
 use App\Service\GroqService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ServiceController extends AbstractController
 {
     #[Route('/', name: 'app_service_index', methods: ['GET'])]
-    public function index(Request $request, ServiceRepository $serviceRepository, CategorieServiceRepository $categorieServiceRepository): Response
+    public function index(Request $request, ServiceRepository $serviceRepository, CategorieServiceRepository $categorieServiceRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
         $categorie = $request->query->get('categorie', '');
@@ -44,7 +45,15 @@ final class ServiceController extends AbstractController
                 ->setParameter('categorie', $categorie);
         }
 
-        $services = $queryBuilder->orderBy('s.id', 'DESC')->getQuery()->getResult();
+        $queryBuilder->orderBy('s.id', 'DESC');
+        
+        // Pagination - 6 services par page
+        $services = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            6
+        );
+        
         $categories = $categorieServiceRepository->findBy(['archive' => false]);
 
         return $this->render('admin/service/index.html.twig', [
@@ -179,55 +188,56 @@ final class ServiceController extends AbstractController
         }
     }
 
-#[Route('/api/test-groq', name: 'api_test_groq', methods: ['GET'])]
-public function testGroq(): JsonResponse
-{
-    $apiKey = '';
-    
-    $data = [
-        'model' => 'llama-3.3-70b-versatile',
-        'messages' => [
-            ['role' => 'user', 'content' => 'Dis "API Groq fonctionne parfaitement" en français']
-        ]
-    ];
-    
-    $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $apiKey,
-        'Content-Type: application/json'
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
-    
-    return $this->json([
-        'http_code' => $httpCode,
-        'curl_error' => $curlError,
-        'response' => json_decode($response, true)
-    ]);
-}
-#[Route('/api/export-pdf', name: 'api_export_pdf', methods: ['GET'])]
-public function exportPDF(ServiceRepository $serviceRepository, PDFExportService $pdfExportService): Response
-{
-    try {
-        $services = $serviceRepository->findBy(['archive' => false]);
+    #[Route('/api/test-groq', name: 'api_test_groq', methods: ['GET'])]
+    public function testGroq(): JsonResponse
+    {
+        $apiKey = '';
         
-        $pdfContent = $pdfExportService->exportServicesToPDF($services, 'Liste des Services');
+        $data = [
+            'model' => 'llama-3.3-70b-versatile',
+            'messages' => [
+                ['role' => 'user', 'content' => 'Dis "API Groq fonctionne parfaitement" en français']
+            ]
+        ];
         
-        return new Response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="services_' . date('Y-m-d') . '.pdf"',
+        $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $apiKey,
+            'Content-Type: application/json'
         ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         
-    } catch (\Exception $e) {
-        return $this->json(['error' => $e->getMessage()], 500);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        return $this->json([
+            'http_code' => $httpCode,
+            'curl_error' => $curlError,
+            'response' => json_decode($response, true)
+        ]);
     }
-}
+
+    #[Route('/api/export-pdf', name: 'api_export_pdf', methods: ['GET'])]
+    public function exportPDF(ServiceRepository $serviceRepository, PDFExportService $pdfExportService): Response
+    {
+        try {
+            $services = $serviceRepository->findBy(['archive' => false]);
+            
+            $pdfContent = $pdfExportService->exportServicesToPDF($services, 'Liste des Services');
+            
+            return new Response($pdfContent, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="services_' . date('Y-m-d') . '.pdf"',
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
