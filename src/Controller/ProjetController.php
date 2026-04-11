@@ -10,6 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 
 #[Route('/projet')]
 class ProjetController extends AbstractController
@@ -39,40 +41,80 @@ public function index(Request $request, ProjetRepository $repo): Response
         ]);
     }
 
-    #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
-        $projet = new Projet();
-        $form = $this->createForm(ProjetType::class, $projet);
-        $form->handleRequest($request);
+   
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            if (!$projet->getStatut()) $projet->setStatut('Planifié');
-            $projet->setIsArchived(false);
-            $em->persist($projet);
-            $em->flush();
-            return $this->redirectToRoute('app_projet_index');
+#[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $em): Response
+{
+    $projet = new Projet();
+    $form = $this->createForm(ProjetType::class, $projet);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        
+        // --- Gestion de l'upload du fichier ---
+        /** @var UploadedFile|null $file */
+        $file = $form->get('cahierDesChargesFile')->getData();
+        if ($file) {
+            // Génère un nom unique pour éviter les conflits
+            $newFilename = uniqid('cdc_') . '_' . time() . '.' . $file->guessExtension();
+            
+            // Déplace le fichier dans le dossier public/uploads/cahiers
+            $file->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/cahiers',
+                $newFilename
+            );
+            $projet->setCahierDesCharges($newFilename);
         }
 
-        return $this->render('admin/projet/ajouterProjet.html.twig', ['form' => $form]);
+        $projet->setStatut($projet->getStatut() ?? 'Planifié');
+        $projet->setIsArchived(false);
+        $em->persist($projet);
+        $em->flush();
+
+        $this->addFlash('success', '✅ Projet "' . $projet->getNom() . '" créé avec succès !');
+        return $this->redirectToRoute('app_projet_index');
     }
 
-    #[Route('/{id}/edit', name: 'app_projet_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Projet $projet, EntityManagerInterface $em): Response
-    {
-        $form = $this->createForm(ProjetType::class, $projet);
-        $form->handleRequest($request);
+    return $this->render('admin/projet/ajouterProjet.html.twig', ['form' => $form]);
+}
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            return $this->redirectToRoute('app_projet_index');
+#[Route('/{id}/edit', name: 'app_projet_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, Projet $projet, EntityManagerInterface $em): Response
+{
+    $form = $this->createForm(ProjetType::class, $projet);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+
+        // --- Gestion du nouveau fichier (si l'utilisateur en uploade un) ---
+        /** @var UploadedFile|null $file */
+        $file = $form->get('cahierDesChargesFile')->getData();
+        if ($file) {
+            // Supprime l'ancien fichier s'il existe
+            $oldFile = $this->getParameter('kernel.project_dir') . '/public/uploads/cahiers/' . $projet->getCahierDesCharges();
+            if ($projet->getCahierDesCharges() && file_exists($oldFile)) {
+                unlink($oldFile);
+            }
+
+            $newFilename = uniqid('cdc_') . '_' . time() . '.' . $file->guessExtension();
+            $file->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/cahiers',
+                $newFilename
+            );
+            $projet->setCahierDesCharges($newFilename);
         }
 
-        return $this->render('admin/Projet/modifierProjet.html.twig', [
-            'projet' => $projet,
-            'form' => $form->createView(),
-        ]);
+        $em->flush();
+        $this->addFlash('success', '✅ Projet modifié avec succès !');
+        return $this->redirectToRoute('app_projet_index');
     }
+
+    return $this->render('admin/Projet/modifierProjet.html.twig', [
+        'projet' => $projet,
+        'form'   => $form->createView(),
+    ]);
+}
 
     #[Route('/{id}/archiver', name: 'app_projet_archive_action')]
     public function archiver(Projet $p, EntityManagerInterface $em): Response
