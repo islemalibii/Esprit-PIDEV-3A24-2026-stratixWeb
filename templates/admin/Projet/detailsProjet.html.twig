@@ -6,32 +6,42 @@
 {% block body %}
 <main id="content" class="content py-4">
 <div class="container-fluid">
-    
+
+    {# ── En-tête ──────────────────────────────────────────── #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fs-4 fw-bold text-dark">🔍 Détails : {{ projet.nom }}</h2>
+            <h2 class="fs-4 fw-bold text-dark">
+                <i class="fas fa-folder-open me-2 text-warning"></i>{{ projet.nom }}
+            </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{{ path('app_projet_index') }}" class="text-danger text-decoration-none">Liste des projets</a>
+                        <a href="{{ path('app_projet_index') }}" class="text-danger text-decoration-none">
+                            Liste des projets
+                        </a>
                     </li>
                     <li class="breadcrumb-item active">Fiche projet</li>
                 </ol>
             </nav>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn btn-warning text-white shadow-sm fw-bold">
+            <a href="{{ path('app_projet_edit', {'id': projet.id}) }}"
+               class="btn btn-warning text-white shadow-sm fw-bold rounded-3">
                 <i class="fas fa-edit me-1"></i> Modifier
             </a>
-            <a href="{{ path('app_projet_index') }}" class="btn btn-light border shadow-sm fw-bold">
+            <a href="{{ path('app_projet_index') }}"
+               class="btn btn-light border shadow-sm fw-bold rounded-3">
                 <i class="fas fa-arrow-left me-1"></i> Retour
             </a>
         </div>
     </div>
 
     <div class="row g-4">
+
+        {# ── Colonne principale ──────────────────────────────── #}
         <div class="col-lg-8">
-            {# Fiche Descriptive #}
+
+            {# Fiche descriptive #}
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="mb-0 fw-bold text-dark">
@@ -42,27 +52,48 @@
                     <table class="table align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold" style="width: 30%;">NOM DU PROJET</th>
+                                <th class="ps-4 py-3 bg-light text-muted small fw-bold" style="width:32%;">NOM DU PROJET</th>
                                 <td class="ps-3 fw-bold text-dark">{{ projet.nom }}</td>
                             </tr>
                             <tr>
-                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">DESCRIPTION</th>
-                                <td class="ps-3 text-muted">{{ projet.description|default('Aucune description enregistrée.') }}</td>
+                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">DESCRIPTION</th>
+                                <td class="ps-3 text-muted">{{ projet.description|default('Aucune description.') }}</td>
                             </tr>
                             <tr>
-                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">BUDGET ESTIMÉ</th>
-                                <td class="ps-3 text-success fw-bold fs-5">{{ projet.budget|number_format(2, ',', ' ') }} DT</td>
+                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">BUDGET ESTIMÉ</th>
+                                <td class="ps-3 text-success fw-bold fs-5">
+                                    {{ projet.budget|number_format(2, ',', ' ') }} DT
+                                </td>
                             </tr>
                             <tr>
-                                <th class="ps-4 py-3 bg-light-subtle text-muted small fw-bold">STATUT ACTUEL</th>
+                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">STATUT ACTUEL</th>
                                 <td class="ps-3">
-                                    <span class="badge rounded-pill px-3 py-2 
+                                    <span class="badge rounded-pill px-3 py-2
                                         {% if projet.statut == 'En cours' %}bg-warning text-dark
                                         {% elseif projet.statut == 'Terminé' %}bg-success
                                         {% elseif projet.statut == 'Annulé' %}bg-danger
                                         {% else %}bg-info text-white{% endif %}">
                                         {{ projet.statut }}
                                     </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">CAHIER DES CHARGES</th>
+                                <td class="ps-3">
+                                    {% if projet.cahierDesCharges %}
+                                        <a href="{{ asset('uploads/cahiers/' ~ projet.cahierDesCharges) }}"
+                                           target="_blank"
+                                           class="btn btn-sm btn-outline-danger rounded-3 fw-bold px-3">
+                                            <i class="fas fa-file-download me-1"></i> Télécharger
+                                        </a>
+                                        <span class="text-muted small ms-2">
+                                            {{ projet.cahierDesCharges|split('_')|last }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted fst-italic">
+                                            <i class="fas fa-minus me-1"></i>Aucun fichier joint.
+                                        </span>
+                                    {% endif %}
                                 </td>
                             </tr>
                         </tbody>
@@ -81,31 +112,38 @@
                     {% if projet.membres|length > 0 %}
                         <div class="row g-3">
                             {% for membre in projet.membres %}
-                                {# Vérification de l'existence de l'objet membre pour éviter l'erreur EntityNotFound #}
                                 {% if membre is defined and membre is not null %}
-                                    <div class="col-md-6 col-xl-4">
-                                        <div class="d-flex align-items-center p-3 border rounded-3 bg-light-subtle">
-                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold text-dark small">{{ membre.prenom }} {{ membre.nom }}</h6>
-                                                <span class="text-muted" style="font-size: 0.75rem;">Collaborateur</span>
-                                            </div>
+                                <div class="col-md-6 col-xl-4">
+                                    <div class="d-flex align-items-center p-3 border rounded-3 bg-light">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold"
+                                             style="width:40px; height:40px; font-size:0.85rem;">
+                                            {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark small">
+                                                {{ membre.prenom }} {{ membre.nom }}
+                                            </h6>
+                                            <span class="text-muted" style="font-size:0.72rem;">Collaborateur</span>
                                         </div>
                                     </div>
+                                </div>
                                 {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-muted italic mb-0">Aucun membre assigné à ce projet pour le moment.</p>
+                        <p class="text-muted fst-italic mb-0">
+                            <i class="fas fa-user-slash me-1"></i>Aucun membre assigné.
+                        </p>
                     {% endif %}
                 </div>
             </div>
+
         </div>
 
+        {# ── Colonne latérale ────────────────────────────────── #}
         <div class="col-lg-4">
-            {# Responsable - Section avec protection Null Coalesce #}
+
+            {# Responsable #}
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="mb-0 fw-bold text-dark">
@@ -113,15 +151,15 @@
                     </h5>
                 </div>
                 <div class="card-body text-center py-4">
-                    <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3"
+                         style="width:64px; height:64px;">
                         <i class="fas fa-user-shield fs-2"></i>
                     </div>
                     <h5 class="fw-bold text-dark mb-1">
-                        {# Utilisation du filtre default et test d'existence #}
                         {% if projet.responsable %}
                             {{ projet.responsable.prenom }} {{ projet.responsable.nom }}
                         {% else %}
-                            <span class="text-muted fw-normal italic">Non défini ou supprimé</span>
+                            <span class="text-muted fw-normal fst-italic">Non défini</span>
                         {% endif %}
                     </h5>
                     <p class="text-muted small text-uppercase fw-bold mb-0">Chef de projet</p>
@@ -142,22 +180,53 @@
                         </div>
                         <div>
                             <label class="text-muted small fw-bold d-block">DATE DE DÉBUT</label>
-                            <span class="fw-bold text-dark fs-6">{{ projet.dateDebut ? projet.dateDebut|date('d/m/Y') : '--/--/----' }}</span>
+                            <span class="fw-bold text-dark fs-6">
+                                {{ projet.dateDebut ? projet.dateDebut|date('d/m/Y') : '--/--/----' }}
+                            </span>
                         </div>
                     </div>
-                    <div class="d-flex align-items-start">
+                    <div class="d-flex align-items-start mb-4">
                         <div class="bg-danger-subtle p-2 rounded-3 me-3">
                             <i class="fas fa-calendar-check fs-4 text-danger"></i>
                         </div>
                         <div>
                             <label class="text-muted small fw-bold d-block">DATE DE FIN</label>
-                            <span class="fw-bold text-dark fs-6">{{ projet.dateFin ? projet.dateFin|date('d/m/Y') : '--/--/----' }}</span>
+                            <span class="fw-bold text-dark fs-6">
+                                {{ projet.dateFin ? projet.dateFin|date('d/m/Y') : '--/--/----' }}
+                            </span>
                         </div>
                     </div>
+
+                    {# Indicateur deadline #}
+                    {% if projet.dateFin %}
+                        {% set today = "now"|date("U") %}
+                        {% set fin   = projet.dateFin|date("U") %}
+                        {% set diff  = (fin - today) / 86400 %}
+
+                        {% if diff < 0 %}
+                            <div class="alert alert-danger rounded-3 small py-2 mb-0">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                Projet en retard de {{ (-diff)|round }} jour(s) !
+                            </div>
+                        {% elseif diff <= 7 %}
+                            <div class="alert alert-warning rounded-3 small py-2 mb-0">
+                                <i class="fas fa-clock me-1"></i>
+                                Deadline dans {{ diff|round }} jour(s) !
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success rounded-3 small py-2 mb-0">
+                                <i class="fas fa-check me-1"></i>
+                                {{ diff|round }} jour(s) restants
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
                 </div>
             </div>
+
         </div>
     </div>
+
 </div>
 </main>
 {% endblock %}
