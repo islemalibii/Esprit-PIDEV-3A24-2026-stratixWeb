@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AuthController extends AbstractController
 {
@@ -92,6 +93,13 @@ class AuthController extends AbstractController
 
             if ($password && $password !== $confirm) $errors['confirm'] = 'Les mots de passe ne correspondent pas.';
 
+            // Validation photo : face_validated doit être "1" si une photo est uploadée
+            /** @var UploadedFile|null $avatarFile */
+            $avatarFile = $request->files->get('avatar');
+            if ($avatarFile && $request->request->get('face_validated') !== '1') {
+                $errors['avatar'] = 'Aucun visage humain détecté. Veuillez uploader une photo avec votre visage visible.';
+            }
+
             if (empty($errors)) {
                 $user = new Utilisateur();
                 $user->setNom($nom)
@@ -102,6 +110,13 @@ class AuthController extends AbstractController
                      ->setStatut('actif')
                      ->setDateAjout(new \DateTime())
                      ->setPassword($hasher->hashPassword($user, $password));
+
+                // Sauvegarde de la photo si uploadée
+                if ($avatarFile) {
+                    $filename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
+                    $avatarFile->move($this->getParameter('kernel.project_dir') . '/public/images/avatar', $filename);
+                    $user->setAvatar($filename);
+                }
 
                 $em->persist($user);
                 $em->flush();

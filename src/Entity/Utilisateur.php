@@ -301,6 +301,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $two_factor_secret = null;
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $avatar = null;
+
+    public function getAvatar(): ?string { return $this->avatar; }
+    public function setAvatar(?string $avatar): static { $this->avatar = $avatar; return $this; }
+
     public function getTwo_factor_secret(): ?string
     {
         return $this->two_factor_secret;
