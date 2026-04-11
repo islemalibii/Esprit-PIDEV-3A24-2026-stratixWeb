@@ -57,14 +57,12 @@
                     </div>
                 </div>
             </li>
+            {% import 'macros/avatar.html.twig' as avatarMacro %}
             {% if app.user %}
             <li class="ms-2 dropdown">
                 <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
                    class="d-flex align-items-center gap-2 text-decoration-none">
-                    <div class="avatar avatar-sm rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed);width:34px;height:34px;font-size:.8rem;">
-                        {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
-                    </div>
+                    {{ avatarMacro.show(app.user, '34px', '.8rem') }}
                     <div class="d-none d-md-block">
                         <div class="small fw-semibold text-dark">{{ app.user.prenom }} {{ app.user.nom }}</div>
                         <div class="small text-secondary" style="font-size:.72rem;">{{ app.user.role|upper }}</div>
@@ -72,10 +70,7 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-end p-0" style="min-width:210px;">
                     <div class="d-flex gap-3 align-items-center px-3 py-3 border-bottom">
-                        <div class="avatar avatar-md rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                             style="background:linear-gradient(135deg,#4f46e5,#7c3aed);width:42px;height:42px;">
-                            {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
-                        </div>
+                        {{ avatarMacro.show(app.user, '42px', '1rem') }}
                         <div>
                             <h4 class="mb-0 small fw-semibold">{{ app.user.prenom }} {{ app.user.nom }}</h4>
                             <p class="mb-0 small text-secondary">{{ app.user.email }}</p>
