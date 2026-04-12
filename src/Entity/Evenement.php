@@ -13,6 +13,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 #[ORM\Table(name: 'evenement')]
+#[UniqueEntity(fields: ['titre'], message: "Un événement avec ce titre existe déjà.")]  // 👈 here on the class
 class Evenement
 {
     #[ORM\Id]
@@ -137,7 +138,6 @@ class Evenement
         minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
         maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
     )]
-    #[UniqueEntity(fields: ['titre'], message: "Un événement avec ce titre existe déjà.")]
     private ?string $titre = null;
 
     public function getTitre(): ?string

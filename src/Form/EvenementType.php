@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 class EvenementType extends AbstractType
 {
@@ -28,7 +29,19 @@ class EvenementType extends AbstractType
                 'property_path'  => 'date_event',
             ])
             ->add('lieu', TextType::class, [
+                'attr' => [
+                    'placeholder' => 'Entrez une adresse...',
+                    'id'          => 'lieu-input',
+                    'autocomplete'=> 'off',
+                ]
             ])
+            ->add('latitude', HiddenType::class, [
+                'attr' => ['id' => 'latitude-input'],
+            ])
+            ->add('longitude', HiddenType::class, [
+                'attr' => ['id' => 'longitude-input'],
+            ])
+            
             ->add('typeEvent', ChoiceType::class, [
                 'choices'  => [
                     'Formation'        => 'formation',

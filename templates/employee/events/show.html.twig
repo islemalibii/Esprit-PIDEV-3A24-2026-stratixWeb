@@ -144,6 +144,37 @@
                                 </div>
                             </div>
                         </div>
+                        {% if evenement.latitude and evenement.longitude %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-semibold text-muted text-uppercase small mb-3"
+                                            style="letter-spacing:.05em;">
+                                            <i class="ti ti-map-pin me-1"></i> Localisation
+                                        </h6>
+                                        <p class="text-muted small mb-2">{{ evenement.lieu }}</p>
+                                        <div id="map-show" class="rounded-2" style="height:300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                        <script>
+                            const map = L.map('map-show').setView(
+                                [{{ evenement.latitude }}, {{ evenement.longitude }}], 14
+                            );
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '© OpenStreetMap contributors'
+                            }).addTo(map);
+                            L.marker([{{ evenement.latitude }}, {{ evenement.longitude }}])
+                                .addTo(map)
+                                .bindPopup('{{ evenement.lieu|e('js') }}')
+                                .openPopup();
+                        </script>
+                        {% endif %}
 
                         <div class="col-12">
                             <div class="d-flex gap-3">

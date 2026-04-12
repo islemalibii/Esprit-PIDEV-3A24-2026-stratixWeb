@@ -94,13 +94,7 @@ class EventController extends AbstractController
         return $this->redirectToRoute('resp_event_index');
     }
 
-    #[Route('/admin/evenement/delete/{id}', name: 'admin_event_delete', methods: ['POST'])]
-    public function delete(Evenement $evenement, EntityManagerInterface $em): Response
-    {
-        $em->remove($evenement);
-        $em->flush();
-        return $this->redirectToRoute('resp_event_index');
-    }
+
 
     
     // front office
