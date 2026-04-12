@@ -15,6 +15,17 @@ class ParticipationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Participation::class);
     }
+    public function findUserEventIds(string $userEmail): array
+    {
+        $results = $this->createQueryBuilder('p')
+            ->select('p.event_id')
+            ->where('p.user_email = :email')
+            ->setParameter('email', $userEmail)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($results, 'event_id');
+    }
 
     //    /**
     //     * @return Participation[] Returns an array of Participation objects

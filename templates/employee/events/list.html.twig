@@ -81,7 +81,7 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="card event-card shadow-sm h-100 overflow-hidden">
                         {% if event.imageUrl %}
-                            <img src="{{ asset('images/events/' ~ event.imageUrl) }}" 
+                            <img src="{{ asset(event.imageUrl) }}" 
                                  class="card-img-top" 
                                  style="height:160px; object-fit:cover;" 
                                  alt="{{ event.titre }}">
@@ -123,12 +123,25 @@
                                 <span class="badge bg-success-soft text-success w-100 py-2">
                                     <i class="fas fa-check-circle me-1"></i> Planifié
                                 </span>
+                                {% set alreadyJoined = event.id in joinedEventIds %}
+                                <button 
+                                    class="btn btn-sm w-100 btn-participate {{ alreadyJoined ? 'btn-success' : 'btn-primary' }}"
+                                    data-event-id="{{ event.id }}"
+                                    {{ alreadyJoined ? 'disabled' : '' }}>
+                                    <i class="ti ti-{{ alreadyJoined ? 'check' : 'calendar-plus' }} me-1"></i>
+                                    {{ alreadyJoined ? 'Inscrit' : 'Participer' }}
+                                </button>
+                                <a href="{{ path('emp_event_show', {'id': event.id}) }}"
+                                class="btn btn-sm btn-outline-secondary w-100">
+                                    <i class="ti ti-eye me-1"></i> Détails
+                                </a>
                             {% elseif event.statut == 'terminer' %}
                                 <span class="badge bg-light text-muted w-100 py-2">
                                     <i class="fas fa-history me-1"></i> Terminé
                                 </span>
                             {% endif %}
                         </div>
+                        <div class="participate-msg mt-2"></div>
                     </div>
                 </div>
             {% endfor %}
@@ -155,5 +168,34 @@
                 document.getElementById('filterForm').submit();
             }, 400);
         });
+
+
+        document.querySelectorAll('.btn-participate').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const eventId = this.dataset.eventId;
+            const msgBox  = this.closest('.card').querySelector('.participate-msg');
+            const button  = this;
+
+            fetch(`/api/participation/join/${eventId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            })
+            .then(r => r.json())
+            .then(data => {
+                msgBox.innerHTML = `
+                    <div class="alert alert-${data.success ? 'success' : 'warning'} py-1 px-2 small mb-0">
+                        ${data.message}
+                    </div>`;
+                if (data.success) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="ti ti-check me-1"></i> Inscrit';
+                    button.classList.replace('btn-primary', 'btn-success');
+                }
+            })
+            .catch(() => {
+                msgBox.innerHTML = `<div class="alert alert-danger py-1 px-2 small mb-0">Une erreur est survenue.</div>`;
+            });
+        });
+    });
     </script>
 {% endblock %}

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
+use App\Repository\ParticipationRepository;
 use App\Form\EvenementType;
 use App\Repository\EvenementRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -103,7 +104,7 @@ class EventController extends AbstractController
     
     // front office
     #[Route('/employee/events', name: 'emp_event_list')]
-    public function employeeIndex(Request $request, EvenementRepository $repo): Response
+    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo): Response
     {
         $type   = $request->query->get('type');
         $search = $request->query->get('search');
@@ -116,8 +117,29 @@ class EventController extends AbstractController
             $events = $repo->findVisibleForEmployees();
         }
 
+
+        $userEmail = $this->getUser()?->getUserIdentifier();
+
+        $joinedEventIds = $participationRepo->findUserEventIds($userEmail);
+
         return $this->render('employee/events/list.html.twig', [
-            'events' => $events
+            'events'        => $events,
+            'userEmail'     => $userEmail,
+            'joinedEventIds'=> $joinedEventIds, 
+        ]);
+    }
+    #[Route('/event/{id}', name: 'emp_event_show', methods: ['GET'])]
+    public function showDEpmloyee(Evenement $evenement, ParticipationRepository $participationRepo): Response
+    {
+        $userEmail      = $this->getUser()?->getUserIdentifier();
+        $alreadyJoined  = $participationRepo->findOneBy([
+            'event_id'   => $evenement->getId(),
+            'user_email' => $userEmail,
+        ]);
+
+        return $this->render('employee/events/show.html.twig', [
+            'evenement'    => $evenement,
+            'alreadyJoined'=> $alreadyJoined !== null,
         ]);
     }
 }
