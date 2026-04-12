@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 
 #[Route('/admin')]
 class AdminController extends AbstractController
@@ -182,5 +186,34 @@ class AdminController extends AbstractController
             }
         }
         return $this->redirectToRoute('admin_users');
+    }
+
+    #[Route('/users/{id}/qrcode.svg', name: 'admin_user_qrcode', methods: ['GET'])]
+    public function qrcode(Utilisateur $user): Response
+    {
+        $data = json_encode([
+            'id'         => $user->getId(),
+            'nom'        => $user->getNom(),
+            'prenom'     => $user->getPrenom(),
+            'email'      => $user->getEmail(),
+            'poste'      => $user->getPoste(),
+            'department' => $user->getDepartment(),
+            'role'       => $user->getRole(),
+        ]);
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(300),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $svg = $writer->writeString($data);
+
+        return new Response($svg, 200, ['Content-Type' => 'image/svg+xml']);
+    }
+
+    #[Route('/users/{id}/badge', name: 'admin_user_badge', methods: ['GET'])]
+    public function badge(Utilisateur $user): Response
+    {
+        return $this->render('admin/user_badge.html.twig', ['user' => $user]);
     }
 }

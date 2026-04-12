@@ -110,6 +110,9 @@
                         <a href="{{ path('admin_user_edit', {id: u.id}) }}" class="btn btn-sm btn-outline-primary flex-fill">
                             <i class="ti ti-edit me-1"></i>Modifier
                         </a>
+                        <a href="{{ path('admin_user_badge', {id: u.id}) }}" class="btn btn-sm btn-outline-info flex-fill">
+                            <i class="ti ti-id-badge me-1"></i>Badge
+                        </a>
                         <form method="post" action="{{ path('admin_user_toggle_lock', {id: u.id}) }}" class="flex-fill">
                             <input type="hidden" name="_token" value="{{ csrf_token('toggle'~u.id) }}">
                             <button type="submit" class="btn btn-sm w-100 {% if u.isAccountLocked() %}btn-outline-success{% else %}btn-outline-warning{% endif %}">
