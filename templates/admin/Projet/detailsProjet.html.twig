@@ -1,232 +1,329 @@
-{# templates/admin/Projet/detailsProjet.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}STRATIX - Détails du Projet{% endblock %}
 
 {% block body %}
 <main id="content" class="content py-4">
-<div class="container-fluid">
+    <div class="container-fluid">
 
-    {# ── En-tête ──────────────────────────────────────────── #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fs-4 fw-bold text-dark">
-                <i class="fas fa-folder-open me-2 text-warning"></i>{{ projet.nom }}
-            </h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{{ path('app_projet_index') }}" class="text-danger text-decoration-none">
-                            Liste des projets
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active">Fiche projet</li>
-                </ol>
-            </nav>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ path('app_projet_edit', {'id': projet.id}) }}"
-               class="btn btn-warning text-white shadow-sm fw-bold rounded-3">
-                <i class="fas fa-edit me-1"></i> Modifier
-            </a>
-            <a href="{{ path('app_projet_index') }}"
-               class="btn btn-light border shadow-sm fw-bold rounded-3">
-                <i class="fas fa-arrow-left me-1"></i> Retour
-            </a>
-        </div>
-    </div>
-
-    <div class="row g-4">
-
-        {# ── Colonne principale ──────────────────────────────── #}
-        <div class="col-lg-8">
-
-            {# Fiche descriptive #}
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-info-circle me-2 text-danger"></i>Fiche descriptive
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th class="ps-4 py-3 bg-light text-muted small fw-bold" style="width:32%;">NOM DU PROJET</th>
-                                <td class="ps-3 fw-bold text-dark">{{ projet.nom }}</td>
-                            </tr>
-                            <tr>
-                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">DESCRIPTION</th>
-                                <td class="ps-3 text-muted">{{ projet.description|default('Aucune description.') }}</td>
-                            </tr>
-                            <tr>
-                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">BUDGET ESTIMÉ</th>
-                                <td class="ps-3 text-success fw-bold fs-5">
-                                    {{ projet.budget|number_format(2, ',', ' ') }} DT
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">STATUT ACTUEL</th>
-                                <td class="ps-3">
-                                    <span class="badge rounded-pill px-3 py-2
-                                        {% if projet.statut == 'En cours' %}bg-warning text-dark
-                                        {% elseif projet.statut == 'Terminé' %}bg-success
-                                        {% elseif projet.statut == 'Annulé' %}bg-danger
-                                        {% else %}bg-info text-white{% endif %}">
-                                        {{ projet.statut }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="ps-4 py-3 bg-light text-muted small fw-bold">CAHIER DES CHARGES</th>
-                                <td class="ps-3">
-                                    {% if projet.cahierDesCharges %}
-                                        <a href="{{ asset('uploads/cahiers/' ~ projet.cahierDesCharges) }}"
-                                           target="_blank"
-                                           class="btn btn-sm btn-outline-danger rounded-3 fw-bold px-3">
-                                            <i class="fas fa-file-download me-1"></i> Télécharger
-                                        </a>
-                                        <span class="text-muted small ms-2">
-                                            {{ projet.cahierDesCharges|split('_')|last }}
-                                        </span>
-                                    {% else %}
-                                        <span class="text-muted fst-italic">
-                                            <i class="fas fa-minus me-1"></i>Aucun fichier joint.
-                                        </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        {# ── En-tête ──────────────────────────────────────────── #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fs-4 fw-bold text-dark">
+                    <i class="fas fa-folder-open me-2 text-warning"></i>{{ projet.nom }}
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_projet_index') }}" class="text-danger text-decoration-none">
+                                Liste des projets
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">Fiche projet</li>
+                    </ol>
+                </nav>
             </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_projet_edit', {'id': projet.id}) }}"
+                   class="btn btn-warning text-white shadow-sm fw-bold rounded-3">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                <a href="{{ path('app_projet_index') }}"
+                   class="btn btn-light border shadow-sm fw-bold rounded-3">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+            </div>
+        </div>
 
-            {# Équipe du projet #}
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-users me-2 text-primary"></i>Équipe du projet
-                    </h5>
+        <div class="row g-4">
+            {# ── Colonne principale ──────────────────────────────── #}
+            <div class="col-lg-8">
+                {# Fiche descriptive #}
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fas fa-info-circle me-2 text-danger"></i>Fiche descriptive
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="ps-4 py-3 bg-light text-muted small fw-bold" style="width:32%;">NOM DU PROJET</th>
+                                    <td class="ps-3 fw-bold text-dark">{{ projet.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-4 py-3 bg-light text-muted small fw-bold">DESCRIPTION</th>
+                                    <td class="ps-3 text-muted">{{ projet.description|default('Aucune description.') }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-4 py-3 bg-light text-muted small fw-bold">BUDGET ESTIMÉ</th>
+                                    <td class="ps-3 text-success fw-bold fs-5">
+                                        {{ projet.budget|number_format(2, ',', ' ') }} DT
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-4 py-3 bg-light text-muted small fw-bold">STATUT ACTUEL</th>
+                                    <td class="ps-3">
+                                        <span class="badge rounded-pill px-3 py-2
+                                            {% if projet.statut == 'En cours' %}bg-warning text-dark
+                                            {% elseif projet.statut == 'Terminé' %}bg-success
+                                            {% elseif projet.statut == 'Annulé' %}bg-danger
+                                            {% else %}bg-info text-white{% endif %}">
+                                            {{ projet.statut }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-4 py-3 bg-light text-muted small fw-bold">CAHIER DES CHARGES</th>
+                                    <td class="ps-3">
+                                        {% if projet.cahierDesCharges %}
+                                            <div class="d-flex align-items-center gap-2">
+                                                <a href="{{ asset('uploads/cahiers/' ~ projet.cahierDesCharges) }}"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-danger rounded-3 fw-bold px-3">
+                                                    <i class="fas fa-file-pdf me-1"></i> PDF
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-dark rounded-3 fw-bold shadow-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#modalIA">
+                                                    <i class="fas fa-robot me-1 text-info"></i> Analyser IA
+                                                </button>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">
+                                                <i class="fas fa-minus me-1"></i>Aucun fichier joint.
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if projet.membres|length > 0 %}
-                        <div class="row g-3">
-                            {% for membre in projet.membres %}
-                                {% if membre is defined and membre is not null %}
-                                <div class="col-md-6 col-xl-4">
-                                    <div class="d-flex align-items-center p-3 border rounded-3 bg-light">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold"
-                                             style="width:40px; height:40px; font-size:0.85rem;">
-                                            {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0 fw-bold text-dark small">
-                                                {{ membre.prenom }} {{ membre.nom }}
-                                            </h6>
-                                            <span class="text-muted" style="font-size:0.72rem;">Collaborateur</span>
+
+                {# Équipe du projet #}
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fas fa-users me-2 text-primary"></i>Équipe du projet
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if projet.membres|length > 0 %}
+                            <div class="row g-3">
+                                {% for membre in projet.membres %}
+                                    <div class="col-md-6 col-xl-4">
+                                        <div class="d-flex align-items-center p-3 border rounded-3 bg-light">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold"
+                                                 style="width:40px; height:40px; font-size:0.85rem;">
+                                                {{ membre.prenom|first|upper }}{{ membre.nom|first|upper }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-dark small">{{ membre.prenom }} {{ membre.nom }}</h6>
+                                                <span class="text-muted" style="font-size:0.72rem;">Collaborateur</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted fst-italic mb-0">
-                            <i class="fas fa-user-slash me-1"></i>Aucun membre assigné.
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
-
-        </div>
-
-        {# ── Colonne latérale ────────────────────────────────── #}
-        <div class="col-lg-4">
-
-            {# Responsable #}
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-user-tie me-2 text-warning"></i>Responsable
-                    </h5>
-                </div>
-                <div class="card-body text-center py-4">
-                    <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="width:64px; height:64px;">
-                        <i class="fas fa-user-shield fs-2"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark mb-1">
-                        {% if projet.responsable %}
-                            {{ projet.responsable.prenom }} {{ projet.responsable.nom }}
-                        {% else %}
-                            <span class="text-muted fw-normal fst-italic">Non défini</span>
-                        {% endif %}
-                    </h5>
-                    <p class="text-muted small text-uppercase fw-bold mb-0">Chef de projet</p>
-                </div>
-            </div>
-
-            {# Planning #}
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-calendar-alt me-2 text-danger"></i>Planning
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="bg-primary-subtle p-2 rounded-3 me-3">
-                            <i class="fas fa-calendar-plus fs-4 text-primary"></i>
-                        </div>
-                        <div>
-                            <label class="text-muted small fw-bold d-block">DATE DE DÉBUT</label>
-                            <span class="fw-bold text-dark fs-6">
-                                {{ projet.dateDebut ? projet.dateDebut|date('d/m/Y') : '--/--/----' }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="bg-danger-subtle p-2 rounded-3 me-3">
-                            <i class="fas fa-calendar-check fs-4 text-danger"></i>
-                        </div>
-                        <div>
-                            <label class="text-muted small fw-bold d-block">DATE DE FIN</label>
-                            <span class="fw-bold text-dark fs-6">
-                                {{ projet.dateFin ? projet.dateFin|date('d/m/Y') : '--/--/----' }}
-                            </span>
-                        </div>
-                    </div>
-
-                    {# Indicateur deadline #}
-                    {% if projet.dateFin %}
-                        {% set today = "now"|date("U") %}
-                        {% set fin   = projet.dateFin|date("U") %}
-                        {% set diff  = (fin - today) / 86400 %}
-
-                        {% if diff < 0 %}
-                            <div class="alert alert-danger rounded-3 small py-2 mb-0">
-                                <i class="fas fa-exclamation-circle me-1"></i>
-                                Projet en retard de {{ (-diff)|round }} jour(s) !
+                                {% endfor %}
                             </div>
-                        {% elseif diff <= 7 %}
-                            <div class="alert alert-warning rounded-3 small py-2 mb-0">
+                        {% else %}
+                            <p class="text-muted fst-italic mb-0"><i class="fas fa-user-slash me-1"></i>Aucun membre assigné.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# ── Colonne latérale ────────────────────────────────── #}
+            <div class="col-lg-4">
+                {# Responsable #}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fas fa-user-tie me-2 text-warning"></i>Responsable
+                        </h5>
+                    </div>
+                    <div class="card-body text-center py-4">
+                        <div class="mx-auto bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center mb-3"
+                             style="width:64px; height:64px;">
+                            <i class="fas fa-user-shield fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">
+                            {{ projet.responsable ? projet.responsable.prenom ~ ' ' ~ projet.responsable.nom : 'Non défini' }}
+                        </h5>
+                        <p class="text-muted small text-uppercase fw-bold mb-0">Chef de projet</p>
+                    </div>
+                </div>
+
+                {# Planning #}
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fas fa-calendar-alt me-2 text-danger"></i>Planning
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="bg-primary-subtle p-2 rounded-3 me-3">
+                                <i class="fas fa-calendar-plus fs-4 text-primary"></i>
+                            </div>
+                            <div>
+                                <label class="text-muted small fw-bold d-block">DATE DE DÉBUT</label>
+                                <span class="fw-bold text-dark">{{ projet.dateDebut ? projet.dateDebut|date('d/m/Y') : '--/--/----' }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="bg-danger-subtle p-2 rounded-3 me-3">
+                                <i class="fas fa-calendar-check fs-4 text-danger"></i>
+                            </div>
+                            <div>
+                                <label class="text-muted small fw-bold d-block">DATE DE FIN</label>
+                                <span class="fw-bold text-dark">{{ projet.dateFin ? projet.dateFin|date('d/m/Y') : '--/--/----' }}</span>
+                            </div>
+                        </div>
+
+                        {% if projet.dateFin %}
+                            {% set today = "now"|date("U") %}
+                            {% set fin = projet.dateFin|date("U") %}
+                            {% set diff = (fin - today) / 86400 %}
+                            <div class="alert {% if diff < 0 %}alert-danger{% elseif diff <= 7 %}alert-warning{% else %}alert-success{% endif %} rounded-3 small py-2 mb-0 text-center">
                                 <i class="fas fa-clock me-1"></i>
-                                Deadline dans {{ diff|round }} jour(s) !
-                            </div>
-                        {% else %}
-                            <div class="alert alert-success rounded-3 small py-2 mb-0">
-                                <i class="fas fa-check me-1"></i>
-                                {{ diff|round }} jour(s) restants
+                                {% if diff < 0 %}Retard de {{ (-diff)|round }} jour(s){% else %}{{ diff|round }} jour(s) restants{% endif %}
                             </div>
                         {% endif %}
-                    {% endif %}
-
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-</div>
+    {# ── MODAL ANALYSE IA ──────────────────────────────────── #}
+    <div class="modal fade" id="modalIA" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 bg-dark text-white rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-robot me-2 text-info"></i>Stratix IA - Analyse</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="ia-loader" class="text-center py-5">
+                        <div class="spinner-border text-danger mb-3" role="status"></div>
+                        <p class="text-muted fw-bold">L'IA analyse le cahier des charges...</p>
+                    </div>
+                    <div id="ia-content" class="d-none">
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-danger border-bottom pb-2 mb-3">Résumé Exécutif</h6>
+                            <div class="p-3 bg-light rounded-3 text-dark border-start border-danger border-4 shadow-sm" id="resumeCourt"></div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-3">Détails de l'analyse</h6>
+                            <div id="resumeDetaille"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 fw-bold" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── SCRIPT IA (inline dans le block body pour garantir l'accès au DOM) ── #}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalIA = document.getElementById('modalIA');
+
+        modalIA.addEventListener('show.bs.modal', function () {
+            const loader = document.getElementById('ia-loader');
+            const content = document.getElementById('ia-content');
+            const resumeCourt = document.getElementById('resumeCourt');
+            const resumeDetaille = document.getElementById('resumeDetaille');
+
+            // Réinitialisation de l'état de la modale
+            loader.classList.remove('d-none');
+            loader.innerHTML = `
+                <div class="spinner-border text-danger mb-3" role="status"></div>
+                <p class="text-muted fw-bold">L'IA analyse le cahier des charges...</p>
+            `;
+            content.classList.add('d-none');
+
+            // URL de l'API (gérée par Symfony)
+            const url = "{{ path('app_projet_analyser_ia', {id: projet.id}) }}";
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Erreur réseau');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        loader.innerHTML = `<div class="alert alert-warning mx-4"><i class="fas fa-exclamation-circle me-2"></i>${data.error}</div>`;
+                        return;
+                    }
+
+                    // 1. Remplissage du résumé court
+                    resumeCourt.innerText = data.resume_court || "Analyse terminée.";
+
+                    // 2. Remplissage du résumé détaillé (Accordéon)
+                    let detailHtml = "";
+                    let details = data.resume_detaille;
+
+                    // Tentative de parsing JSON si la valeur est une chaîne
+                    if (typeof details === 'string' && details.trim().startsWith('{')) {
+                        try { details = JSON.parse(details); } catch(e) {}
+                    }
+
+                    if (details && typeof details === 'object' && !Array.isArray(details)) {
+                        detailHtml = '<div class="accordion accordion-flush border rounded-3" id="accDetaillesIA">';
+                        Object.entries(details).forEach(([key, value], index) => {
+                            const title = key.replace(/_/g, ' ');
+                            detailHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed fw-bold text-capitalize py-3" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collIA${index}">
+                                            <i class="fas fa-chevron-right me-2 small text-danger"></i>${title}
+                                        </button>
+                                    </h2>
+                                    <div id="collIA${index}" class="accordion-collapse collapse" data-bs-parent="#accDetaillesIA">
+                                        <div class="accordion-body bg-light text-muted">
+                                            ${Array.isArray(value)
+                                                ? `<ul class="mb-0"><li>${value.join('</li><li>')}</li></ul>`
+                                                : value}
+                                        </div>
+                                    </div>
+                                </div>`;
+                        });
+                        detailHtml += '</div>';
+                    } else {
+                        detailHtml = `<div class="p-3 bg-light rounded-3 border text-muted">${details || "Pas de détails supplémentaires."}</div>`;
+                    }
+
+                    resumeDetaille.innerHTML = detailHtml;
+
+                    // Affichage du contenu et masquage du loader
+                    loader.classList.add('d-none');
+                    content.classList.remove('d-none');
+                })
+                .catch(error => {
+                    loader.innerHTML = `<div class="alert alert-danger mx-4"><i class="fas fa-bug me-2"></i>Erreur : impossible de contacter le service d'analyse.</div>`;
+                    console.error(error);
+                });
+        });
+    });
+    </script>
+
+    <style>
+        .accordion-button:not(.collapsed) {
+            background-color: #fff5f5 !important;
+            color: #dc3545 !important;
+            box-shadow: none;
+        }
+        .accordion-button:not(.collapsed) i {
+            transform: rotate(90deg);
+            transition: transform 0.2s;
+        }
+        .accordion-button:focus { box-shadow: none; }
+    </style>
+
 </main>
 {% endblock %}

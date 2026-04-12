@@ -97,6 +97,41 @@
             padding: 0.85rem 1.5rem !important;
             font-weight: 700 !important;
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35) !important;
+        /* Bouton IA */
+        .btn-ia-generate {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        }
+        .btn-ia-generate:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.45);
+        }
+        .btn-ia-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Feedback IA */
+        .ia-feedback-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            color: #166534;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.8rem;
+        }
+        
+        
+        
         }
     </style>
 {% endblock %}
@@ -194,12 +229,43 @@
                                 </div>
                             </div>
 
-                            {# Description #}
+                            {# ── Description ──────────────────────────────── #}
                             <div class="mb-4">
-                                <label class="form-label">Description <span class="text-danger">*</span></label>
-                                {{ form_widget(form.description, {'attr': {'class': 'form-control ' ~ (form.description.vars.errors|length > 0 ? 'is-invalid' : ''), 'rows': '3'}}) }}
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="form-label mb-0">
+                                        Description <span class="text-danger">*</span>
+                                    </label>
+                                    <button type="button" id="btn-ia" class="btn-ia-generate"
+                                            onclick="genererDescriptionIA()">
+                                        <span id="ia-btn-text">
+                                            <i class="fas fa-magic me-1"></i>Générer avec IA
+                                        </span>
+                                        <span id="ia-btn-loading" style="display:none;">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>Génération...
+                                        </span>
+                                    </button>
+                                </div>
+
+                                {{ form_widget(form.description, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.description.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'rows': '3',
+                                        'placeholder': 'Décrivez les objectifs du projet ou cliquez sur ✨ Générer avec IA...',
+                                        'id': 'description-field'
+                                    }
+                                }) }}
+
+                                {# Message de feedback IA #}
+                                <div id="ia-feedback" style="display:none;" class="ia-feedback-box mt-2">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    <span id="ia-feedback-text"></span>
+                                </div>
+
                                 {% if form.description.vars.errors|length > 0 %}
-                                    <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form_errors(form.description) }}</div>
+                                    <div class="field-error">
+                                        <i class="fas fa-circle-exclamation"></i>
+                                        {{ form_errors(form.description) }}
+                                    </div>
                                 {% endif %}
                             </div>
 
