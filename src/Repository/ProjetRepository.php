@@ -63,15 +63,15 @@ class ProjetRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-public function findActiveWithFilters(?string $search, ?string $statut): array
+public function findActiveWithFilters($search, $statut)
 {
     $qb = $this->createQueryBuilder('p')
-        ->andWhere('p.isArchived = :archived')
-        ->setParameter('archived', false);
+        ->where('p.isArchived = :val')
+        ->setParameter('val', false);
 
     if ($search) {
         $qb->andWhere('p.nom LIKE :search')
-           ->setParameter('search', '%' . $search . '%');
+           ->setParameter('search', '%'.$search.'%');
     }
 
     if ($statut) {
@@ -79,8 +79,7 @@ public function findActiveWithFilters(?string $search, ?string $statut): array
            ->setParameter('statut', $statut);
     }
 
-    return $qb->orderBy('p.id', 'DESC')
-              ->getQuery()
-              ->getResult();
+    // IMPORTANT : Retourne le QueryBuilder ou ->getQuery()
+    return $qb->getQuery(); 
 }
 }

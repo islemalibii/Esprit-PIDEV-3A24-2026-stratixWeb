@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/projet')]
 class ProjetController extends AbstractController
@@ -22,13 +23,24 @@ class ProjetController extends AbstractController
     //  LISTE (admin)
     // ─────────────────────────────────────────────
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
-    public function index(Request $request, ProjetRepository $repo): Response
+    public function index(Request $request, ProjetRepository $repo, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search');
         $statut = $request->query->get('statut');
 
+        // 1. On récupère la requête de base (sans exécuter le result)
+        // Note : findActiveWithFilters doit retourner un Query ou QueryBuilder pour être efficace
+        $query = $repo->findActiveWithFilters($search, $statut);
+
+        // 2. On pagine
+        $pagination = $paginator->paginate(
+            $query, /* destination */
+            $request->query->getInt('page', 1), /* numéro de page */
+            6 /* nombre d'éléments par page */
+        );
+
         return $this->render('admin/Projet/listeProjets.html.twig', [
-            'projets'       => $repo->findActiveWithFilters($search, $statut),
+            'projets'       => $pagination, // On envoie l'objet pagination à la place du tableau
             'currentSearch' => $search,
             'currentStatut' => $statut,
         ]);
@@ -255,4 +267,14 @@ class ProjetController extends AbstractController
             'projet' => $projet
         ]);
     }
+
+    #[Route('/projet/unarchive/{id}', name: 'app_projet_unarchive_action', methods: ['POST', 'GET'])]
+public function unarchive(Projet $projet, EntityManagerInterface $entityManager): Response
+{
+    // Logic to move from archive back to active
+    $projet->setArchived(false); 
+    $entityManager->flush();
+
+    return $this->redirectToRoute('app_projet_liste_archives');
+}
 }

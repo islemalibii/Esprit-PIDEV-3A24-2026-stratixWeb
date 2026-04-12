@@ -6,11 +6,11 @@
 <main id="content" class="content py-4">
     <div class="container-fluid px-4">
         
-        {# --- FORMULAIRE DE FILTRAGE (SERVEUR) --- #}
+        {# --- FORMULAIRE DE FILTRAGE --- #}
         <form method="get" action="{{ path('app_projet_index') }}" id="filterForm" class="row g-3 align-items-center mb-4 mt-2">
             <div class="col-lg-3">
                 <h2 class="fs-4 mb-0 fw-bold text-dark">Gestion des Projets</h2>
-                <p class="text-muted small mb-0">Suivi en temps réel de vos développements.</p>
+                <p class="text-muted small mb-0">Suivi en temps réel (Total : {{ projets.getTotalItemCount }})</p>
             </div>
             
             <div class="col-lg-4">
@@ -56,12 +56,8 @@
                     <thead class="bg-light">
                         <tr>
                             <th class="ps-4 py-3 text-muted small fw-bold" style="width: 70px;">ICÔNE</th>
-                            <th class="py-3 text-muted small fw-bold cursor-pointer" onclick="sortTable(1)">
-                                NOM DU PROJET <i class="ti ti-arrows-sort ms-1"></i>
-                            </th>
-                            <th class="py-3 text-muted small fw-bold text-center cursor-pointer" onclick="sortTable(2)">
-                                BUDGET <i class="ti ti-arrows-sort ms-1"></i>
-                            </th>
+                            <th class="py-3 text-muted small fw-bold">NOM DU PROJET</th>
+                            <th class="py-3 text-muted small fw-bold text-center">BUDGET</th>
                             <th class="py-3 text-muted small fw-bold text-center">STATUT</th>
                             <th class="text-end pe-4 py-3 text-muted small fw-bold">ACTIONS</th>
                         </tr>
@@ -93,7 +89,6 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="btn-group shadow-sm rounded-3 border bg-white">
-                                    {# BOUTON CHAT (Nouveau) #}
                                     <a href="{{ path('app_projet_chat', {'id': projet.id}) }}" class="btn btn-sm btn-white text-info" title="Ouvrir le Chat">
                                         <i class="ti ti-messages" style="font-size: 1.1rem;"></i>
                                     </a>
@@ -122,6 +117,14 @@
                 </table>
             </div>
         </div>
+
+        {# --- BARRE DE PAGINATION --- #}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                {{ knp_pagination_render(projets) }}
+            </nav>
+        </div>
+
     </div>
 </main>
 {% endblock %}
