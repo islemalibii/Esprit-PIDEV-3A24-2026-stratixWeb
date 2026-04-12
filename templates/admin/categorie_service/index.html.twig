@@ -1,5 +1,3 @@
-{# templates/admin/categorie_service/index.html.twig #}
-
 {% extends 'admin/base_admin.html.twig' %}
 
 {% block admin_content %}
@@ -14,7 +12,80 @@
         </a>
     </div>
 
-    <!-- Flash Messages -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-soft-orange">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Total Catégories</span>
+                    <h2 class="stats-value">{{ categorie_services.getTotalItemCount }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-soft-blue">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Total Services</span>
+                    <h2 class="stats-value">{{ totalServices|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-soft-green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Moyenne/Catégorie</span>
+                    <h2 class="stats-value">{{ (totalServices|default(0) / max(categorie_services.getTotalItemCount, 1))|round(1) }}</h2>
+                    <small class="text-muted">services par catégorie</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-soft-purple">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Catégories Actives</span>
+                    <h2 class="stats-value">{{ categorie_services|filter(c => not c.archive)|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="top-categories-card">
+                <div class="top-categories-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-simple me-2 text-orange"></i>Top catégories (par nombre de services)</h6>
+                </div>
+                <div class="top-categories-body">
+                    <div class="row">
+                        {% set topCategories = categorie_services|sort((a, b) => b.services|length <=> a.services|length)|slice(0, 5) %}
+                        {% for categorie in topCategories %}
+                            <div class="col-md-2">
+                                <div class="top-category-item">
+                                    <div class="top-category-rank">#{{ loop.index }}</div>
+                                    <div class="top-category-name">{{ categorie.nom }}</div>
+                                    <div class="top-category-count">
+                                        <span class="badge bg-orange">{{ categorie.services|length }} services</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ message }}
@@ -22,7 +93,6 @@
         </div>
     {% endfor %}
 
-    <!-- Search and Filter Form -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Recherche et Filtrage</h6>
@@ -56,7 +126,6 @@
         </div>
     </div>
 
-    <!-- Categories Grid -->
     <div class="row g-4">
         {% for categorie in categorie_services %}
             <div class="col-xl-4 col-md-6">
@@ -74,6 +143,11 @@
                             <p class="small text-muted">
                                 {{ categorie.description|slice(0, 100) }}{{ categorie.description|length > 100 ? '...' : '' }}
                             </p>
+                        </div>
+                        <div class="category-stats">
+                            <span class="badge bg-info">
+                                <i class="fas fa-briefcase me-1"></i>{{ categorie.services|length }} services
+                            </span>
                         </div>
                         <div class="category-date">
                             <i class="fas fa-calendar-alt me-1 text-muted"></i>
@@ -101,7 +175,7 @@
                 <div class="empty-state">
                     <i class="fas fa-folder-open fa-3x mb-3 text-muted"></i>
                     <h5>Aucune catégorie trouvée</h5>
-                    <p class="text-muted">Il n'y a pas de catégories {{ showArchives ? 'archivées' : 'actives' }} correspondant à vos critères.</p>
+                    <p class="text-muted">Commencez par créer votre première catégorie</p>
                     <a href="{{ path('app_categorie_service_new') }}" class="btn btn-orange mt-2">
                         <i class="fas fa-plus"></i> Créer la première catégorie
                     </a>
@@ -110,7 +184,6 @@
         {% endfor %}
     </div>
 
-    <!-- PAGINATION -->
     {% if categorie_services|length > 0 %}
         <div class="row mt-5">
             <div class="col-12">
@@ -137,7 +210,83 @@
     
     body { background-color: var(--gray-100); font-family: 'Inter', system-ui, sans-serif; }
     
-    /* CATEGORY CARDS */
+    .stats-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stats-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
+    .bg-soft-orange { background: #fff7ed; color: #f97316; }
+    .bg-soft-blue { background: #eff6ff; color: #3b82f6; }
+    .bg-soft-green { background: #f0fdf4; color: #22c55e; }
+    .bg-soft-purple { background: #faf5ff; color: #a855f7; }
+    .stats-info { flex: 1; }
+    .stats-label { font-size: 0.75rem; color: #525252; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stats-value { font-size: 1.8rem; font-weight: 700; color: #262626; margin: 0; }
+    .stats-info small { font-size: 0.7rem; }
+    
+    .top-categories-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .top-categories-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    .top-categories-body {
+        padding: 1.25rem;
+    }
+    .top-category-item {
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 12px;
+        background: var(--gray-50);
+        transition: all 0.2s;
+    }
+    .top-category-item:hover {
+        background: var(--orange-light);
+        transform: translateY(-2px);
+    }
+    .top-category-rank {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--orange);
+        margin-bottom: 0.5rem;
+    }
+    .top-category-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+        word-break: break-word;
+    }
+    .top-category-count .badge {
+        background: var(--orange);
+        color: white;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+    }
+    
     .category-card {
         background: white;
         border-radius: 16px;
@@ -160,10 +309,17 @@
     .category-title { font-size: 0.9rem; font-weight: 600; color: var(--gray-800); margin: 0; }
     .category-badge { font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 20px; }
     .bg-orange { background: var(--orange-light); color: var(--orange); }
+    .bg-secondary { background: #e5e5e5; color: #666; }
     
     .category-card-body { padding: 0.5rem 1rem 1rem 1rem; flex: 1; }
     .category-description { margin: 0.5rem 0; }
-    .category-date { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--gray-200); }
+    .category-stats { margin: 0.5rem 0; }
+    .category-stats .badge { background: #3b82f6; color: white; font-size: 0.7rem; padding: 0.25rem 0.6rem; }
+    .category-date { 
+        margin-top: 0.5rem; 
+        padding-top: 0.5rem; 
+        border-top: 1px solid var(--gray-200); 
+    }
     
     .category-card-footer { 
         padding: 0.75rem 1rem; 
@@ -191,7 +347,6 @@
     .category-btn-archive { background: #fef2f2; color: #ef4444; }
     .category-btn-archive:hover { background: #ef4444; color: white; }
     
-    /* BUTTONS */
     .btn-orange { background: var(--orange); border: none; color: white; padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; }
     .btn-orange:hover { background: var(--orange-dark); transform: translateY(-1px); color: white; }
     .btn-orange-outline { background: transparent; border: 1px solid var(--orange); color: var(--orange); padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; }
@@ -199,7 +354,6 @@
     .btn-secondary-outline { background: transparent; border: 1px solid var(--gray-300); color: var(--gray-600); padding: 0.6rem 1rem; border-radius: 12px; transition: all 0.2s; }
     .btn-secondary-outline:hover { background: var(--gray-100); border-color: var(--gray-400); }
     
-    /* PAGINATION */
     .pagination { gap: 5px; }
     .page-item .page-link { border-radius: 10px; color: var(--gray-600); border: 1px solid var(--gray-200); padding: 8px 14px; font-size: 14px; }
     .page-item.active .page-link { background: var(--orange); border-color: var(--orange); color: white; }
