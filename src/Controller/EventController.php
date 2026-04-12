@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\PictureService;
 
 class EventController extends AbstractController
 {
@@ -43,18 +44,26 @@ class EventController extends AbstractController
     }
     #[Route('/responsable/evenement/new', name: 'resp_event_new')]
     #[Route('/responsable/evenement/edit/{id}', name: 'resp_event_edit')]
-    public function save(Evenement $evenement = null, Request $request, EntityManagerInterface $em): Response
+    public function save(Evenement $evenement = null, Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
     {
         if (!$evenement) $evenement = new Evenement();
 
-        $form = $this->createForm(EvenementType::class, $evenement);
+        $isNew = !$evenement->getId(); 
+        $form = $this->createForm(EvenementType::class, $evenement, [
+            'validation_groups' => $isNew ? ['Default', 'create'] : ['Default', 'edit'],
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($evenement->isArchived() === null) {
                 $evenement->setIsArchived(false);
             }
-            
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $imageUrl = $pictureService->uploadImage($imageFile);
+                $evenement->setImageUrl($imageUrl);
+            }
+
             $em->persist($evenement);
             $em->flush();
             return $this->redirectToRoute('resp_event_index');

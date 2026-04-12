@@ -9,8 +9,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-
-
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Image;
 
 class EvenementType extends AbstractType
 {
@@ -52,9 +53,19 @@ class EvenementType extends AbstractType
 
             ])
 
-            ->add('imageUrl', TextType::class, [
+            ->add('image', FileType::class, [
                 'required' => false,
-                'property_path'  => 'image_url',
+                'mapped'   => false,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => "L'image est obligatoire.",
+                        'groups'  => ['create'], 
+                    ]),
+                    new Image([
+                        'maxSize' => '5M',
+                        'mimeTypesMessage' => "Format invalide. Utilisez JPG, PNG ou WEBP.",
+                    ]),
+                ],
             ]);
             
     }

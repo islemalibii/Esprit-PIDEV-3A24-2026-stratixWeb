@@ -41,7 +41,7 @@
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm overflow-hidden">
                     {% if evenement.imageUrl %}
-                        <img src="{{ asset('images/events/' ~ evenement.imageUrl) }}"
+                        <img src="{{ asset(evenement.imageUrl) }}"
                              alt="{{ evenement.titre }}"
                              class="w-100"
                              style="height: 280px; object-fit: cover;">

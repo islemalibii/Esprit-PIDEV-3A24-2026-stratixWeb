@@ -93,7 +93,7 @@
         </div>
 
         {{ form_start(form, {
-            'action': path('resp_event_new'),
+            'action': evenement.id ? path('resp_event_edit', {'id': evenement.id}) : path('resp_event_new'),
             'method': 'POST',
             'attr': {
                 'novalidate': 'novalidate',
@@ -186,7 +186,7 @@
                             <div id="imgPreview" class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
                                 style="width:80px; height:80px; background:#f1f5f9; border: 1.5px dashed #cbd5e1;">
                                 {% if evenement.imageUrl %}
-                                    <img src="{{ asset('images/events/' ~ evenement.imageUrl) }}"
+                                    <img src="{{ asset(evenement.imageUrl) }}"
                                         style="width:80px;height:80px;object-fit:cover;"
                                         onerror="this.parentElement.innerHTML='<i class=\'ti ti-photo text-muted fs-3\'></i>'">
                                 {% else %}
@@ -200,16 +200,15 @@
                                 </label>
 
                                 
-                                {{ form_widget(form.imageUrl, {
+                                {{ form_widget(form.image, {
                                     'attr': {
                                         'class': 'form-control form-control-sm',
-                                        'placeholder': 'formation.jpg',
-                                        'id': 'imageUrlInput'
+                                        'id': 'imageUrlInput',
+                                        'accept': 'image/jpeg, image/png, image/webp'
                                     }
                                 }) }}
 
-                     
-                                {{ form_errors(form.imageUrl) }}
+                                {{ form_errors(form.image) }}
                             </div>
                         </div>
                     </div>
