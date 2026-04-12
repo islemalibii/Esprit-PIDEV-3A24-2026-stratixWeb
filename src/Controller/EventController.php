@@ -1,23 +1,24 @@
 <?php
 
 namespace App\Controller;
-use App\Repository\EventFeedbackRepository;
 use App\Entity\Evenement;
-use App\Repository\ParticipationRepository;
 use App\Form\EvenementType;
 use App\Repository\EvenementRepository;
+use App\Repository\EventFeedbackRepository;
+use App\Repository\ParticipationRepository;
+use App\Service\PictureService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\PictureService;
 
 class EventController extends AbstractController
 {
     //back office
     #[Route('/responsable/evenement', name: 'resp_event_index')]
-    public function responsableIndex(Request $request, EvenementRepository $repo): Response
+    public function responsableIndex(Request $request, EvenementRepository $repo, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search');
         $type_event = $request->query->get('type_event');
@@ -29,9 +30,14 @@ class EventController extends AbstractController
         } else {
             $events = $repo->findByArchiveStatus(false);
         }
+        $pagination = $paginator->paginate(
+            $events,
+            $request->query->getInt('page', 1), 
+            10
+        );
 
         return $this->render('admin/events/responsableEvent.html.twig', [
-            'evenements' => $events,
+            'evenements' => $pagination,
             'archived' => $repo->findByArchiveStatus(true)
         ]);
     }
@@ -99,7 +105,7 @@ class EventController extends AbstractController
     
     // front office
     #[Route('/employee/events', name: 'emp_event_list')]
-    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo, EventFeedbackRepository $feedbackRepo): Response
+    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo, EventFeedbackRepository $feedbackRepo, PaginatorInterface $paginator): Response
     {
         $type   = $request->query->get('type');
         $search = $request->query->get('search');
@@ -111,14 +117,18 @@ class EventController extends AbstractController
         } else {
             $events = $repo->findVisibleForEmployees();
         }
-
+        $pagination = $paginator->paginate(
+            $events,
+            $request->query->getInt('page', 1),
+            9
+        );
 
         $userEmail = $this->getUser()?->getUserIdentifier();
 
         $joinedEventIds = $participationRepo->findUserEventIds($userEmail);
 
         return $this->render('employee/events/list.html.twig', [
-            'events'        => $events,
+            'events'          => $pagination,
             'userEmail'     => $userEmail,
             'joinedEventIds'=> $joinedEventIds, 
             'feedbackEventIds'=> $feedbackRepo->findFeedbackEventIds($userEmail),
