@@ -33,7 +33,10 @@
                     target="_blank">
                         <i class="ti ti-file-type-pdf me-1"></i> Exporter PDF
                     </a>
-                    
+                    <a href="{{ path('participation_export_excel', {'id': evenement.id}) }}"
+                    class="btn btn-sm btn-outline-success px-3">
+                        <i class="ti ti-file-type-xls me-1"></i> Exporter Participants
+                    </a>
                 </div>
             </div>
         </div>
