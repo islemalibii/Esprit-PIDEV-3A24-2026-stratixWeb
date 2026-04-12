@@ -28,10 +28,12 @@
                         <i class="ti ti-archive me-1"></i>
                         {{ evenement.isArchived ? 'Restaurer' : 'Archiver' }}
                     </a>
-                    <form method="post" action="{{ path('admin_event_delete', {'id': evenement.id}) }}"
-                          onsubmit="return confirm('Supprimer définitivement cet événement ?');" style="display:inline;">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                    </form>
+                    <a href="{{ path('resp_event_pdf', {'id': evenement.id}) }}"
+                    class="btn btn-sm btn-outline-danger px-3"
+                    target="_blank">
+                        <i class="ti ti-file-type-pdf me-1"></i> Exporter PDF
+                    </a>
+                    
                 </div>
             </div>
         </div>

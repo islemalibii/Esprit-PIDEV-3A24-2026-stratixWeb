@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Snappy\Pdf;
 
 class EventController extends AbstractController
 {
@@ -101,6 +102,23 @@ class EventController extends AbstractController
     }
 
 
+    #[Route('/responsable/evenement/{id}/pdf', name: 'resp_event_pdf')]
+    public function exportPdf(Evenement $evenement, Pdf $pdf, EventFeedbackRepository $feedbackRepo): Response
+    {
+        $html = $this->renderView('admin/events/pdf.html.twig', [
+            'evenement' => $evenement,
+            'feedbacks' => $feedbackRepo->findBy(['evenement' => $evenement]),
+        ]);
+
+        return new Response(
+            $pdf->getOutputFromHtml($html),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="event-' . $evenement->getId() . '.pdf"',
+            ]
+        );
+    }
 
     
     // front office
