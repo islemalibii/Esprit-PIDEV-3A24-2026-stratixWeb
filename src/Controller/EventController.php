@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use App\Repository\EventFeedbackRepository;
 use App\Entity\Evenement;
 use App\Repository\ParticipationRepository;
 use App\Form\EvenementType;
@@ -78,10 +78,11 @@ class EventController extends AbstractController
 
     
     #[Route('/responsable/evenement/{id}', name: 'resp_event_show')]
-    public function show(Evenement $evenement): Response
+    public function show(Evenement $evenement, EventFeedbackRepository $feedbackRepo): Response
     {
         return $this->render('admin/events/showEvent.html.twig', [
-            'evenement' => $evenement
+            'evenement' => $evenement,
+            'feedbacks' => $feedbackRepo->findBy(['evenement' => $evenement]),
         ]);
     }
 
@@ -104,7 +105,7 @@ class EventController extends AbstractController
     
     // front office
     #[Route('/employee/events', name: 'emp_event_list')]
-    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo): Response
+    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo, EventFeedbackRepository $feedbackRepo): Response
     {
         $type   = $request->query->get('type');
         $search = $request->query->get('search');
@@ -126,6 +127,7 @@ class EventController extends AbstractController
             'events'        => $events,
             'userEmail'     => $userEmail,
             'joinedEventIds'=> $joinedEventIds, 
+            'feedbackEventIds'=> $feedbackRepo->findFeedbackEventIds($userEmail),
         ]);
     }
     #[Route('/event/{id}', name: 'emp_event_show', methods: ['GET'])]

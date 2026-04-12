@@ -170,7 +170,6 @@
 </div>
 
 <script>
-    // Participer
     const btnParticipate = document.getElementById('btn-participate');
     if (btnParticipate) {
         btnParticipate.addEventListener('click', function() {
@@ -188,7 +187,6 @@
                         ${data.message}
                     </div>`;
                 if (data.success) {
-                    // Reload to update participation status
                     setTimeout(() => location.reload(), 1500);
                 }
             });

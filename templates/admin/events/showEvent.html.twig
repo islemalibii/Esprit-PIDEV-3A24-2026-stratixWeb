@@ -158,6 +158,60 @@
                                 </div>
                             </div>
 
+
+                            {% if feedbacks is not empty %}
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <h6 class="fw-semibold text-muted text-uppercase small mb-4"
+                                                style="letter-spacing:.05em;">
+                                                <i class="ti ti-star me-1 text-warning"></i>
+                                                Avis des employés ({{ feedbacks|length }})
+                                            </h6>
+
+                                            {% set total = 0 %}
+                                            {% for f in feedbacks %}{% set total = total + f.rating %}{% endfor %}
+                                            {% set average = (total / feedbacks|length)|round(1) %}
+
+                                            <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-2" style="background:#fffbeb;">
+                                                <span class="fs-1 fw-bold text-warning">{{ average }}</span>
+                                                <div>
+                                                    <div class="d-flex gap-1 fs-5">
+                                                        {% for i in 1..5 %}
+                                                            <i class="ti ti-star{% if i <= average %}-filled text-warning{% else %} text-muted{% endif %}"></i>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <p class="mb-0 text-muted small">Moyenne sur {{ feedbacks|length }} avis</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex flex-column gap-3">
+                                                {% for feedback in feedbacks %}
+                                                <div class="p-3 rounded-2" style="background:#f8fafc; border-left: 3px solid #f59e0b;">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <div class="d-flex gap-1">
+                                                            {% for i in 1..5 %}
+                                                                <i class="ti ti-star{% if i <= feedback.rating %}-filled text-warning{% else %} text-muted{% endif %} small"></i>
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="text-muted" style="font-size:.72rem;">
+                                                            {{ feedback.dateFeedback ? feedback.dateFeedback|date('d/m/Y') : '' }}
+                                                        </span>
+                                                    </div>
+                                                    {% if feedback.commentaire %}
+                                                        <p class="mb-0 small text-dark">{{ feedback.commentaire }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>

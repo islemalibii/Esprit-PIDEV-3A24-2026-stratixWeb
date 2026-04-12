@@ -139,6 +139,22 @@
                                 <span class="badge bg-light text-muted w-100 py-2">
                                     <i class="fas fa-history me-1"></i> Terminé
                                 </span>
+                                {% set alreadyFeedback = event.id in feedbackEventIds %}
+                                {% if alreadyFeedback %}
+                                    <span class="btn btn-sm btn-warning w-100 mt-1 disabled" style="opacity:1; cursor:default; pointer-events:none;">
+                                        <i class="ti ti-star me-1"></i> Merci pour votre avis !
+                                    </span>
+                                {% else %}
+                                    <a href="{{ path('feedback_new', {'id': event.id}) }}"
+                                    class="btn btn-sm btn-outline-warning w-100 mt-1">
+                                        <i class="ti ti-star me-1"></i> Donner un avis
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ path('emp_event_show', {'id': event.id}) }}"
+                                class="btn btn-sm btn-outline-secondary w-100 mt-1">
+                                    <i class="ti ti-eye me-1"></i> Détails
+                                </a>
                             {% endif %}
                         </div>
                         <div class="participate-msg mt-2"></div>
