@@ -42,7 +42,12 @@ class Projet
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     #[Assert\Type("\DateTimeInterface")]
-    #[Assert\GreaterThanOrEqual("today", message: "La date de début ne peut pas être dans le passé.")]
+    // On ajoute le groupe ici :
+    #[Assert\GreaterThanOrEqual(
+        "today", 
+        message: "La date de début ne peut pas être dans le passé.",
+        groups: ['registration'] 
+    )]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

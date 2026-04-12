@@ -43,18 +43,22 @@ class ProjetController extends AbstractController
     }
 
     // ─────────────────────────────────────────────
-    //  CRÉER
+    //  CRÉER (Contrainte date future activée)
     // ─────────────────────────────────────────────
     #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $projet = new Projet();
-        $form   = $this->createForm(ProjetType::class, $projet);
+        
+        // CORRECTION : Ajout du groupe 'registration' pour valider la date de début au futur
+        $form = $this->createForm(ProjetType::class, $projet, [
+            'validation_groups' => ['Default', 'registration'],
+        ]);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // ── Upload du cahier des charges ──────────────────
             /** @var UploadedFile|null $file */
             $file = $form->get('cahierDesChargesFile')->getData();
             if ($file) {
@@ -64,7 +68,6 @@ class ProjetController extends AbstractController
                 $projet->setCahierDesCharges($newFilename);
             }
 
-            // ── Valeurs par défaut ────────────────────────────
             if (!$projet->getStatut()) {
                 $projet->setStatut('Planifié');
             }
@@ -83,23 +86,25 @@ class ProjetController extends AbstractController
     }
 
     // ─────────────────────────────────────────────
-    //  MODIFIER
+    //  MODIFIER (Aucune contrainte sur la date passée)
     // ─────────────────────────────────────────────
     #[Route('/{id}/edit', name: 'app_projet_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Projet $projet, EntityManagerInterface $em): Response
     {
-        $form = $this->createForm(ProjetType::class, $projet);
+        // CORRECTION : Utilisation de 'Default' uniquement pour ignorer 'registration'
+        $form = $this->createForm(ProjetType::class, $projet, [
+            'validation_groups' => ['Default'],
+        ]);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // ── Upload d'un nouveau fichier (remplace l'ancien) ──
             /** @var UploadedFile|null $file */
             $file = $form->get('cahierDesChargesFile')->getData();
             if ($file) {
                 $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/cahiers';
 
-                // Suppression de l'ancien fichier s'il existe
                 if ($projet->getCahierDesCharges()) {
                     $oldPath = $uploadDir . '/' . $projet->getCahierDesCharges();
                     if (file_exists($oldPath)) {
@@ -145,13 +150,11 @@ class ProjetController extends AbstractController
         return $this->redirectToRoute('app_projet_archives');
     }
 
-    #[Route('/projet/{id}/chat', name: 'app_projet_chat')]
+    #[Route('/{id}/chat', name: 'app_projet_chat')]
     public function chat(Projet $projet): Response
     {
         return $this->render('admin/Projet/chat.html.twig', [
             'projet' => $projet,
-            // On passe l'utilisateur actuel pour le nom de l'expéditeur
-            'userName' => $this->getUser()->getNom() . ' ' . $this->getUser()->getPrenom(),
         ]);
     }
 
@@ -174,7 +177,7 @@ class ProjetController extends AbstractController
     // ─────────────────────────────────────────────
     //  DÉTAILS
     // ─────────────────────────────────────────────
-    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
+    #[Route('/{id}/show', name: 'app_projet_show', methods: ['GET'])]
     public function show(Projet $projet): Response
     {
         return $this->render('admin/Projet/detailsProjet.html.twig', [
@@ -185,14 +188,9 @@ class ProjetController extends AbstractController
     // ─────────────────────────────────────────────
     //  DÉTAILS VUE EMPLOYÉ
     // ─────────────────────────────────────────────
-    #[Route('/employee/projet/{id}', name: 'app_projet_employe_show', methods: ['GET'])]
+    #[Route('/employee/projet/{id}/show', name: 'app_projet_employe_show', methods: ['GET'])]
     public function showEmployee(Projet $projet): Response
     {
-        // Optionnel : vérifier si l'employé fait bien partie du projet pour plus de sécurité
-        if (!$projet->getMembres()->contains($this->getUser()) && $projet->getResponsable() !== $this->getUser()) {
-            // Tu peux choisir de rediriger ou d'afficher une erreur si l'employé n'est pas lié au projet
-        }
-
         return $this->render('employee/employeProjetDetails.html.twig', [
             'projet' => $projet,
         ]);
