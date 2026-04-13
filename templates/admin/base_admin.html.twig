@@ -1,120 +1,38 @@
-{# templates/admin/base_admin.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <style>
-        /* Structure Globale Stratix */
-        body {
-            overflow-x: hidden;
-            background-color: #f4f7f6;
-        }
-
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-
-        /* Sidebar : Largeur fixe et transition douce */
-        .admin-sidebar {
-            width: 250px;
-            min-width: 250px;
-            background: #ffffff; 
-            border-right: 1px solid #e0e0e0;
-            transition: all 0.3s ease;
-            z-index: 1031;
-        }
-
-        /* Main Area : Prend tout l'espace restant */
-        .admin-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0; /* Évite les débordements de tableaux */
-        }
-
-        /* Ajustement pour la Navbar fixe */
-        .admin-content-area {
-            padding: 25px;
-            margin-top: 70px; /* IMPORTANT : Laisse de la place pour la TopBar fixe */
-            flex-grow: 1;
-        }
-
-        /* Mode "Mini" Sidebar (Si tu actives le bouton Toggle plus tard) */
-        .sidebar-collapsed .admin-sidebar {
-            margin-left: -250px;
-        }
-
-        /* Responsive Mobile */
-        @media (max-width: 992px) {
-            .admin-sidebar {
-                margin-left: -250px;
-                position: fixed;
-                height: 100%;
-            }
-            .sidebar-show .admin-sidebar {
-                margin-left: 0;
-            }
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
-    <div class="admin-wrapper" id="wrapper">
-        
-        {# 1. SIDEBAR PARTIAL #}
-        <aside class="admin-sidebar shadow-sm">
-            {% include 'admin/partials/sidebar.html.twig' %}
-        </aside>
-
-        <div class="admin-main">
+    <main id="content" class="content py-4">
+        <div class="container-fluid px-4">
             
-            {# 2. NAVBAR / TOPBAR PARTIAL #}
-            {# Attention : vérifie si ton fichier s'appelle navbar.html.twig ou topbar.html.twig #}
-            {% include 'admin/partials/navbar.html.twig' %}
-
-            {# 3. ZONE DE CONTENU DYNAMIQUE #}
-            <main class="admin-content-area">
-                {# Affichage des messages Flash (Succès/Erreur) #}
-                {% for label, messages in app.flashes %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show shadow-sm" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
+            {# Flash messages #}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 {% endfor %}
+            {% endfor %}
 
-                {# Injection du contenu (ex: ton tableau de produits) #}
-                {% block admin_content %}
-                {% endblock %}
-            </main>
-            
+            {% block admin_content %}{% endblock %}
+
         </div>
-    </div>
+    </main>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Script simple pour le bouton Toggle (si tu as besoin qu'il fonctionne)
         document.addEventListener('DOMContentLoaded', function() {
-            const toggleBtn = document.getElementById('toggleBtn');
-            const mobileBtn = document.getElementById('mobileBtn');
-            const wrapper = document.getElementById('wrapper');
-
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    wrapper.classList.toggle('sidebar-collapsed');
-                });
-            }
-
-            if(mobileBtn) {
-                mobileBtn.addEventListener('click', () => {
-                    wrapper.classList.toggle('sidebar-show');
-                });
-            }
+            var dropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            dropdowns.forEach(function(el) {
+                new bootstrap.Dropdown(el);
+            });
         });
     </script>
 {% endblock %}

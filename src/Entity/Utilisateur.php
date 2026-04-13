@@ -6,12 +6,18 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 use App\Repository\UtilisateurRepository;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
-class Utilisateur
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+#[UniqueEntity(fields: ['cin'], message: 'Ce CIN est déjà utilisé.')]
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,6 +36,7 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Email(message: 'Email invalide.')]
     private ?string $email = null;
 
     public function getEmail(): ?string
@@ -44,6 +51,7 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Regex(pattern: '/^\d{8}$/', message: 'Le téléphone doit contenir 8 chiffres.')]
     private ?string $tel = null;
 
     public function getTel(): ?string
@@ -72,6 +80,9 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(min: 2, max: 50, minMessage: 'Minimum 2 caractères.', maxMessage: 'Maximum 50 caractères.')]
+    #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/', message: 'Le nom ne doit contenir que des lettres.')]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -86,6 +97,9 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[Assert\Length(min: 2, max: 50, minMessage: 'Minimum 2 caractères.', maxMessage: 'Maximum 50 caractères.')]
+    #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/', message: 'Le prénom ne doit contenir que des lettres.')]
     private ?string $prenom = null;
 
     public function getPrenom(): ?string
@@ -100,6 +114,8 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'integer', nullable: false)]
+    #[Assert\NotBlank(message: 'Le CIN est obligatoire.')]
+    #[Assert\Regex(pattern: '/^\d{8}$/', message: 'Le CIN doit contenir exactement 8 chiffres.')]
     private ?int $cin = null;
 
     public function getCin(): ?int
@@ -211,7 +227,8 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le salaire doit être positif.')]
     private ?float $salaire = null;
 
     public function getSalaire(): ?float
@@ -379,4 +396,18 @@ class Utilisateur
         return $this;
     }
 
+    // --- UserInterface ---
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        $role = strtoupper(str_replace(' ', '_', $this->role ?? 'user'));
+        return ['ROLE_' . $role];
+    }
+
+    public function eraseCredentials(): void {}
 }

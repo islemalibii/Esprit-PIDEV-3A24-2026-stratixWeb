@@ -1,0 +1,104 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Dashboard — Stratix{% endblock %}
+
+{% block admin_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-0" style="font-size:1.8rem;">Dashboard</h1>
+        <p class="text-secondary mb-0" style="font-size:.95rem;">
+            {{ "now"|date("d/m/Y") }} — Bienvenue, {{ app.user.prenom }} 👋
+        </p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-2 h-100">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="d-flex align-items-center justify-content-center text-white rounded-2"
+                     style="width:48px;height:48px;background:#4f46e5;">
+                    <i class="ti ti-checklist fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small">Mes Tâches</div>
+                    <div class="fw-bold fs-4 lh-1">Gérer</div>
+                </div>
+            </div>
+            <a href="{{ path('app_tache_index') }}" class="btn btn-primary btn-sm mt-3">
+                <i class="ti ti-arrow-right me-1"></i>Voir les tâches
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-2 h-100">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="d-flex align-items-center justify-content-center text-white rounded-2"
+                     style="width:48px;height:48px;background:#16a34a;">
+                    <i class="ti ti-folder fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small">Projets</div>
+                    <div class="fw-bold fs-4 lh-1">Gérer</div>
+                </div>
+            </div>
+            <a href="{{ path('app_projet_index') }}" class="btn btn-success btn-sm mt-3">
+                <i class="ti ti-arrow-right me-1"></i>Voir les projets
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-2 h-100">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="d-flex align-items-center justify-content-center text-white rounded-2"
+                     style="width:48px;height:48px;background:#d97706;">
+                    <i class="ti ti-calendar-event fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small">Événements</div>
+                    <div class="fw-bold fs-4 lh-1">Gérer</div>
+                </div>
+            </div>
+            <a href="{{ path('resp_event_index') }}" class="btn btn-warning btn-sm mt-3">
+                <i class="ti ti-arrow-right me-1"></i>Voir les événements
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <a href="{{ path('app_service_index') }}" class="card p-3 text-decoration-none border-0 shadow-sm h-100 d-flex flex-row align-items-center gap-3" style="border-radius:12px;">
+            <div class="rounded-2 d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;background:#0891b2;flex-shrink:0;">
+                <i class="ti ti-building"></i>
+            </div>
+            <span class="fw-semibold text-dark">Services</span>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('app_categorie_service_index') }}" class="card p-3 text-decoration-none border-0 shadow-sm h-100 d-flex flex-row align-items-center gap-3" style="border-radius:12px;">
+            <div class="rounded-2 d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;background:#7c3aed;flex-shrink:0;">
+                <i class="ti ti-category"></i>
+            </div>
+            <span class="fw-semibold text-dark">Catégories</span>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('produit_index') }}" class="card p-3 text-decoration-none border-0 shadow-sm h-100 d-flex flex-row align-items-center gap-3" style="border-radius:12px;">
+            <div class="rounded-2 d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;background:#dc2626;flex-shrink:0;">
+                <i class="ti ti-shopping-bag"></i>
+            </div>
+            <span class="fw-semibold text-dark">Produits</span>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('ressource_index') }}" class="card p-3 text-decoration-none border-0 shadow-sm h-100 d-flex flex-row align-items-center gap-3" style="border-radius:12px;">
+            <div class="rounded-2 d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;background:#059669;flex-shrink:0;">
+                <i class="ti ti-package"></i>
+            </div>
+            <span class="fw-semibold text-dark">Ressources</span>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

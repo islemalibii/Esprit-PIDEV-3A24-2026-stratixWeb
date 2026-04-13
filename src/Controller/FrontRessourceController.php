@@ -29,7 +29,7 @@ class FrontRessourceController extends AbstractController
             $quantiteTotale += $r->getQuantite();
         }
 
-        return $this->render('front/ressource/index.html.twig', [
+        return $this->render('employee/ressource/index.html.twig', [
             'ressources' => $ressources,
             'searchTerm' => $searchTerm,
             'stats' => [

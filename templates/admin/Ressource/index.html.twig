@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Ressources{% endblock %}
+
+{% block body %}
+<main id="content" class="content py-4">
+
+<div class="container mt-4">
+    {# --- AJOUT : BANDEAU DE CONSEIL IA --- #}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info d-flex align-items-center shadow-sm border-0" style="background-color: #e3f2fd; border-left: 5px solid #3498db !important;">
+                <i class="ti ti-robot fs-3 me-3 text-primary"></i>
+                <div>
+                    <strong>Assistant Stratix AI :</strong> 
+                    Analyse en temps réel activée. Cliquez sur le bouton <span class="badge bg-primary"><i class="ti ti-bolt"></i> Analyser</span> pour trouver le meilleur compromis prix/délai parmi vos catalogues importés.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            
+            <form method="GET" action="{{ path('ressource_index') }}" class="row g-3 align-items-center mb-4">
+                <div class="col-auto">
+                    <label class="fw-bold">Rechercher :</label>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="q" value="{{ searchTerm }}" 
+                           class="form-control" placeholder="Nom, type ou fournisseur...">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" style="background-color: #3498db; border: none;">Rechercher</button>
+                    <a href="{{ path('ressource_index') }}" class="btn btn-secondary" style="background-color: #95a5a6; border: none;">Effacer</a>
+                </div>
+                
+                <div class="col text-end">
+                    <a href="{{ path('ressource_form') }}" class="btn btn-success fw-bold px-4" style="background-color: #27ae60; border: none;">
+                        ➕ Nouvelle Ressource
+                    </a>
+                </div>
+            </form>
+
+            <h2 class="mb-4" style="color: #2c3e50; font-weight: bold;">Gestion des Ressources</h2>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Quantité</th>
+                            <th>Fournisseur</th>
+                            {# --- AJOUT : COLONNE IA --- #}
+                            <th class="text-center" style="color: #6366f1;"><i class="ti ti-cpu"></i> Intelligence</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ressource in ressources %}
+                            <tr>
+                                <td class="fw-bold">{{ ressource.nom }}</td>
+                                <td><span class="badge bg-info text-dark">{{ ressource.typeRessource }}</span></td>
+                                <td>{{ ressource.quantite }}</td>
+                                <td>{{ ressource.fournisseur }}</td>
+                                
+                                {# --- AJOUT : CELLULE ACTION IA --- #}
+                                <td class="text-center">
+                                    <a href="{{ path('app_comparateur', {'id': ressource.id}) }}" 
+                                       class="btn btn-sm btn-primary shadow-sm" 
+                                       style="background-color: #6366f1; border: none; transition: 0.3s;">
+                                        <i class="ti ti-bolt"></i> Analyser
+                                    </a>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="{{ path('ressource_form', {'id': ressource.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                                    
+                                    <form method="post" action="{{ path('ressource_delete', {'id': ressource.id}) }}" style="display:inline-block;" onsubmit="return confirm('Supprimer cette ressource ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ressource.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Aucune ressource trouvée.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row text-center mt-4 p-3 border-top" style="background-color: #ecf0f1; border-radius: 0 0 8px 8px;">
+                <div class="col-md-4 fw-bold" style="color: #2c3e50;">
+                    Total ressources : {{ ressources|length }}
+                </div>
+                <div class="col-md-4 fw-bold" style="color: #27ae60;">
+                    Quantité totale : {{ quantiteTotale|default(0) }}
+                </div>
+                <div class="col-md-4 fw-bold" style="color: #3498db;">
+                    Types : {{ nombreTypes|default(0) }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</main>
+{% endblock %}

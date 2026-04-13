@@ -15,25 +15,17 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProduitController extends AbstractController
 {
-    /**
-     * Affiche la liste des produits avec recherche, tri et statistiques.
-     */
     #[Route('/produit', name: 'produit_index')]
     public function index(ProduitRepository $repository, Request $request): Response
     {
-        // 1. Récupération des paramètres de recherche et de tri
         $searchTerm = $request->query->get('q', '');
         $sortBy = $request->query->get('sort', 'nom');
         $direction = $request->query->get('direction', 'asc');
 
-        if ($searchTerm) {
-            // Assure-toi d'avoir implémenté findBySearch dans ProduitRepository
-            $produits = $repository->findBySearch($searchTerm);
-        } else {
-            $produits = $repository->findBy([], [$sortBy => $direction]);
-        }
+        $produits = $searchTerm 
+            ? $repository->findBySearch($searchTerm) 
+            : $repository->findBy([], [$sortBy => $direction]);
 
-        // 2. Calcul des statistiques pour le tableau de bord 
         $stats = [
             'total' => count($produits),
             'stockFaible' => 0,
@@ -47,21 +39,19 @@ class ProduitController extends AbstractController
             $stats['valeurStock'] += ($p->getPrix() * $p->getStockActuel());
         }
 
-        return $this->render('produit/index.html.twig', [
+        return $this->render('admin/produit/index.html.twig', [
             'produits' => $produits,
             'searchTerm' => $searchTerm,
             'stats' => $stats
         ]);
     }
 
-    /**
-     * Formulaire combiné pour la création et l'édition d'un produit.
-     */
     #[Route('/produit/new', name: 'produit_new')]
     #[Route('/produit/edit/{id}', name: 'produit_edit')]
     public function form(?Produit $produit = null, Request $request, EntityManagerInterface $em): Response
     {
         $editMode = ($produit !== null);
+        $aujourdhui = new \DateTime('today');
 
         if (!$produit) {
             $produit = new Produit();
@@ -73,7 +63,17 @@ class ProduitController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
-            // 3. Gestion de l'upload de l'image
+            // 1. Sécurité supplémentaire : Date de fabrication
+            // On accepte le passé seulement en mode EDITION pour ne pas bloquer les vieux produits
+            if (!$editMode && $produit->getDateFabrication() < $aujourdhui) {
+                $this->addFlash('error', 'La date de fabrication ne peut pas être antérieure à aujourd\'hui.');
+                return $this->render('admin/produit/formulaire.html.twig', [
+                    'form' => $form->createView(),
+                    'editMode' => $editMode
+                ]);
+            }
+
+            // 2. Gestion de l'image
             $imageFile = $form->get('image_file')->getData();
             if ($imageFile) {
                 $newFilename = 'produit_'.uniqid().'.'.$imageFile->guessExtension();
@@ -88,43 +88,33 @@ class ProduitController extends AbstractController
                 }
             }
 
-            // 4. Validation logique des dates (Métier avancé)
-            if ($produit->getDatePeremption() && $produit->getDateFabrication() && 
-                $produit->getDatePeremption() < $produit->getDateFabrication()) {
-                $this->addFlash('error', 'La date de péremption ne peut pas être antérieure à la fabrication.');
-            } else {
-                $em->persist($produit);
-                $em->flush();
-                
-                $this->addFlash('success', $editMode ? 'Produit mis à jour !' : 'Produit ajouté avec succès !');
-                return $this->redirectToRoute('produit_index');
-            }
+            // 3. Sauvegarde
+            $em->persist($produit);
+            $em->flush();
+            
+            $this->addFlash('success', $editMode ? 'Produit mis à jour !' : 'Produit ajouté avec succès !');
+            return $this->redirectToRoute('produit_index');
         }
 
-        return $this->render('produit/formulaire.html.twig', [
+        return $this->render('admin/produit/formulaire.html.twig', [
             'form' => $form->createView(),
             'editMode' => $editMode,
-            'produit' => $produit // Nécessaire pour l'affichage de l'image actuelle
+            'produit' => $produit 
         ]);
     }
 
-    /**
-     * Exportation de la liste des produits en format PDF.
-     */
     #[Route('/produit/pdf', name: 'produit_pdf')]
-    public function generatePdf(ProduitRepository $repository, PdfService $pdf): void
+    public function generatePdf(ProduitRepository $repository, PdfService $pdf): Response
     {
         $produits = $repository->findAll();
-        $html = $this->renderView('produit/pdf.html.twig', [
+        $html = $this->renderView('admin/produit/pdf.html.twig', [
             'produits' => $produits
         ]);
         
-        $pdf->showPdfFile($html, 'Rapport_Produits_Stratix_' . date('Y-m-d'));
+        // On retourne la réponse générée par le service (Content-Type: application/pdf)
+        return $pdf->showPdfFile($html, 'Rapport_Produits_Stratix_' . date('Y-m-d'));
     }
 
-    /**
-     * Suppression sécurisée d'un produit via jeton CSRF.
-     */
     #[Route('/produit/delete/{id}', name: 'produit_delete', methods: ['POST'])]
     public function delete(Produit $produit, Request $request, EntityManagerInterface $em): Response
     {

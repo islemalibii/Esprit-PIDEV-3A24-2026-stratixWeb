@@ -1,0 +1,122 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Liste des Plannings{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-calendar-alt"></i> Gestion des Plannings</h1>
+    <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouveau planning
+    </a>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h2 class="display-4">{{ plannings|length }}</h2>
+                <h5>📊 Total plannings</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'JOUR')|length }}</h2>
+                <h5>☀️ JOUR</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'SOIR')|length }}</h2>
+                <h5>🌆 SOIR</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-dark">
+            <div class="card-body text-center">
+                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'NUIT')|length }}</h2>
+                <h5>🌙 NUIT</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tableau des plannings -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Employé</th>
+                        <th>Date</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for planning in plannings %}
+                    <tr>
+                        <td>
+                            {{ employes[planning.employeId] ?? 'Non assigné' }}
+                        </td>
+                        <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</td>
+                        <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</td>
+                        <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</td>
+                        <td>
+                            {% if planning.typeShift == 'JOUR' %}
+                                <span class="badge bg-info">☀️ JOUR</span>
+                            {% elseif planning.typeShift == 'SOIR' %}
+                                <span class="badge bg-warning">🌆 SOIR</span>
+                            {% elseif planning.typeShift == 'NUIT' %}
+                                <span class="badge bg-dark">🌙 NUIT</span>
+                            {% elseif planning.typeShift == 'CONGE' %}
+                                <span class="badge bg-warning text-dark">🏖️ CONGÉ</span>
+                            {% elseif planning.typeShift == 'MALADIE' %}
+                                <span class="badge bg-danger">🤒 MALADIE</span>
+                            {% elseif planning.typeShift == 'FORMATION' %}
+                                <span class="badge bg-info">📚 FORMATION</span>
+                            {% else %}
+                                <span class="badge bg-secondary">⚪ AUTRE</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-actions">
+                            <a href="{{ path('app_planning_show', {'id': planning.id}) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun planning trouvé</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-actions .btn { padding: 2px 8px; margin: 0 2px; }
+    .badge { font-size: 0.85rem; padding: 5px 10px; }
+    .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+</style>
+{% endblock %}
+

@@ -37,7 +37,7 @@ class RessourceController extends AbstractController
         }
         $nombreTypes = count(array_unique($typesUniques));
 
-        return $this->render('ressource/index.html.twig', [
+        return $this->render('admin/ressource/index.html.twig', [
             'ressources' => $ressources,
             'searchTerm' => $searchTerm,
             'quantiteTotale' => $quantiteTotale,
@@ -76,7 +76,7 @@ class RessourceController extends AbstractController
             return $this->redirectToRoute('ressource_index');
         }
 
-        return $this->render('ressource/form.html.twig', [
+        return $this->render('admin/ressource/form.html.twig', [
             'form' => $form->createView(),
             'editMode' => $ressource->getId() !== null,
             'ressource' => $ressource
@@ -102,7 +102,7 @@ class RessourceController extends AbstractController
 public function generatePdfRessources(RessourceRepository $repository, PdfService $pdf): void
 {
     $ressources = $repository->findAll();
-    $html = $this->renderView('ressource/pdf.html.twig', [
+    $html = $this->renderView('admin/ressource/pdf.html.twig', [
         'ressources' => $ressources
     ]);
     $pdf->showPdfFile($html, 'Liste_Ressources_Stratix');

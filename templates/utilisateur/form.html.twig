@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}
+<div style="max-width:700px;margin:2rem auto;font-family:sans-serif;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h1 style="margin:0;">{{ title }}</h1>
+        <a href="{{ path('utilisateur_index') }}" style="color:#6b7280;text-decoration:none;">← Retour</a>
+    </div>
+    {{ form_start(form, {attr: {style: 'background:#fff;padding:2rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);'}}) }}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>{{ form_row(form.nom) }}</div>
+        <div>{{ form_row(form.prenom) }}</div>
+        <div>{{ form_row(form.cin) }}</div>
+        <div>{{ form_row(form.email) }}</div>
+        <div>{{ form_row(form.tel) }}</div>
+        <div>{{ form_row(form.role) }}</div>
+        <div>{{ form_row(form.statut) }}</div>
+        <div>{{ form_row(form.department) }}</div>
+        <div>{{ form_row(form.poste) }}</div>
+        <div>{{ form_row(form.date_embauche) }}</div>
+        <div>{{ form_row(form.salaire) }}</div>
+        <div>{{ form_row(form.plainPassword) }}</div>
+    </div>
+    <div style="margin-top:1rem;">{{ form_row(form.competences) }}</div>
+    <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+        <button type="submit" style="background:#4f46e5;color:#fff;padding:.6rem 1.5rem;border:none;border-radius:6px;cursor:pointer;">Enregistrer</button>
+        <a href="{{ path('utilisateur_index') }}" style="padding:.6rem 1.5rem;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;">Annuler</a>
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\EvenementRepository;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
@@ -22,42 +22,59 @@ class Evenement
     {
         return $this->id;
     }
-
     public function setId(int $id): self
     {
         $this->id = $id;
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'type_event', type: 'string', nullable: true)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['reunion', 'formation', 'lancementProduit', 'seminaire', 'recrutement'],
+        message: "Type d'événement invalide."
+    )]
     private ?string $type_event = null;
 
-    public function getType_event(): ?string
+    public function getTypeEvent(): ?string
     {
         return $this->type_event;
     }
 
-    public function setType_event(?string $type_event): self
+    public function setTypeEvent(?string $type_event): static
     {
         $this->type_event = $type_event;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: true)]
+
+
+    #[ORM\Column(name: 'date_event', type: 'date', nullable: true)]
+    #[Assert\NotBlank(message: "La date est obligatoire.")]
+    #[Assert\GreaterThanOrEqual(
+        value: "today",
+        message: "La date de l'événement ne peut pas être dans le passé."
+    )]
     private ?\DateTimeInterface $date_event = null;
 
-    public function getDate_event(): ?\DateTimeInterface
+    public function getDateEvent(): ?\DateTime
     {
         return $this->date_event;
     }
 
-    public function setDate_event(?\DateTimeInterface $date_event): self
+    public function setDateEvent(?\DateTime $date_event): static
     {
         $this->date_event = $date_event;
+
         return $this;
     }
 
+
+
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: "Veuillez fournir une description.")]
+    #[Assert\Length(min: 10, minMessage: "La description est trop courte.")]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -71,8 +88,14 @@ class Evenement
         return $this;
     }
 
+
     #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $statut = null;
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['planifier', 'annuler', 'terminer'],
+        message: "Statut invalide."
+    )]
+    private ?string $statut = 'planifier';
 
     public function getStatut(): ?string
     {
@@ -86,6 +109,7 @@ class Evenement
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le lieu est obligatoire.")]
     private ?string $lieu = null;
 
     public function getLieu(): ?string
@@ -99,7 +123,14 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire")]
+    #[Assert\Length(
+        min: 5,
+        max: 100,
+        minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -113,7 +144,7 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'isArchived', type: 'boolean', nullable: true)]
     private ?bool $isArchived = null;
 
     public function isIsArchived(): ?bool
@@ -127,21 +158,12 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'image_url', type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "L'image est obligatoire.")]
     private ?string $image_url = null;
 
-    public function getImage_url(): ?string
-    {
-        return $this->image_url;
-    }
 
-    public function setImage_url(?string $image_url): self
-    {
-        $this->image_url = $image_url;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
     private ?float $latitude = null;
 
     public function getLatitude(): ?float
@@ -155,7 +177,7 @@ class Evenement
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: true)]
     private ?float $longitude = null;
 
     public function getLongitude(): ?float
@@ -202,29 +224,9 @@ class Evenement
         return $this;
     }
 
-    public function getTypeEvent(): ?string
-    {
-        return $this->type_event;
-    }
+    
 
-    public function setTypeEvent(?string $type_event): static
-    {
-        $this->type_event = $type_event;
-
-        return $this;
-    }
-
-    public function getDateEvent(): ?\DateTime
-    {
-        return $this->date_event;
-    }
-
-    public function setDateEvent(?\DateTime $date_event): static
-    {
-        $this->date_event = $date_event;
-
-        return $this;
-    }
+    
 
     public function isArchived(): ?bool
     {

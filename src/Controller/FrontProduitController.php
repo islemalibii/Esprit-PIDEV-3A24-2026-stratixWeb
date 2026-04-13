@@ -31,7 +31,7 @@ class FrontProduitController extends AbstractController
             }
         }
 
-        return $this->render('front/produit/index.html.twig', [
+        return $this->render('employee/produit/index.html.twig', [
             'produits' => $produits,
             'searchTerm' => $searchTerm,
             'stats' => [
