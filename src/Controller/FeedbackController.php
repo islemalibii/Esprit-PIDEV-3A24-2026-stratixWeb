@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\EventFeedback;
 use App\Entity\Evenement;
-use App\Entity\Utilisateur;
 use App\Form\FeedbackType;
 use App\Repository\EventFeedbackRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,10 +22,11 @@ class FeedbackController extends AbstractController
         EntityManagerInterface $em,
         EventFeedbackRepository $feedbackRepo
     ): Response {
-        $user = $this->getUser();
+        $userEmail = $this->getUser()?->getUserIdentifier();
 
         $existing = $feedbackRepo->findOneBy([
-            'evenement' => $evenement,
+            'evenement'  => $evenement,
+            'user_email' => $userEmail,
         ]);
 
         if ($existing) {
@@ -37,6 +37,7 @@ class FeedbackController extends AbstractController
         $feedback = new EventFeedback();
         $feedback->setEvenement($evenement);
         $feedback->setDateFeedback(new \DateTime());
+        $feedback->setUserEmail($userEmail); 
 
         $form = $this->createForm(FeedbackType::class, $feedback);
         $form->handleRequest($request);

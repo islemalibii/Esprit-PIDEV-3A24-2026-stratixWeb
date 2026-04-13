@@ -41,7 +41,7 @@ class EvenementType extends AbstractType
             ->add('longitude', HiddenType::class, [
                 'attr' => ['id' => 'longitude-input'],
             ])
-            
+
             ->add('typeEvent', ChoiceType::class, [
                 'choices'  => [
                     'Formation'        => 'formation',
@@ -64,6 +64,18 @@ class EvenementType extends AbstractType
                 'multiple' => false,
                 'data' => 'planifier',
 
+            ])
+            ->add('recurrence', ChoiceType::class, [
+                'choices' => [
+                    'Pas de répétition' => 'none',
+                    'Chaque semaine'    => 'weekly',
+                    'Chaque mois'       => 'monthly',
+                ],
+                'expanded' => false,
+                'multiple' => false,
+                'required' => false,
+                'data'     => 'none',
+                'attr'     => ['id' => 'recurrence-select'],
             ])
 
             ->add('image', FileType::class, [

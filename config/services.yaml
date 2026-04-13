@@ -23,5 +23,10 @@ services:
     App\Service\PictureService:
         arguments:
             $uploadDir: '%kernel.project_dir%/public/uploads/events'
+
+
+    App\Service\MeetingSummaryService:  
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

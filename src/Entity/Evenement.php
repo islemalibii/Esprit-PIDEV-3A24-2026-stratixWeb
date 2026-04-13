@@ -207,6 +207,21 @@ class Evenement
         $this->eventFeedbacks = new ArrayCollection();
     }
 
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $recurrence = null; // 'none', 'weekly', 'monthly'
+
+    public function getRecurrence(): ?string
+    {
+        return $this->recurrence;
+    }
+
+    public function setRecurrence(?string $recurrence): static
+    {
+        $this->recurrence = $recurrence;
+        return $this;
+    }
+
     /**
      * @return Collection<int, EventFeedback>
      */

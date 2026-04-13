@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Knp\Snappy\Pdf;
+use App\Service\MeetingSummaryService;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\RecurrenceService;
 
 class EventController extends AbstractController
 {
@@ -39,7 +42,7 @@ class EventController extends AbstractController
 
         return $this->render('admin/events/responsableEvent.html.twig', [
             'evenements' => $pagination,
-            'archived' => $repo->findByArchiveStatus(true)
+            'archived' => $repo->findByArchiveStatusArray(true)
         ]);
     }
 
@@ -47,12 +50,12 @@ class EventController extends AbstractController
     public function archives(EvenementRepository $repo): Response
     {
         return $this->render('admin/events/archivedEvents.html.twig', [
-            'archived' => $repo->findByArchiveStatus(true)
+            'archived' => $repo->findByArchiveStatusArray(true)
         ]);
     }
     #[Route('/responsable/evenement/new', name: 'resp_event_new')]
     #[Route('/responsable/evenement/edit/{id}', name: 'resp_event_edit')]
-    public function save(Evenement $evenement = null, Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
+    public function save(Evenement $evenement = null, Request $request, EntityManagerInterface $em, PictureService $pictureService, RecurrenceService $recurrenceService): Response
     {
         if (!$evenement) $evenement = new Evenement();
 
@@ -74,6 +77,9 @@ class EventController extends AbstractController
 
             $em->persist($evenement);
             $em->flush();
+            if ($isNew) {
+                $recurrenceService->generateRecurringEvents($evenement);
+            }
             return $this->redirectToRoute('resp_event_index');
         }
 
@@ -118,6 +124,33 @@ class EventController extends AbstractController
                 'Content-Disposition' => 'inline; filename="event-' . $evenement->getId() . '.pdf"',
             ]
         );
+    }
+
+    #[Route('/responsable/evenement/{id}/summary', name: 'resp_event_summary', methods: ['POST'])]
+    public function generateSummary(
+        Evenement $evenement,
+        EventFeedbackRepository $feedbackRepo,
+        MeetingSummaryService $summaryService
+    ): JsonResponse {
+        $feedbacks = $feedbackRepo->findBy(['evenement' => $evenement]);
+
+        if (empty($feedbacks)) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Aucun avis disponible pour générer un résumé.'
+            ]);
+        }
+        $summary = $summaryService->generateSummary($feedbacks, $evenement->getTitre());
+        if (!$summary) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du résumé.'
+            ]);
+        }
+        return $this->json([
+            'success' => true,
+            'summary' => $summary
+        ]);
     }
 
     

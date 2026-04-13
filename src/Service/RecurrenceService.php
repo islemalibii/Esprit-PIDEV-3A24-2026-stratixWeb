@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\Evenement;
+use Doctrine\ORM\EntityManagerInterface;
+
+class RecurrenceService
+{
+    public function __construct(private EntityManagerInterface $em) {}
+
+    public function generateRecurringEvents(Evenement $original): void
+    {
+        $recurrence = $original->getRecurrence();
+
+        if (!$recurrence || $recurrence === 'none') return;
+
+        for ($i = 1; $i <= 4; $i++) {
+            $newDate = clone $original->getDateEvent();
+
+            if ($recurrence === 'weekly') {
+                $newDate->modify("+{$i} week");
+            } elseif ($recurrence === 'monthly') {
+                $newDate->modify("+{$i} month");
+            }
+
+            $newEvent = new Evenement();
+            $newEvent->setTitre($original->getTitre() . ' (n° ' . ($i + 1) . ')');
+            $newEvent->setDescription($original->getDescription());
+            $newEvent->setLieu($original->getLieu());
+            $newEvent->setTypeEvent($original->getTypeEvent());
+            $newEvent->setStatut($original->getStatut());
+            $newEvent->setIsArchived(false);
+            $newEvent->setDateEvent($newDate);
+            $newEvent->setImageUrl($original->getImageUrl());
+            $newEvent->setLatitude($original->getLatitude());
+            $newEvent->setLongitude($original->getLongitude());
+            $newEvent->setRecurrence('none');
+
+            $this->em->persist($newEvent);
+        }
+
+        $this->em->flush();
+    }
+}

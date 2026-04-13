@@ -170,15 +170,12 @@
                                 }) }}
                                 {{ form_errors(form.lieu) }}
 
-                                {# Suggestions dropdown #}
                                 <div id="suggestions" class="list-group mt-1 position-absolute z-3" style="max-width:400px;"></div>
                             </div>
 
-                            {# Hidden fields #}
                             {{ form_widget(form.latitude, {'attr': {'id': 'latitude-input'}}) }}
                             {{ form_widget(form.longitude, {'attr': {'id': 'longitude-input'}}) }}
 
-                            {# Map #}
                             <div id="map" class="rounded-2 mt-2" style="height:300px; z-index:1;"></div>
                         </div>
 
@@ -289,6 +286,18 @@
                             {% endfor %}
                         </div>
                         {{ form_errors(form.statut) }}
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <p class="section-label">Récurrence</p>
+                        {{ form_widget(form.recurrence, {
+                            'attr': {'class': 'form-select'}
+                        }) }}
+                        {{ form_errors(form.recurrence) }}
+                        <small class="text-muted">
+                            Si vous choisissez une répétition, 4 occurrences seront créées automatiquement.
+                        </small>
                     </div>
                 </div>
 

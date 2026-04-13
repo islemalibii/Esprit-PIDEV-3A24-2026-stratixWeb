@@ -25,6 +25,15 @@ class EvenementRepository extends ServiceEntityRepository
             ->where('e.isArchived = :status')
             ->setParameter('status', $status);
     }
+    
+    public function findByArchiveStatusArray(bool $status): array
+    { 
+        return $this->createQueryBuilder('e')
+            ->where('e.isArchived = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getResult();
+    }
 
     
     public function searchByTitle(string $title): QueryBuilder
