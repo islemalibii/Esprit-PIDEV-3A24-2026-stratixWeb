@@ -20,6 +20,10 @@ class Projet
     #[ORM\Column]
     private ?int $id = null;
 
+    // --- RELATION AVEC SPRINT ---
+    #[ORM\OneToMany(mappedBy: 'projet', targetEntity: Sprint::class, orphanRemoval: true)]
+    private Collection $sprints;
+
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: "Le nom du projet est obligatoire.")]
     #[Assert\Length(
@@ -42,7 +46,6 @@ class Projet
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     #[Assert\Type("\DateTimeInterface")]
-    // On ajoute le groupe ici :
     #[Assert\GreaterThanOrEqual(
         "today", 
         message: "La date de début ne peut pas être dans le passé.",
@@ -103,6 +106,7 @@ class Projet
     public function __construct()
     {
         $this->membres = new ArrayCollection();
+        $this->sprints = new ArrayCollection(); // INITIALISATION ESSENTIELLE
         $this->statut = "Planifié";
         $this->isArchived = false;
         $this->dateDebut = new \DateTime();
@@ -154,6 +158,34 @@ class Projet
     public function removeMembre(Utilisateur $membre): self
     {
         $this->membres->removeElement($membre);
+        return $this;
+    }
+
+    // --- LOGIQUE POUR LES SPRINTS ---
+
+    /** @return Collection<int, Sprint> */
+    public function getSprints(): Collection
+    {
+        return $this->sprints;
+    }
+
+    public function addSprint(Sprint $sprint): self
+    {
+        if (!$this->sprints->contains($sprint)) {
+            $this->sprints->add($sprint);
+            $sprint->setProjet($this);
+        }
+        return $this;
+    }
+
+    public function removeSprint(Sprint $sprint): self
+    {
+        if ($this->sprints->removeElement($sprint)) {
+            // set the owning side to null (unless already changed)
+            if ($sprint->getProjet() === $this) {
+                $sprint->setProjet(null);
+            }
+        }
         return $this;
     }
 }

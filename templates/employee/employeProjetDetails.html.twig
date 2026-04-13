@@ -6,7 +6,7 @@
 {% block employee_content %}
 <div class="container-fluid py-4 px-4">
 
-    {# --- En-tête (Style Admin avec boutons Employé) --- #}
+    {# --- En-tête --- #}
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
         <div>
             <h2 class="fw-bold mb-1" style="color: #64748b; font-size: 24px;">
@@ -83,6 +83,58 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {# --- SECTION AJOUTÉE : LISTE DÉTAILLÉE DES SPRINTS --- #}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="ti ti-run me-2 text-info"></i>Sprints du projet
+                    </h5>
+                    <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ projet.sprints|length }} Sprint(s)</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 text-muted small fw-bold border-0">NOM DU SPRINT</th>
+                                    <th class="py-3 text-muted small fw-bold border-0 text-center">PÉRIODE</th>
+                                    <th class="py-3 text-muted small fw-bold border-0 text-center">STATUT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sprint in projet.sprints %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">{{ sprint.nom }}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">Objectif : {{ sprint.objectif|default('Non défini')|slice(0, 50) }}...</div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="small fw-medium text-dark">{{ sprint.dateDebut|date('d/m/Y') }}</div>
+                                            <div class="text-muted small">au {{ sprint.dateFin|date('d/m/Y') }}</div>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if sprint.statut == 'Terminé' %}
+                                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2"><i class="ti ti-check me-1"></i>Terminé</span>
+                                            {% elseif sprint.statut == 'En cours' %}
+                                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2"><i class="ti ti-loader me-1"></i>En cours</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-muted border rounded-pill px-3 py-2">Planifié</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted fst-italic">
+                                            Aucun sprint défini pour ce projet.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -193,7 +245,7 @@
     </div>
 </div>
 
-{# --- MODAL IA (Gardée de ta version employée) --- #}
+{# --- MODAL IA --- #}
 <div class="modal fade" id="modalIA" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -224,7 +276,7 @@
     </div>
 </div>
 
-{# Script IA déjà validé précédemment #}
+{# Script IA #}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('modalIA');

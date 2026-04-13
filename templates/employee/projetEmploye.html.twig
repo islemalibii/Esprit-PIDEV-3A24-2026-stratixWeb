@@ -9,7 +9,9 @@
             <h2 class="fw-bold mb-1" style="color: #64748b; font-size: 24px;">
                 Bonjour, {{ app.user.prenom }}
             </h2>
-            <p style="color: #94a3b8; font-size: 14px;">Espace Collaborateur - Mes Projets</p>
+            <p style="color: #94a3b8; font-size: 14px;">
+                Espace Collaborateur - Mes Projets ({{ projets|length }} au total)
+            </p>
         </div>
     </div>
 
@@ -50,21 +52,27 @@
                             {{ projet.description|slice(0, 80) }}...
                         </p>
 
-                        {# --- INFOS RESPONSABLE & DATE --- #}
+                        {# --- INFOS RESPONSABLE, DATE & SPRINTS --- #}
                         <div class="p-3 rounded-3 mb-4 mt-auto" style="background-color: #f8fafc;">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="ti ti-crown text-warning me-2"></i>
                                 <span class="small text-truncate"><strong>Resp :</strong> {{ projet.responsable.prenom }} {{ projet.responsable.nom }}</span>
                             </div>
+
+                            {# AJOUT DE L'AFFICHAGE DES SPRINTS #}
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="ti ti-run text-info me-2"></i>
+                                <span class="small"><strong>Sprints :</strong> {{ projet.sprints|length }} cycle(s)</span>
+                            </div>
+
                             <div class="d-flex align-items-center">
                                 <i class="ti ti-calendar-event text-primary me-2"></i>
                                 <span class="small text-muted">Fin : {{ projet.dateFin|date('d/m/Y') }}</span>
                             </div>
                         </div>
 
-                        {# --- ACTIONS MODIFIÉES --- #}
+                        {# --- ACTIONS --- #}
                         <div class="d-flex gap-2">
-                            {# Ici, assure-toi que la route pointe vers la méthode qui rend 'employeProjetDetails.html.twig' #}
                             <a href="{{ path('app_projet_employe_show', {'id': projet.id}) }}" 
                                class="btn btn-light border flex-grow-1 rounded-3 fw-bold text-muted small">
                                 Détails
@@ -88,7 +96,6 @@
     </div>
 </div>
 
-{# ... Styles et Scripts inchangés ... #}
 <style>
     .transition-card { 
         transition: transform 0.2s ease, box-shadow 0.2s ease; 
