@@ -13,22 +13,22 @@ use Symfony\Component\Routing\Annotation\Route;
 class RessourceController extends AbstractController
 {
     /**
-     * Affiche la liste des ressources (Equivalent de ton index FXML)
+     * Affiche la liste des ressources 
      */
     #[Route('/ressource', name: 'ressource_index', methods: ['GET'])]
     public function index(RessourceRepository $repository, Request $request): Response
     {
-        // Récupération du terme de recherche (searchField)
+        // Récupération du  (searchField)
         $searchTerm = $request->query->get('q');
         
         if ($searchTerm) {
-            // Tu devras créer cette méthode "findBySearch" dans ton RessourceRepository
+            // findBySearch dans RessourceRepository
             $ressources = $repository->findBySearch($searchTerm);
         } else {
             $ressources = $repository->findAll();
         }
 
-        // Calcul des statistiques (Equivalent de tes labels statsTotal, statsQuantiteTotale, etc.)
+        // Calcul des statistiques 
         $quantiteTotale = 0;
         $typesUniques = [];
         foreach ($ressources as $r) {
@@ -46,7 +46,7 @@ class RessourceController extends AbstractController
     }
 
     /**
-     * Formulaire d'Ajout et de Modification (Equivalent de FormulaireRessourceController)
+     * Formulaire d'Ajout et de Modification 
      */
     #[Route('/ressource/form/{id?}', name: 'ressource_form')]
     public function form(Ressource $ressource = null, Request $request, EntityManagerInterface $em): Response
@@ -68,7 +68,7 @@ class RessourceController extends AbstractController
                 $ressource->setTypeRessource(trim($typePerso));
             }
 
-            // Enregistrement (Equivalent de serviceRessource.add/update)
+            // Enregistrement 
             $em->persist($ressource);
             $em->flush();
 
@@ -84,7 +84,7 @@ class RessourceController extends AbstractController
     }
 
     /**
-     * Suppression d'une ressource (Equivalent de serviceRessource.delete)
+     * Suppression d'une ressource 
      */
     #[Route('/ressource/delete/{id}', name: 'ressource_delete', methods: ['POST'])]
     public function delete(Ressource $ressource, Request $request, EntityManagerInterface $em): Response

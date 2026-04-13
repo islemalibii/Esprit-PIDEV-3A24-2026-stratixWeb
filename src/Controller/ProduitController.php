@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Produit;
 use App\Form\ProduitType;
 use App\Repository\ProduitRepository;
-use App\Service\PdfService; // Importation du service PDF
+use App\Service\PdfService; 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -33,7 +33,7 @@ class ProduitController extends AbstractController
             $produits = $repository->findBy([], [$sortBy => $direction]);
         }
 
-        // 2. Calcul des statistiques pour le tableau de bord Stratix
+        // 2. Calcul des statistiques pour le tableau de bord 
         $stats = [
             'total' => count($produits),
             'stockFaible' => 0,

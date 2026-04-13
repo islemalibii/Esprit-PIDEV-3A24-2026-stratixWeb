@@ -16,13 +16,13 @@ class FrontRessourceController extends AbstractController
         $searchTerm = $request->query->get('q', '');
 
         if ($searchTerm) {
-            // Assure-toi d'avoir findBySearch dans ton RessourceRepository
+            // findBySearch dans RessourceRepository
             $ressources = $repository->findBySearch($searchTerm);
         } else {
             $ressources = $repository->findAll();
         }
 
-        // Calcul des stats (Remplacement de mettreAJourStatistiques)
+        // Calcul des stats 
         $total = count($ressources);
         $quantiteTotale = 0;
         foreach ($ressources as $r) {
