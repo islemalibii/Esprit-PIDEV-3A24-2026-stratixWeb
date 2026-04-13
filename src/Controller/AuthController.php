@@ -23,6 +23,31 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return $this->redirectToRoute('app_emotion_check');
+        }
+        if (in_array($user->getRole(), ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {
+            return $this->redirectToRoute('app_emotion_check');
+        }
+        return $this->redirectToRoute('app_emotion_check');
+    }
+
+    #[Route('/emotion-check', name: 'app_emotion_check')]
+    public function emotionCheck(): Response
+    {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+        return $this->render('auth/emotion_check.html.twig');
+    }
+
+    #[Route('/emotion-redirect', name: 'app_emotion_redirect')]
+    public function emotionRedirect(): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('admin_dashboard');
         }
         if (in_array($user->getRole(), ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {

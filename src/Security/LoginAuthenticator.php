@@ -79,18 +79,8 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            return new RedirectResponse($this->router->generate('admin_dashboard'));
-        }
-
-        // Responsables → tâches directement
-        $role = $user->getRole();
-        if (in_array($role, ['responsable_rh', 'responsable_projet', 'responsable_production', 'ceo'])) {
-            return new RedirectResponse($this->router->generate('app_tache_index'));
-        }
-
-        // Employés → espace employé
-        return new RedirectResponse($this->router->generate('app_employee_dashboard'));
+        // Toujours passer par la détection d'émotion
+        return new RedirectResponse($this->router->generate('app_emotion_check'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
