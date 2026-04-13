@@ -25,7 +25,7 @@ class EvenementRepository extends ServiceEntityRepository
             ->where('e.isArchived = :status')
             ->setParameter('status', $status);
     }
-    
+
     public function findByArchiveStatusArray(bool $status): array
     { 
         return $this->createQueryBuilder('e')
@@ -48,7 +48,8 @@ class EvenementRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('e')
             ->where('e.type_event = :type')
-            ->andWhere('e.isArchived = false');
+            ->andWhere('e.isArchived = false')
+            ->setParameter('type', $type);
     }
     
 
