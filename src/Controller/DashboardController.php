@@ -11,7 +11,11 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DashboardController extends AbstractController
 {
+<<<<<<< HEAD
     #[Route('/', name: 'app_dashboard')]
+=======
+    #[Route('/dashboard', name: 'app_dashboard')]
+>>>>>>> origin/master
     public function index(
         TacheRepository $tacheRepository,
         PlanningRepository $planningRepository,
@@ -74,7 +78,11 @@ class DashboardController extends AbstractController
         ];
         $quote = $quotes[array_rand($quotes)];
 
+<<<<<<< HEAD
         return $this->render('dashboard/index.html.twig', [
+=======
+        return $this->render('admin/dashboard/index.html.twig', [
+>>>>>>> origin/master
             'total'            => count($taches),
             'aFaire'           => $aFaire,
             'enCours'          => $enCours,

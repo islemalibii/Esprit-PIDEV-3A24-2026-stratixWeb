@@ -2,12 +2,11 @@
 
 namespace App\Entity;
 
+use App\Entity\CategorieService;
+use App\Entity\Utilisateur;
+use App\Repository\ServiceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
-use App\Repository\ServiceRepository;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 #[ORM\Table(name: 'service')]
@@ -116,6 +115,10 @@ class Service
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $utilisateur_id = null;
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: true)]
+    private ?Utilisateur $utilisateur = null;
+
     public function getUtilisateur_id(): ?int
     {
         return $this->utilisateur_id;
@@ -127,7 +130,19 @@ class Service
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        $this->utilisateur_id = $utilisateur?->getId();
+        return $this;
+    }
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?float $budget = null;
 
     public function getBudget(): ?float
@@ -144,6 +159,10 @@ class Service
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $categorie_id = null;
 
+    #[ORM\ManyToOne(targetEntity: CategorieService::class)]
+    #[ORM\JoinColumn(name: 'categorie_id', referencedColumnName: 'id', nullable: true)]
+    private ?CategorieService $categorie = null;
+
     public function getCategorie_id(): ?int
     {
         return $this->categorie_id;
@@ -152,6 +171,18 @@ class Service
     public function setCategorie_id(?int $categorie_id): self
     {
         $this->categorie_id = $categorie_id;
+        return $this;
+    }
+
+    public function getCategorie(): ?CategorieService
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?CategorieService $categorie): self
+    {
+        $this->categorie = $categorie;
+        $this->categorie_id = $categorie?->getId();
         return $this;
     }
 

@@ -54,7 +54,7 @@ class CalendarController extends AbstractController
             }
         }
         
-        return $this->render('calendar/index.html.twig', [
+        return $this->render('admin/calendar/index.html.twig', [
             'events' => json_encode($events),
         ]);
     }

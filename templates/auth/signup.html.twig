@@ -1,0 +1,150 @@
+{% extends 'base_auth.html.twig' %}
+{% block title %}Inscription — Stratix{% endblock %}
+
+{% block body %}
+
+{# Logo en haut à gauche #}
+<div style="position:fixed;top:1.5rem;left:1.5rem;z-index:100;">
+    <img src="/images/logo.png" alt="Stratix" style="height:180px;width:auto;">
+</div>
+
+{# Formulaire centré #}
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-white">
+    <div style="position:relative;width:100%;max-width:650px;padding:2rem;margin:1.5rem;">
+        {# Rectangle gris en arrière-plan #}
+        <div style="position:absolute;top:8px;left:8px;right:-8px;bottom:-8px;background:#e9ecef;border-radius:16px;z-index:0;"></div>
+        {# Formulaire #}
+        <div style="position:relative;z-index:1;background:#fff;border-radius:16px;padding:3.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+
+        <h2 class="fw-bold mb-1" style="color:#2196f3;font-size:2rem;">Créer un compte</h2>
+        <p class="text-secondary mb-4">Rejoignez la plateforme Stratix</p>
+
+        {% if errors is defined and errors|length > 0 %}
+            <div class="alert alert-danger py-2 small">Veuillez corriger les erreurs ci-dessous.</div>
+        {% endif %}
+
+        <form method="post">
+            <div class="row g-3 mb-2">
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Nom *</label>
+                    <input type="text" name="nom" value="{{ old.nom ?? '' }}"
+                           class="form-control form-control-lg {% if errors.nom is defined %}is-invalid{% endif %}"
+                           placeholder="Dupont" required>
+                    {% if errors.nom is defined %}<div class="invalid-feedback">{{ errors.nom }}</div>{% endif %}
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Prénom *</label>
+                    <input type="text" name="prenom" value="{{ old.prenom ?? '' }}"
+                           class="form-control form-control-lg {% if errors.prenom is defined %}is-invalid{% endif %}"
+                           placeholder="Jean" required>
+                    {% if errors.prenom is defined %}<div class="invalid-feedback">{{ errors.prenom }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email *</label>
+                <input type="email" name="email" value="{{ old.email ?? '' }}"
+                       class="form-control form-control-lg {% if errors.email is defined %}is-invalid{% endif %}"
+                       placeholder="votre@email.com" required>
+                {% if errors.email is defined %}<div class="invalid-feedback">{{ errors.email }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">CIN *</label>
+                <input type="number" name="cin" value="{{ old.cin ?? '' }}"
+                       class="form-control form-control-lg {% if errors.cin is defined %}is-invalid{% endif %}"
+                       placeholder="8 chiffres" required>
+                {% if errors.cin is defined %}<div class="invalid-feedback">{{ errors.cin }}</div>{% endif %}
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Mot de passe *</label>
+                    <input type="password" name="password" id="pw1"
+                           class="form-control form-control-lg {% if errors.password is defined %}is-invalid{% endif %}"
+                           placeholder="••••••••" required>
+                    {% if errors.password is defined %}
+                        <div class="invalid-feedback">{{ errors.password }}</div>
+                    {% endif %}
+                    <div class="d-flex gap-1 mt-1">
+                        <div class="flex-fill rounded" id="s1" style="height:3px;background:#e5e7eb;transition:background .3s;"></div>
+                        <div class="flex-fill rounded" id="s2" style="height:3px;background:#e5e7eb;transition:background .3s;"></div>
+                        <div class="flex-fill rounded" id="s3" style="height:3px;background:#e5e7eb;transition:background .3s;"></div>
+                        <div class="flex-fill rounded" id="s4" style="height:3px;background:#e5e7eb;transition:background .3s;"></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Confirmer *</label>
+                    <input type="password" name="confirm"
+                           class="form-control form-control-lg {% if errors.confirm is defined %}is-invalid{% endif %}"
+                           placeholder="••••••••" required>
+                    {% if errors.confirm is defined %}<div class="invalid-feedback">{{ errors.confirm }}</div>{% endif %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase btn-lg" style="letter-spacing:1px;">
+                S'inscrire
+            </button>
+        </form>
+
+        <p class="text-center text-secondary mt-4 mb-0">
+            Déjà un compte ?
+            <a href="{{ path('app_login') }}" class="text-primary fw-semibold text-decoration-none">Se connecter</a>
+        </p>
+
+        </div>{# fin formulaire blanc #}
+    </div>{# fin wrapper relatif #}
+</div>
+
+<script>
+// Force du mot de passe
+const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+document.getElementById('pw1').addEventListener('input', function() {
+    const v = this.value; let s = 0;
+    if (v.length >= 8) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById('s'+i).style.background = i <= s ? colors[s-1] : '#e5e7eb';
+    }
+});
+
+// Validation en temps réel
+function setValid(el)   { el.classList.remove('is-invalid'); el.classList.add('is-valid'); }
+function setInvalid(el) { el.classList.remove('is-valid');   el.classList.add('is-invalid'); }
+function clearState(el) { el.classList.remove('is-valid','is-invalid'); }
+
+// Nom
+document.querySelector('[name=nom]').addEventListener('blur', function() {
+    this.value.trim() && /^[a-zA-ZÀ-ÿ\s\-]+$/.test(this.value) ? setValid(this) : setInvalid(this);
+});
+
+// Prénom
+document.querySelector('[name=prenom]').addEventListener('blur', function() {
+    this.value.trim() && /^[a-zA-ZÀ-ÿ\s\-]+$/.test(this.value) ? setValid(this) : setInvalid(this);
+});
+
+// Email
+document.querySelector('[name=email]').addEventListener('blur', function() {
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value) ? setValid(this) : setInvalid(this);
+});
+
+// CIN
+document.querySelector('[name=cin]').addEventListener('blur', function() {
+    /^\d{8}$/.test(this.value) ? setValid(this) : setInvalid(this);
+});
+
+// Mot de passe
+document.getElementById('pw1').addEventListener('blur', function() {
+    const v = this.value;
+    v.length >= 8 && /[A-Z]/.test(v) && /[0-9]/.test(v) ? setValid(this) : setInvalid(this);
+});
+
+// Confirmation
+document.querySelector('[name=confirm]').addEventListener('blur', function() {
+    this.value && this.value === document.getElementById('pw1').value ? setValid(this) : setInvalid(this);
+});
+document.querySelector('[name=confirm]').addEventListener('input', function() {
+    if (!this.value) { clearState(this); return; }
+    this.value === document.getElementById('pw1').value ? setValid(this) : setInvalid(this);
+});
+</script>
+
+{% endblock %}

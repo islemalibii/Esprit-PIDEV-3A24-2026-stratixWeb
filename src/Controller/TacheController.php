@@ -40,7 +40,11 @@ final class TacheController extends AbstractController
             if ($tache->getPriorite() === 'BASSE') $basse++;
         }
         
+<<<<<<< HEAD
         return $this->render('tache/index.html.twig', [
+=======
+        return $this->render('admin/tache/index.html.twig', [
+>>>>>>> origin/master
             'taches' => $taches,
             'total' => $total,
             'a_faire' => $aFaire,
@@ -67,7 +71,11 @@ final class TacheController extends AbstractController
             return $this->redirectToRoute('app_tache_index', [], Response::HTTP_SEE_OTHER);
         }
 
+<<<<<<< HEAD
         return $this->render('tache/new.html.twig', [
+=======
+        return $this->render('admin/tache/new.html.twig', [
+>>>>>>> origin/master
             'tache' => $tache,
             'form' => $form,
         ]);
@@ -76,7 +84,11 @@ final class TacheController extends AbstractController
     #[Route('/{id}', name: 'app_tache_show', methods: ['GET'])]
     public function show(Tache $tache): Response
     {
+<<<<<<< HEAD
         return $this->render('tache/show.html.twig', [
+=======
+        return $this->render('admin/tache/show.html.twig', [
+>>>>>>> origin/master
             'tache' => $tache,
         ]);
     }
@@ -94,7 +106,11 @@ final class TacheController extends AbstractController
             return $this->redirectToRoute('app_tache_index', [], Response::HTTP_SEE_OTHER);
         }
 
+<<<<<<< HEAD
         return $this->render('tache/edit.html.twig', [
+=======
+        return $this->render('admin/tache/edit.html.twig', [
+>>>>>>> origin/master
             'tache' => $tache,
             'form' => $form,
         ]);
@@ -103,6 +119,10 @@ final class TacheController extends AbstractController
     #[Route('/{id}', name: 'app_tache_delete', methods: ['POST'])]
     public function delete(Request $request, Tache $tache, EntityManagerInterface $entityManager): Response
     {
+<<<<<<< HEAD
+=======
+        // Vérification du token CSRF
+>>>>>>> origin/master
         if ($this->isCsrfTokenValid('delete'.$tache->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($tache);
             $entityManager->flush();
@@ -112,6 +132,10 @@ final class TacheController extends AbstractController
             $this->addFlash('danger', '❌ Erreur lors de la suppression !');
         }
 
+<<<<<<< HEAD
+=======
+        // CORRECTION : On retire le "admin/" qui n'a rien à faire dans un nom de route
+>>>>>>> origin/master
         return $this->redirectToRoute('app_tache_index', [], Response::HTTP_SEE_OTHER);
     }
     

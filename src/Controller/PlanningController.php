@@ -25,7 +25,7 @@ final class PlanningController extends AbstractController
             $employes[$u->getId()] = $u->getPrenom() . ' ' . $u->getNom();
         }
 
-        return $this->render('planning/index.html.twig', [
+        return $this->render('admin/planning/index.html.twig', [
             'plannings' => $plannings,
             'employes'  => $employes,
         ]);
@@ -46,7 +46,7 @@ final class PlanningController extends AbstractController
             return $this->redirectToRoute('app_planning_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('planning/new.html.twig', [
+        return $this->render('admin/planning/new.html.twig', [
             'planning' => $planning,
             'form'     => $form,
         ]);
@@ -60,7 +60,7 @@ final class PlanningController extends AbstractController
             $employes[$u->getId()] = $u->getPrenom() . ' ' . $u->getNom();
         }
 
-        return $this->render('planning/show.html.twig', [
+        return $this->render('admin/planning/show.html.twig', [
             'planning' => $planning,
             'employes' => $employes,
         ]);
@@ -79,23 +79,25 @@ final class PlanningController extends AbstractController
             return $this->redirectToRoute('app_planning_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('planning/edit.html.twig', [
+        return $this->render('admin/planning/edit.html.twig', [
             'planning' => $planning,
             'form'     => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_planning_delete', methods: ['POST'])]
+   #[Route('/{id}', name: 'app_planning_delete', methods: ['POST'])]
     public function delete(Request $request, Planning $planning, EntityManagerInterface $entityManager): Response
     {
+        // On vérifie le token CSRF pour la sécurité
         if ($this->isCsrfTokenValid('delete' . $planning->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($planning);
             $entityManager->flush();
             $this->addFlash('success', '✅ Planning supprimé avec succès !');
         } else {
-            $this->addFlash('danger', '❌ Erreur lors de la suppression !');
+            $this->addFlash('danger', '❌ Erreur lors de la suppression (Token invalide) !');
         }
 
+        // CORRECTION ICI : Utilisez le nom exact de la route défini à la ligne 19
         return $this->redirectToRoute('app_planning_index', [], Response::HTTP_SEE_OTHER);
     }
 }

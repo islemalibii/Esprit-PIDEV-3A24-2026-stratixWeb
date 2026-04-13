@@ -16,28 +16,31 @@ class RessourceRepository extends ServiceEntityRepository
         parent::__construct($registry, Ressource::class);
     }
 
-    //    /**
-    //     * @return Ressource[] Returns an array of Ressource objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Recherche multicritère (Nom, Type, Fournisseur)
+     * Équivalent de ton filtrage dans le controller JavaFX
+     */
+    public function findBySearch(string $term): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.nom LIKE :term')
+            ->orWhere('r.type_ressource LIKE :term')
+            ->orWhere('r.fournisseur LIKE :term')
+            ->setParameter('term', '%' . $term . '%')
+            ->orderBy('r.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Ressource
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Si tu veux aussi calculer la quantité totale directement en SQL 
+     * (plus performant que la boucle foreach dans le controller)
+     */
+    public function getTotalQuantite(): int
+    {
+        return $this->createQueryBuilder('r')
+            ->select('SUM(r.quantite)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+    }
 }

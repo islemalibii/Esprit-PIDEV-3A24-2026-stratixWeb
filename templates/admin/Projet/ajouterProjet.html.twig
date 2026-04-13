@@ -1,0 +1,162 @@
+{# templates/projet/new.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}STRATIX - Nouveau Projet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .form-label {
+            letter-spacing: 0.05em;
+            font-size: 0.75rem !important;
+            color: #64748b !important;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #fff !important;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+            border-color: #f59e0b !important;
+            outline: none;
+        }
+
+        /* Tom Select Style pour coller à Stratix */
+        .ts-control {
+            border: none !important;
+            background-color: #f8fafc !important;
+            padding: 0.75rem !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .btn-confirm-orange {
+            background-color: #f59e0b !important;
+            color: white !important;
+            border: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .btn-confirm-orange:hover {
+            background-color: #d97706 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3) !important;
+        }
+    </style>
+{% endblock %}
+
+{% block employee_content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-11 col-xl-10">
+            
+            <div class="page-header mt-2">
+                <h2 class="h4 fw-bold text-dark mb-1">Créer un Nouveau Projet</h2>
+                <p class="text-muted small">Configurez les détails du projet et l'équipe Stratix.</p>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        {# Nom #}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-uppercase">Nom du Projet</label>
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3', 'placeholder': 'Entrez le nom...'}}) }}
+                            <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
+                        </div>
+
+                        {# Budget et Statut #}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Budget (DT)</label>
+                                {{ form_widget(form.budget, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3'}}) }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Statut Initial</label>
+                                <input type="text" class="form-control border-0 bg-light p-3 rounded-3 fw-bold text-muted" value="Planifié" readonly>
+                            </div>
+                        </div>
+
+                        {# DATES (SANS TEMPS + MINIMUM AUJOURD'HUI) #}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Date de Début</label>
+                                {{ form_widget(form.dateDebut, {
+                                    'attr': {
+                                        'class': 'form-control border-0 bg-light p-3 rounded-3',
+                                        'type': 'date',
+                                        'min': "now"|date("Y-m-d")
+                                    }
+                                }) }}
+                                <div class="text-danger mt-1 small">{{ form_errors(form.dateDebut) }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Date de Fin</label>
+                                {{ form_widget(form.dateFin, {
+                                    'attr': {
+                                        'class': 'form-control border-0 bg-light p-3 rounded-3',
+                                        'type': 'date',
+                                        'min': "now"|date("Y-m-d")
+                                    }
+                                }) }}
+                                <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
+                            </div>
+                        </div>
+
+                        {# Responsable et Équipe Flexible #}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Responsable</label>
+                                {{ form_widget(form.responsable, {'attr': {'class': 'form-select border-0 bg-light p-3 rounded-3'}}) }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-uppercase">Équipe (Membres)</label>
+                                {{ form_widget(form.membres, {
+                                    'attr': {'class': 'tom-select-it', 'placeholder': 'Ajouter des membres...'}
+                                }) }}
+                            </div>
+                        </div>
+
+                        {# Description #}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-uppercase">Description</label>
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control border-0 bg-light p-3 rounded-3', 'rows': '3'}}) }}
+                        </div>
+
+                        {# Actions #}
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-8">
+                                <button type="submit" class="btn btn-confirm-orange w-100 p-3 fw-bold rounded-3 shadow-sm text-uppercase">
+                                    <i class="fas fa-check-circle me-2"></i>Lancer le projet
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ path('app_projet_index') }}" class="btn btn-light border w-100 p-3 fw-bold rounded-3 text-muted">
+                                    ANNULER
+                                </a>
+                            </div>
+                        </div>
+
+                        {% do form.statut.setRendered() %}
+                        {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            new TomSelect(".tom-select-it", {
+                plugins: ['remove_button'],
+                persist: false,
+                create: false,
+            });
+        });
+    </script>
+{% endblock %}

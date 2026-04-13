@@ -46,7 +46,7 @@ class WhiteboardController extends AbstractController
             }
         }
 
-        return $this->render('whiteboard/index.html.twig', [
+        return $this->render('admin/whiteboard/index.html.twig', [
             'tachesAFaire'    => $tachesAFaire,
             'tachesEnCours'   => $tachesEnCours,
             'tachesTerminees' => $tachesTerminees,
@@ -66,14 +66,14 @@ class WhiteboardController extends AbstractController
             $entityManager->flush();
         }
 
-        // Drag & drop AJAX request → return JSON
+        //  AJAX 
         if ($request->isXmlHttpRequest()) {
             return $this->json(['success' => true]);
         }
 
         // Normal button click → redirect
         $this->addFlash('success', '✅ Tâche déplacée avec succès !');
-        return $this->redirectToRoute('app_whiteboard_index');
+        return $this->redirectToRoute('admin/app_whiteboard_index');
     }
 
     #[Route('/delete/{id}', name: 'app_whiteboard_delete', methods: ['POST'])]
@@ -91,6 +91,6 @@ class WhiteboardController extends AbstractController
         }
 
         $this->addFlash('success', '✅ Tâche supprimée avec succès !');
-        return $this->redirectToRoute('app_whiteboard_index');
+        return $this->redirectToRoute('admin/app_whiteboard_index');
     }
 }
