@@ -1,34 +1,38 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Ressource;
 use App\Form\RessourceType;
 use App\Repository\RessourceRepository;
+use App\Repository\ImportLogRepository; // AJOUT : Import du repository
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\PdfService; // Assure-toi que l'import est correct
 
 class RessourceController extends AbstractController
 {
     /**
-     * Affiche la liste des ressources 
+     * Affiche la liste des ressources et l'historique des imports par email
      */
     #[Route('/ressource', name: 'ressource_index', methods: ['GET'])]
-    public function index(RessourceRepository $repository, Request $request): Response
-    {
-        // Récupération du  (searchField)
+    public function index(
+        RessourceRepository $repository, 
+        ImportLogRepository $importLogRepo, // AJOUT : On injecte le repository des logs
+        Request $request
+    ): Response {
+        // 1. Gestion de la Recherche
         $searchTerm = $request->query->get('q');
-        
         if ($searchTerm) {
-            // findBySearch dans RessourceRepository
             $ressources = $repository->findBySearch($searchTerm);
         } else {
             $ressources = $repository->findAll();
         }
 
-        // Calcul des statistiques 
+        // 2. Calcul des statistiques
         $quantiteTotale = 0;
         $typesUniques = [];
         foreach ($ressources as $r) {
@@ -37,21 +41,25 @@ class RessourceController extends AbstractController
         }
         $nombreTypes = count(array_unique($typesUniques));
 
+        // 3. RÉCUPÉRATION DES IMPORTS RÉCENTS (Pour le deuxième onglet)
+        // On récupère les 10 derniers fichiers récupérés par email
+        $imports = $importLogRepo->findBy([], ['createdAt' => 'DESC'], 10);
+
         return $this->render('admin/ressource/index.html.twig', [
             'ressources' => $ressources,
             'searchTerm' => $searchTerm,
             'quantiteTotale' => $quantiteTotale,
             'nombreTypes' => $nombreTypes,
+            'imports' => $imports, // ON ENVOIE LES IMPORTS À LA VUE
         ]);
     }
 
     /**
-     * Formulaire d'Ajout et de Modification 
+     * Formulaire d'Ajout et de Modification
      */
     #[Route('/ressource/form/{id?}', name: 'ressource_form')]
     public function form(Ressource $ressource = null, Request $request, EntityManagerInterface $em): Response
     {
-        // Mode Ajout : Si l'ID est vide dans l'URL, on crée un nouvel objet
         if (!$ressource) {
             $ressource = new Ressource();
         }
@@ -60,15 +68,11 @@ class RessourceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
-            // Logique "Autre Type" : Si "Autre" est sélectionné dans la ComboBox
-            // On récupère la valeur du champ texte personnalisé envoyé par le formulaire
             $typePerso = $request->request->get('autre_type_field');
             if ($form->get('type_ressource')->getData() === 'Autre' && !empty($typePerso)) {
                 $ressource->setTypeRessource(trim($typePerso));
             }
 
-            // Enregistrement 
             $em->persist($ressource);
             $em->flush();
 
@@ -84,12 +88,11 @@ class RessourceController extends AbstractController
     }
 
     /**
-     * Suppression d'une ressource 
+     * Suppression d'une ressource
      */
     #[Route('/ressource/delete/{id}', name: 'ressource_delete', methods: ['POST'])]
     public function delete(Ressource $ressource, Request $request, EntityManagerInterface $em): Response
     {
-        // Vérification du jeton CSRF pour la sécurité
         if ($this->isCsrfTokenValid('delete'.$ressource->getId(), $request->request->get('_token'))) {
             $em->remove($ressource);
             $em->flush();
@@ -98,13 +101,17 @@ class RessourceController extends AbstractController
 
         return $this->redirectToRoute('ressource_index');
     }
+
+    /**
+     * Export PDF
+     */
     #[Route('/ressource/pdf', name: 'ressource_pdf')]
-public function generatePdfRessources(RessourceRepository $repository, PdfService $pdf): void
-{
-    $ressources = $repository->findAll();
-    $html = $this->renderView('admin/ressource/pdf.html.twig', [
-        'ressources' => $ressources
-    ]);
-    $pdf->showPdfFile($html, 'Liste_Ressources_Stratix');
-}
+    public function generatePdfRessources(RessourceRepository $repository, PdfService $pdf): void
+    {
+        $ressources = $repository->findAll();
+        $html = $this->renderView('admin/ressource/pdf.html.twig', [
+            'ressources' => $ressources
+        ]);
+        $pdf->showPdfFile($html, 'Liste_Ressources_Stratix');
+    }
 }
