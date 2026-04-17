@@ -23,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin/services')]
 final class ServiceController extends AbstractController
 {
-    #[Route('/', name: 'app_service_index', methods: ['GET'])]
+   #[Route('/', name: 'app_service_index', methods: ['GET'])]
     public function index(Request $request, ServiceRepository $serviceRepository, CategorieServiceRepository $categorieServiceRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
@@ -47,12 +47,22 @@ final class ServiceController extends AbstractController
 
         $queryBuilder->orderBy('s.id', 'DESC');
         
-        // Pagination - 6 services par page
         $services = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
             6
         );
+        
+        $now = new \DateTime();
+        $sevenDaysAgo = (new \DateTime())->modify('-7 days');
+        $newServiceIds = [];
+        foreach ($services as $service) {
+            $dateCreation = $service->getDateCreation();
+            if ($dateCreation && $dateCreation > $sevenDaysAgo) {
+                $newServiceIds[] = $service->getId();
+            }
+        }
+        
         
         $categories = $categorieServiceRepository->findBy(['archive' => false]);
 
@@ -62,6 +72,7 @@ final class ServiceController extends AbstractController
             'search' => $search,
             'selectedCategorie' => $categorie,
             'showArchives' => $archive,
+            'newServiceIds' => $newServiceIds,  
         ]);
     }
 
