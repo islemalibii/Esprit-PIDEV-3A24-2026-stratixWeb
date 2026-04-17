@@ -5,8 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Service\RecaptchaService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -54,6 +53,20 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('admin_dashboard');
         }
         return $this->redirectToRoute('app_employee_dashboard');
+    }
+
+    #[Route('/theme/toggle', name: 'app_theme_toggle', methods: ['POST'])]
+    public function toggleTheme(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\JsonResponse
+    {
+        /** @var \App\Entity\Utilisateur $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Non connecté'], 401);
+        }
+        $theme = $request->request->get('theme', 'light');
+        $user->setTheme(in_array($theme, ['light', 'dark']) ? $theme : 'light');
+        $em->flush();
+        return $this->json(['theme' => $user->getTheme()]);
     }
 
     #[Route('/login', name: 'app_login')]

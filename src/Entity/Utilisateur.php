@@ -304,8 +304,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $avatar = null;
 
+    #[ORM\Column(type: 'string', nullable: true, options: ['default' => 'light'])]
+    private ?string $theme = 'light';
+
     public function getAvatar(): ?string { return $this->avatar; }
     public function setAvatar(?string $avatar): static { $this->avatar = $avatar; return $this; }
+
+    public function getTheme(): string { return $this->theme ?? 'light'; }
+    public function setTheme(string $theme): static { $this->theme = $theme; return $this; }
 
     public function getTwo_factor_secret(): ?string
     {

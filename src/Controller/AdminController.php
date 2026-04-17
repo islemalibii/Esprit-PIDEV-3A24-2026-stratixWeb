@@ -216,4 +216,11 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/user_badge.html.twig', ['user' => $user]);
     }
+
+    #[Route('/notifications/read', name: 'admin_notifications_read')]
+    public function markNotificationsRead(Request $request): Response
+    {
+        $request->getSession()->set('notif_read_at', new \DateTime());
+        return $this->redirectToRoute('admin_dashboard');
+    }
 }

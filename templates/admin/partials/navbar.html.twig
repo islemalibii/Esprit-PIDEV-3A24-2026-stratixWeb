@@ -14,6 +14,15 @@
                 <li><div class="alert alert-success py-1 px-3 mb-0 small">{{ msg }}</div></li>
             {% endfor %}
 
+            {# Theme toggle #}
+            {% if app.user %}
+            <li>
+                <button id="theme-toggle" class="btn btn-light btn-icon btn-sm rounded-circle" title="Mode sombre/clair">
+                    <i class="ti ti-{% if app.user.theme == 'dark' %}sun{% else %}moon{% endif %}" id="theme-icon"></i>
+                </button>
+            </li>
+            {% endif %}
+
             {# Notifications #}
             <li class="dropdown">
                 <a class="position-relative btn btn-light btn-icon btn-sm rounded-circle"
@@ -53,7 +62,9 @@
                         {% endfor %}
                     </ul>
                     <div class="px-3 py-2 text-center border-top">
-                        <a href="{{ path('admin_users') }}" class="text-primary small text-decoration-none">Voir tous les utilisateurs</a>
+                        <a href="{{ path('admin_notifications_read') }}" class="text-primary small text-decoration-none">
+                            Tout marquer comme lu
+                        </a>
                     </div>
                 </div>
             </li>
