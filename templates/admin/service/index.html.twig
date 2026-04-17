@@ -158,6 +158,29 @@
                             </button>
                         </form>
                     </div>
+
+                    <!-- HOVER DETAILS OVERLAY -->
+                    <div class="service-hover-details">
+                        <div class="hover-content">
+                            <h5 class="hover-title">{{ service.titre }}</h5>
+                            <div class="hover-badge {{ service.archive ? 'archived' : 'active' }}">
+                                {{ service.archive ? 'Archivé' : 'Actif' }}
+                            </div>
+                            <div class="hover-budget">
+                                <strong>{{ service.budget|number_format(0, ',', ' ') }} DT</strong>
+                            </div>
+                            <div class="hover-category">
+                                <i class="fas fa-tag"></i> {{ service.categorie ? service.categorie.nom : 'Non catégorisé' }}
+                            </div>
+                            <div class="hover-description">
+                                {{ service.description|nl2br }}
+                            </div>
+                            <div class="hover-dates">
+                                <i class="fas fa-calendar-alt"></i> {{ service.dateDebut ? service.dateDebut|date('d/m/Y') : 'N/A' }} → {{ service.dateFin ? service.dateFin|date('d/m/Y') : 'N/A' }}
+                            </div>
+                            <a href="{{ path('app_service_show', {'id': service.id}) }}" class="hover-link">Voir détails →</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         {% else %}
@@ -248,8 +271,93 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
     .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    
+    .service-hover-details {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 10;
+        overflow-y: auto;
+        color: white;
+    }
+    .service-card:hover .service-hover-details {
+        opacity: 1;
+        visibility: visible;
+    }
+    .hover-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .hover-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+        color: white;
+    }
+    .hover-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        width: fit-content;
+    }
+    .hover-badge.active { background: var(--orange); color: white; }
+    .hover-badge.archived { background: #6c757d; color: white; }
+    .hover-budget {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    .hover-category, .hover-dates {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .hover-description {
+        font-size: 0.8rem;
+        line-height: 1.4;
+        max-height: 120px;
+        overflow-y: auto;
+        color: #e5e5e5;
+    }
+    .hover-link {
+        margin-top: 0.5rem;
+        color: var(--orange);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    .hover-link:hover {
+        text-decoration: underline;
+        color: var(--orange-light);
+    }
+    /* Custom scroll for hover overlay */
+    .service-hover-details::-webkit-scrollbar {
+        width: 4px;
+    }
+    .service-hover-details::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+    }
+    .service-hover-details::-webkit-scrollbar-thumb {
+        background: var(--orange);
+        border-radius: 2px;
+    }
     
     .service-card-header { 
         padding: 1rem 1rem 0.5rem 1rem; 
@@ -286,6 +394,9 @@
         display: flex; 
         gap: 0.5rem; 
         justify-content: center; 
+        position: relative;
+        z-index: 5;
+        background: white;
     }
     .service-btn { 
         width: 32px; 
