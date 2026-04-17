@@ -140,6 +140,7 @@ class AdminController extends AbstractController
                 $user->setAvatar($filename);
             }
 
+            $user->setUpdatedAt(new \DateTime());
             $em->flush();
             $this->addFlash('success', 'Utilisateur mis à jour.');
             return $this->redirectToRoute('admin_users');
@@ -164,9 +165,12 @@ class AdminController extends AbstractController
     {
         if ($this->isCsrfTokenValid('toggle'.$user->getId(), $request->request->get('_token'))) {
             $user->setAccountLocked(!$user->isAccountLocked());
-            if (!$user->isAccountLocked()) {
+            if ($user->isAccountLocked()) {
+                $user->setLockedAt(new \DateTime()); // date du verrouillage
+            } else {
                 $user->setFailedLoginAttempts(0);
                 $user->setLockedUntil(null);
+                $user->setLockedAt(null);
             }
             $em->flush();
             $this->addFlash('success', 'Statut du compte mis à jour.');
@@ -218,9 +222,22 @@ class AdminController extends AbstractController
     }
 
     #[Route('/notifications/read', name: 'admin_notifications_read')]
-    public function markNotificationsRead(Request $request): Response
+    public function markNotificationsRead(Request $request, \App\Repository\UtilisateurRepository $repo): Response
     {
-        $request->getSession()->set('notif_read_at', new \DateTime());
+        $session = $request->getSession();
+        $newUsers = $repo->findBy([], ['id' => 'DESC'], 5);
+        $locked   = $repo->findBy(['account_locked' => true], ['id' => 'DESC'], 5);
+        $updated  = $repo->createQueryBuilder('u')
+            ->where('u.updated_at IS NOT NULL')
+            ->orderBy('u.updated_at', 'DESC')
+            ->setMaxResults(5)->getQuery()->getResult();
+
+        $readIds = array_merge(
+            array_map(fn($u) => 'new_'.$u->getId(), $newUsers),
+            array_map(fn($u) => 'lock_'.$u->getId(), $locked),
+            array_map(fn($u) => 'edit_'.$u->getId(), $updated)
+        );
+        $session->set('notif_read_ids', $readIds);
         return $this->redirectToRoute('admin_dashboard');
     }
 }

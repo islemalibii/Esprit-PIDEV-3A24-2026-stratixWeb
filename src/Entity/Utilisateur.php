@@ -307,11 +307,23 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', nullable: true, options: ['default' => 'light'])]
     private ?string $theme = 'light';
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $locked_at = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $updated_at = null;
+
     public function getAvatar(): ?string { return $this->avatar; }
     public function setAvatar(?string $avatar): static { $this->avatar = $avatar; return $this; }
 
     public function getTheme(): string { return $this->theme ?? 'light'; }
     public function setTheme(string $theme): static { $this->theme = $theme; return $this; }
+
+    public function getLockedAt(): ?\DateTime { return $this->locked_at; }
+    public function setLockedAt(?\DateTime $locked_at): static { $this->locked_at = $locked_at; return $this; }
+
+    public function getUpdatedAt(): ?\DateTime { return $this->updated_at; }
+    public function setUpdatedAt(?\DateTime $updated_at): static { $this->updated_at = $updated_at; return $this; }
 
     public function getTwo_factor_secret(): ?string
     {
