@@ -159,6 +159,9 @@ class AuthController extends AbstractController
                 $em->persist($user);
                 $em->flush();
 
+                // Invalider la session pour ne pas connecter automatiquement
+                $request->getSession()->invalidate();
+
                 $this->addFlash('success', 'Compte créé ! Vous pouvez vous connecter.');
                 return $this->redirectToRoute('app_login');
             }

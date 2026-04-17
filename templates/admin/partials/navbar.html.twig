@@ -40,7 +40,7 @@
                         <span class="fw-semibold small">Notifications</span>
                         <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25">{{ admin_notifications|length }} nouvelles</span>
                     </div>
-                    <ul class="list-unstyled p-0 m-0">
+                    <ul class="list-unstyled p-0 m-0" style="max-height:320px;overflow-y:auto;">
                         {% for notif in admin_notifications %}
                         <li class="p-3 border-bottom">
                             <div class="d-flex gap-3">

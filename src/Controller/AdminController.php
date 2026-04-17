@@ -221,8 +221,60 @@ class AdminController extends AbstractController
         return $this->render('admin/user_badge.html.twig', ['user' => $user]);
     }
 
-    #[Route('/notifications/read', name: 'admin_notifications_read')]
-    public function markNotificationsRead(Request $request, \App\Repository\UtilisateurRepository $repo): Response
+    #[Route('/organigramme', name: 'admin_organigramme')]
+    public function organigramme(UtilisateurRepository $repo): Response
+    {
+        $users = $repo->findBy(['statut' => 'actif'], ['role' => 'ASC']);
+
+        // Construire la hiérarchie
+        $hierarchy = [
+            'name' => 'Stratix',
+            'title' => 'Entreprise',
+            'avatar' => null,
+            'children' => []
+        ];
+
+        $roleOrder = ['ceo', 'admin', 'responsable_rh', 'responsable_projet', 'responsable_production', 'employe'];
+        $roleLabels = [
+            'admin' => 'Administrateur',
+            'ceo' => 'CEO',
+            'responsable_rh' => 'Responsable RH',
+            'responsable_projet' => 'Responsable Projet',
+            'responsable_production' => 'Responsable Production',
+            'employe' => 'Employé',
+        ];
+
+        $groups = [];
+        foreach ($users as $u) {
+            $role = $u->getRole();
+            if (!isset($groups[$role])) {
+                $groups[$role] = [];
+            }
+            $groups[$role][] = $u;
+        }
+
+        foreach ($roleOrder as $role) {
+            if (empty($groups[$role])) continue;
+            foreach ($groups[$role] as $u) {
+                $node = [
+                    'id'     => $u->getId(),
+                    'name'   => $u->getPrenom() . ' ' . $u->getNom(),
+                    'title'  => $roleLabels[$role] ?? $role,
+                    'dept'   => $u->getDepartment() ?? '',
+                    'avatar' => $u->getAvatar(),
+                    'role'   => $role,
+                ];
+                $hierarchy['children'][] = $node;
+            }
+        }
+
+        return $this->render('admin/organigramme.html.twig', [
+            'hierarchy' => json_encode($hierarchy),
+            'total'     => count($users),
+        ]);
+    }
+
+    #[Route('/notifications/read', name: 'admin_notifications_read')]    public function markNotificationsRead(Request $request, \App\Repository\UtilisateurRepository $repo): Response
     {
         $session = $request->getSession();
         $newUsers = $repo->findBy([], ['id' => 'DESC'], 5);

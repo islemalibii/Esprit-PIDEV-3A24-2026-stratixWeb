@@ -65,13 +65,14 @@ class NotificationExtension extends AbstractExtension implements GlobalsInterfac
                 ];
             }
 
-            // Trier par date décroissante
+            // Trier par date décroissante et limiter à 5
             usort($notifications, function($a, $b) {
                 if (!$a['date'] && !$b['date']) return 0;
                 if (!$a['date']) return 1;
                 if (!$b['date']) return -1;
                 return $b['date'] <=> $a['date'];
             });
+            $notifications = array_slice($notifications, 0, 5);
 
         } catch (\Exception $e) {}
 
