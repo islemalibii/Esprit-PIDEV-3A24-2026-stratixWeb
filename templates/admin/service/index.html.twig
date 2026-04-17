@@ -100,15 +100,23 @@
 
     <div class="row g-4">
         {% for service in services %}
+            {% set isNew = service.id in newServiceIds %}
             <div class="col-xl-4 col-md-6">
-                <div class="service-card">
+                <div class="service-card {{ isNew ? 'new-service-glow' : '' }}">
                     <div class="service-card-header">
                         <h6 class="service-title">{{ service.titre }}</h6>
-                        {% if service.archive %}
-                            <span class="service-badge bg-secondary">Archivé</span>
-                        {% else %}
-                            <span class="service-badge bg-orange">Actif</span>
-                        {% endif %}
+                        <div style="display: flex; gap: 6px;">
+                            {% if isNew %}
+                                <span class="service-badge" style="background: #b96210; color: white;">
+                                    <i class="fas fa-star-of-life me-1" style="font-size: 10px;"></i>Nouveau
+                                </span>
+                            {% endif %}
+                            {% if service.archive %}
+                                <span class="service-badge bg-secondary">Archivé</span>
+                            {% else %}
+                                <span class="service-badge bg-orange">Actif</span>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="service-card-body">
                         <div class="service-budget">
@@ -200,9 +208,9 @@
                     Bonjour ! 👋<br>
                     J'ai analysé <strong>{{ services.getTotalItemCount }}</strong> services.<br><br>
                     Posez-moi des questions comme :<br>
-                    • "Budget total"<br>
-                    • "Liste des services"<br>
-                    • "Services sans responsable"
+                    • Budget total<br>
+                    • Liste des services<br>
+                    • Services sans responsable
                 </div>
             </div>
         </div>
@@ -298,7 +306,14 @@
     .service-btn-archive { background: #fef2f2; color: #ef4444; }
     .service-btn-archive:hover { background: #ef4444; color: white; }
     
-    /* CONVERTER CARD */
+    .new-service-glow {
+        box-shadow: 0 0 0 2px #0d0e0e, 0 4px 12px rgba(185, 50, 16, 0.2);
+        transition: box-shadow 0.2s ease;
+    }
+    .new-service-glow:hover {
+        box-shadow: 0 0 0 3px #000000, 0 8px 20px rgba(150, 78, 15, 0.3);
+    }
+    
     .converter-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .converter-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200); }
     .converter-body { padding: 1.25rem; }
@@ -307,14 +322,12 @@
     .converter-input-suffix { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 12px; color: var(--gray-600); }
     .bg-soft { background-color: var(--gray-50); }
     
-    /* FILTER CARD */
     .filter-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .filter-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200); }
     .filter-body { padding: 1.25rem; }
     .filter-input, .filter-select { border: 1px solid var(--gray-200); border-radius: 12px; padding: 0.6rem 1rem; font-size: 0.9rem; }
     .filter-input:focus, .filter-select:focus { border-color: var(--orange); outline: none; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
     
-    /* BUTTONS */
     .btn-orange { background: var(--orange); border: none; color: white; padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; }
     .btn-orange:hover { background: var(--orange-dark); transform: translateY(-1px); color: white; }
     .btn-orange-outline { background: transparent; border: 1px solid var(--orange); color: var(--orange); padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; }
@@ -324,7 +337,6 @@
     .btn-danger-outline { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 0.6rem 1rem; border-radius: 12px; transition: all 0.2s; }
     .btn-danger-outline:hover { background: #ef4444; color: white; }
     
-    /* PAGINATION */
     .pagination { gap: 5px; }
     .page-item .page-link { border-radius: 10px; color: var(--gray-600); border: 1px solid var(--gray-200); padding: 8px 14px; font-size: 14px; }
     .page-item.active .page-link { background: var(--orange); border-color: var(--orange); color: white; }
@@ -332,7 +344,6 @@
     
     .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 20px; }
     
-    /* ASSISTANT */
     .assistant-bubble { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--orange); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(249,115,22,0.3); z-index: 1000; transition: all 0.3s ease; }
     .assistant-bubble:hover { transform: scale(1.05); }
     .bubble-icon { font-size: 28px; }
