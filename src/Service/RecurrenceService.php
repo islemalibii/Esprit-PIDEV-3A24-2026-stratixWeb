@@ -21,7 +21,26 @@ class RecurrenceService
             if ($recurrence === 'weekly') {
                 $newDate->modify("+{$i} week");
             } elseif ($recurrence === 'monthly') {
-                $newDate->modify("+{$i} month");
+                $newMonth = (int) $original->getDateEvent()->format('m') + $i;
+                $newYear  = (int) $original->getDateEvent()->format('Y');
+    
+                // Handle year overflow (month > 12)
+                while ($newMonth > 12) {
+                    $newMonth -= 12;
+                    $newYear++;
+                }
+    
+                // Get the last day of the target month
+                $lastDayOfMonth = (int) (new \DateTime("{$newYear}-{$newMonth}-01"))
+                    ->modify('last day of this month')
+                    ->format('d');
+    
+                // Use original day OR last day of month if original day doesn't exist
+                $safeDay = min($originalDay, $lastDayOfMonth);
+    
+                $newDate = new \DateTime(
+                    sprintf('%04d-%02d-%02d', $newYear, $newMonth, $safeDay)
+                );
             }
 
             $newEvent = new Evenement();

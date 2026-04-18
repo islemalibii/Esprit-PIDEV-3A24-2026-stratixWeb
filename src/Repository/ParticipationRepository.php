@@ -26,6 +26,14 @@ class ParticipationRepository extends ServiceEntityRepository
 
         return array_column($results, 'event_id');
     }
+    public function findUserHistory(string $userEmail): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.user_email = :email')
+            ->setParameter('email', $userEmail)
+            ->getQuery()
+            ->getResult();
+    }
 
     //    /**
     //     * @return Participation[] Returns an array of Participation objects
