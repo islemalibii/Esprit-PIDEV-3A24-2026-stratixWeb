@@ -1,179 +1,235 @@
-{% extends 'admin/base_admin.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Liste des Plannings{% endblock %}
 
-{% block admin_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-calendar-alt"></i> Gestion des Plannings</h1>
-    <div class="d-flex gap-2">
-        <!-- ============ BOUTONS EXPORT EXCEL ============ -->
-        <div class="btn-group">
-            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="fas fa-file-excel"></i> Exporter Excel
-            </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel') }}" target="_blank">
-                        <i class="fas fa-download"></i> Tous les plannings
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'JOUR'}) }}" target="_blank">
-                        <i class="fas fa-sun"></i> Plannings JOUR
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'SOIR'}) }}" target="_blank">
-                        <i class="fas fa-moon"></i> Plannings SOIR
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'NUIT'}) }}" target="_blank">
-                        <i class="fas fa-star"></i> Plannings NUIT
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'CONGE'}) }}" target="_blank">
-                        <i class="fas fa-umbrella-beach"></i> Congés
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'MALADIE'}) }}" target="_blank">
-                        <i class="fas fa-thermometer-half"></i> Maladies
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'FORMATION'}) }}" target="_blank">
-                        <i class="fas fa-graduation-cap"></i> Formations
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <!-- ============ FIN EXPORT EXCEL ============ -->
-        
-        <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Nouveau planning
-        </a>
-    </div>
-</div>
+{% block body %}
+<div class="container-fluid px-4">
 
-<!-- Statistiques -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body text-center">
-                <h2 class="display-4">{{ plannings|length }}</h2>
-                <h5>📊 Total plannings</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
-            <div class="card-body text-center">
-                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'JOUR')|length }}</h2>
-                <h5>☀️ JOUR</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body text-center">
-                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'SOIR')|length }}</h2>
-                <h5>🌆 SOIR</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-dark">
-            <div class="card-body text-center">
-                <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'NUIT')|length }}</h2>
-                <h5>🌙 NUIT</h5>
-            </div>
-        </div>
-    </div>
-</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-calendar-alt"></i> Gestion des Plannings</h1>
+        <div class="d-flex gap-2">
 
-<!-- Tableau des plannings -->
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Employé</th>
-                        <th>Date</th>
-                        <th>Début</th>
-                        <th>Fin</th>
-                        <th>Type</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for planning in plannings %}
-                    <tr>
-                        <td>
-                            {{ employes[planning.employeId] ?? 'Non assigné' }}
-                        </td>
-                        <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</div>
-                        <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</div>
-                        <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</div>
-                        <td>
-                            {% if planning.typeShift == 'JOUR' %}
-                                <span class="badge bg-info">☀️ JOUR</span>
-                            {% elseif planning.typeShift == 'SOIR' %}
-                                <span class="badge bg-warning">🌆 SOIR</span>
-                            {% elseif planning.typeShift == 'NUIT' %}
-                                <span class="badge bg-dark">🌙 NUIT</span>
-                            {% elseif planning.typeShift == 'CONGE' %}
-                                <span class="badge bg-warning text-dark">🏖️ CONGÉ</span>
-                            {% elseif planning.typeShift == 'MALADIE' %}
-                                <span class="badge bg-danger">🤒 MALADIE</span>
-                            {% elseif planning.typeShift == 'FORMATION' %}
-                                <span class="badge bg-info">📚 FORMATION</span>
-                            {% else %}
-                                <span class="badge bg-secondary">⚪ AUTRE</span>
-                            {% endif %}
-                        </div>
-                        <td class="table-actions">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ path('app_planning_show', {'id': planning.id}) }}" class="btn btn-outline-info" title="Voir">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-outline-warning" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <!-- Bouton Export Excel pour ce planning -->
-                                <a href="{{ path('api_planning_export_excel', {'employe_id': planning.employeId}) }}" class="btn btn-outline-success" title="Excel employé" target="_blank">
-                                    <i class="fas fa-file-excel"></i>
-                                </a>
-                                <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
-                                    <button class="btn btn-outline-danger" title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+            <!-- BOUTON EXPORT EXCEL (comme Exporter PDF dans Tâches) -->
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-excel"></i> Exporter Excel
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel') }}" target="_blank">
+                            <i class="fas fa-download me-2"></i> Tous les plannings
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'JOUR'}) }}" target="_blank">
+                            <i class="fas fa-sun me-2 text-warning"></i> Plannings JOUR
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'SOIR'}) }}" target="_blank">
+                            <i class="fas fa-moon me-2 text-info"></i> Plannings SOIR
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'NUIT'}) }}" target="_blank">
+                            <i class="fas fa-star me-2 text-dark"></i> Plannings NUIT
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'CONGE'}) }}" target="_blank">
+                            <i class="fas fa-umbrella-beach me-2 text-warning"></i> Congés
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'MALADIE'}) }}" target="_blank">
+                            <i class="fas fa-thermometer-half me-2 text-danger"></i> Maladies
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'FORMATION'}) }}" target="_blank">
+                            <i class="fas fa-graduation-cap me-2 text-primary"></i> Formations
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau planning
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h2 class="display-4">{{ plannings|length }}</h2>
+                    <h5>📊 Total plannings</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'JOUR')|length }}</h2>
+                    <h5>☀️ JOUR</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'SOIR')|length }}</h2>
+                    <h5>🌆 SOIR</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-dark">
+                <div class="card-body text-center">
+                    <h2 class="display-4">{{ plannings|filter(p => p.typeShift == 'NUIT')|length }}</h2>
+                    <h5>🌙 NUIT</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un planning...">
                     </div>
-                    {% else %}
+                </div>
+                <div class="col-md-4">
+                    <select id="typeFilter" class="form-select">
+                        <option value="">Tous les types</option>
+                        <option value="JOUR">☀️ JOUR</option>
+                        <option value="SOIR">🌆 SOIR</option>
+                        <option value="NUIT">🌙 NUIT</option>
+                        <option value="CONGE">🏖️ CONGÉ</option>
+                        <option value="MALADIE">🤒 MALADIE</option>
+                        <option value="FORMATION">📚 FORMATION</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button onclick="resetFilters()" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-undo-alt"></i> Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des plannings -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
                         <tr>
-                            <td colspan="6" class="text-center">Aucun planning trouvé</div>
-                        </div>
-                    {% endfor %}
-                </tbody>
+                            <th>Employé</th>
+                            <th>Date</th>
+                            <th>Début</th>
+                            <th>Fin</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planningTableBody">
+                        {% for planning in plannings %}
+                        <tr>
+                            <td>{{ employes[planning.employeId] ?? 'Non assigné' }}</td>
+                            <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</td>
+                            <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</td>
+                            <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</td>
+                            <td>
+                                {% if planning.typeShift == 'JOUR' %}
+                                    <span class="badge bg-info">☀️ JOUR</span>
+                                {% elseif planning.typeShift == 'SOIR' %}
+                                    <span class="badge bg-warning">🌆 SOIR</span>
+                                {% elseif planning.typeShift == 'NUIT' %}
+                                    <span class="badge bg-dark">🌙 NUIT</span>
+                                {% elseif planning.typeShift == 'CONGE' %}
+                                    <span class="badge bg-warning text-dark">🏖️ CONGÉ</span>
+                                {% elseif planning.typeShift == 'MALADIE' %}
+                                    <span class="badge bg-danger">🤒 MALADIE</span>
+                                {% elseif planning.typeShift == 'FORMATION' %}
+                                    <span class="badge bg-primary">📚 FORMATION</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">⚪ AUTRE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ path('app_planning_show', {'id': planning.id}) }}" class="btn btn-outline-info" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-outline-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ path('api_planning_export_excel', {'employe_id': planning.employeId}) }}" class="btn btn-outline-success" title="Excel employé" target="_blank">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
+                                        <button class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucun planning trouvé</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const typeFilter  = document.getElementById('typeFilter');
+const tbody       = document.getElementById('planningTableBody');
+
+function filterTable() {
+    const search = searchInput.value.toLowerCase();
+    const type   = typeFilter.value;
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+        const employe = row.cells[0]?.innerText.toLowerCase() || '';
+        const shift   = row.cells[4]?.innerText || '';
+        const matchSearch = employe.includes(search);
+        const matchType   = !type || shift.includes(type);
+        row.style.display = (matchSearch && matchType) ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    searchInput.value = '';
+    typeFilter.value  = '';
+    filterTable();
+}
+
+searchInput.addEventListener('keyup', filterTable);
+typeFilter.addEventListener('change', filterTable);
+</script>
 
 <style>
-    .table-actions .btn { padding: 2px 6px; margin: 0 1px; }
-    .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; }
-    .card { border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .table-actions .btn, .btn-group-sm .btn { padding: 2px 8px; margin: 0 1px; }
+    .badge { font-size: 0.85rem; padding: 5px 10px; border-radius: 20px; }
+    .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
     .display-4 { font-size: 1.8rem; }
-    .btn-group .dropdown-item i { margin-right: 8px; width: 16px; }
     .d-flex.gap-2 { gap: 10px; }
 </style>
 {% endblock %}
