@@ -49,6 +49,7 @@
             }
         </style>
     {% endblock %}
+    <meta name="csrf-token" content="{{ csrf_token('archive') }}">
 </head>
 <body>
     <div id="overlay" class="overlay"></div>

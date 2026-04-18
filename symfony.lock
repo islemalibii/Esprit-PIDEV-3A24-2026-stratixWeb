@@ -38,6 +38,7 @@
     "knplabs/knp-paginator-bundle": {
         "version": "v6.10.0"
     },
+
     "knplabs/knp-snappy-bundle": {
         "version": "1.10",
         "recipe": {
@@ -47,6 +48,7 @@
             "ref": "c81bdcf4a9d4e7b1959071457f9608631865d381"
         }
     },
+
     "phpunit/phpunit": {
         "version": "11.5",
         "recipe": {
