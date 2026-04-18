@@ -17,6 +17,8 @@ use Knp\Snappy\Pdf;
 use App\Service\MeetingSummaryService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\RecurrenceService;
+use App\Service\RecommendationService;
+
 
 class EventController extends AbstractController
 {
@@ -156,7 +158,7 @@ class EventController extends AbstractController
     
     // front office
     #[Route('/employee/events', name: 'emp_event_list')]
-    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo, EventFeedbackRepository $feedbackRepo, PaginatorInterface $paginator): Response
+    public function employeeIndex(Request $request, EvenementRepository $repo, ParticipationRepository $participationRepo, EventFeedbackRepository $feedbackRepo, PaginatorInterface $paginator, RecommendationService $recommendationService): Response
     {
         $type   = $request->query->get('type');
         $search = $request->query->get('search');
@@ -178,11 +180,16 @@ class EventController extends AbstractController
 
         $joinedEventIds = $participationRepo->findUserEventIds($userEmail);
 
+        $recommendations = $recommendationService->getRecommendations($userEmail);
+        dump($recommendations);
+        dump($userEmail);
+
         return $this->render('employee/events/list.html.twig', [
             'events'          => $pagination,
             'userEmail'     => $userEmail,
             'joinedEventIds'=> $joinedEventIds, 
             'feedbackEventIds'=> $feedbackRepo->findFeedbackEventIds($userEmail),
+            'recommendations'  => $recommendations,
         ]);
     }
     #[Route('/event/{id}', name: 'emp_event_show', methods: ['GET'])]

@@ -97,7 +97,7 @@ class RecommendationService
             ]
         ";
 
-        $response = $this->callGemini($prompt);
+        $response = $this->callGroq($prompt);
         if (!$response) return [];
 
    
@@ -123,22 +123,25 @@ class RecommendationService
         return $result;
     }
 
-    private function callGemini(string $prompt): ?string
+    private function callGroq(string $prompt): ?string
     {
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' . $this->apiKey;
-
-        $ch = curl_init($url);
+        $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
 
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS     => json_encode([
-                'contents' => [
-                    ['parts' => [['text' => $prompt]]]
-                ]
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $this->apiKey,
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                'model'      => 'llama-3.3-70b-versatile',
+                'messages'   => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+                'max_tokens' => 500,
             ]),
         ]);
 
@@ -148,6 +151,6 @@ class RecommendationService
         if (!$result) return null;
 
         $data = json_decode($result, true);
-        return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        return $data['choices'][0]['message']['content'] ?? null;
     }
 }
