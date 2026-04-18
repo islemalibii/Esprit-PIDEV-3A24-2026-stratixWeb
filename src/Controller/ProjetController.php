@@ -17,6 +17,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Entity\Favori;
 use App\Repository\FavoriRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 
 
 #[Route('/projet')]
@@ -220,16 +223,24 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
     // ─────────────────────────────────────────────
     //  VUES EMPLOYÉ
     // ─────────────────────────────────────────────
-    #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
-    public function indexEmployee(ProjetRepository $repo): Response
-    {
-        $user = $this->getUser();
-        if (!$user) return $this->redirectToRoute('app_login');
+   #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
+public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRepo): Response
+{
+    $user = $this->getUser();
+    if (!$user) return $this->redirectToRoute('app_login');
 
-        return $this->render('employee/projetEmploye.html.twig', [
-            'projets' => $repo->findProjetsPourEmploye($user),
-        ]);
+    // Récupération des favoris de l'employé
+    $userFavorisIds = [];
+    $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
+    foreach ($favoris as $f) {
+        $userFavorisIds[] = $f->getProjet()->getId();
     }
+
+    return $this->render('employee/projetEmploye.html.twig', [
+        'projets' => $repo->findProjetsPourEmploye($user),
+        'user_favoris_ids' => $userFavorisIds, // Essentiel pour garder les coeurs rouges
+    ]);
+}
 
     // ... imports existants
 
@@ -294,4 +305,51 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
         $em->flush();
         return $this->json(['isFavorite' => $isFavorite]);
     }
+
+
+    #[Route('/employee/mes-favoris', name: 'app_projet_employee_favoris')]
+public function favorisEmployee(FavoriRepository $favoriRepo): Response
+{
+    $user = $this->getUser();
+    if (!$user) return $this->redirectToRoute('app_login');
+
+    $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
+
+    return $this->render('employee/favoris_liste.html.twig', [
+        'favoris' => $favoris
+    ]);
+}
+
+#[Route('/employee/projet/{id}/export-pdf', name: 'app_projet_export_pdf', methods: ['GET'])]
+public function exportPdf(Projet $projet): Response
+{
+    // 1. Configuration de Dompdf
+    $pdfOptions = new Options();
+    $pdfOptions->set('defaultFont', 'Arial'); // Utilisation d'une police standard
+    $pdfOptions->set('isRemoteEnabled', true); // Utile si tu as des images externes (ex: logo Cloudinary)
+
+    $dompdf = new Dompdf($pdfOptions);
+
+    // 2. Récupération du HTML via Twig
+    // Note : On a supprimé le paramètre 'qrCode' ici
+    $html = $this->renderView('employee/projet_pdf.html.twig', [
+        'projet' => $projet,
+    ]);
+
+    // 3. Rendu du PDF
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // 4. Sécurisation du nom de fichier
+    // On enlève les caractères spéciaux qui pourraient poser problème au téléchargement
+    $safeFilename = str_replace([' ', '/', '\\'], '_', $projet->getNom());
+    $fileName = 'Stratix_Rapport_' . $safeFilename . '_' . date('Y-m-d') . '.pdf';
+
+    // 5. Envoi du fichier au navigateur
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+    ]);
+}
 }

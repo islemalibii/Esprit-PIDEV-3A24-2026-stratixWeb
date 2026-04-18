@@ -13,6 +13,10 @@
                 Espace Collaborateur - Mes Projets ({{ projets|length }} au total)
             </p>
         </div>
+        {# Lien rapide vers la liste complète des favoris pour l'employé #}
+        <a href="{{ path('app_projet_employee_favoris') }}" class="btn btn-outline-danger shadow-sm px-3 fw-bold rounded-3">
+    <i class="ti ti-heart-filled me-1"></i> Mes Favoris
+</a>
     </div>
 
     {# --- BARRE DE RECHERCHE --- #}
@@ -28,10 +32,10 @@
     <div class="row g-4" id="projetsContainer">
         {% for projet in projets %}
             <div class="col-md-6 col-lg-4 projet-card">
-                <div class="card border-0 shadow-sm rounded-4 h-100 transition-card bg-white">
+                <div class="card border-0 shadow-sm rounded-4 h-100 transition-card bg-white position-relative">
                     <div class="card-body p-4 d-flex flex-column">
                         
-                        {# --- STATUT & BUDGET --- #}
+                        {# --- STATUT & BUDGET + FAVORI --- #}
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <span class="badge rounded-pill px-3 py-2" 
                                   style="background-color: {{ 
@@ -43,7 +47,21 @@
                                   }}; border: 1px solid rgba(0,0,0,0.05);">
                                 {{ projet.statut }}
                             </span>
-                            <small class="text-success fw-bold">{{ projet.budget|number_format(0, '.', ' ') }} DT</small>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <small class="text-success fw-bold">{{ projet.budget|number_format(0, '.', ' ') }} DT</small>
+                                
+                                {# --- LOGIQUE DU COEUR (FAVORI) --- #}
+                                {% set isFav = false %}
+                                {% if user_favoris_ids is defined and projet.id in user_favoris_ids %}
+                                    {% set isFav = true %}
+                                {% endif %}
+                                <a href="{{ path('projet_toggle_favori', {'id': projet.id}) }}" 
+                                   class="js-favori-btn text-decoration-none" 
+                                   title="Ajouter aux favoris">
+                                    <i class="ti {{ isFav ? 'ti-heart-filled text-danger' : 'ti-heart text-secondary' }}" style="font-size: 1.4rem; cursor: pointer;"></i>
+                                </a>
+                            </div>
                         </div>
 
                         {# --- TITRE & DESCRIPTION --- #}
@@ -59,7 +77,6 @@
                                 <span class="small text-truncate"><strong>Resp :</strong> {{ projet.responsable.prenom }} {{ projet.responsable.nom }}</span>
                             </div>
 
-                            {# AJOUT DE L'AFFICHAGE DES SPRINTS #}
                             <div class="d-flex align-items-center mb-2">
                                 <i class="ti ti-run text-info me-2"></i>
                                 <span class="small"><strong>Sprints :</strong> {{ projet.sprints|length }} cycle(s)</span>
@@ -129,5 +146,27 @@ function filterProjets() {
         card.style.display = title.includes(input) ? "" : "none";
     }
 }
+
+// Gestion AJAX des favoris pour l'espace employé
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.js-favori-btn').forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            const icon = this.querySelector('i');
+            
+            fetch(this.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isFavorite) {
+                        icon.classList.remove('ti-heart', 'text-secondary');
+                        icon.classList.add('ti-heart-filled', 'text-danger');
+                    } else {
+                        icon.classList.remove('ti-heart-filled', 'text-danger');
+                        icon.classList.add('ti-heart', 'text-secondary');
+                    }
+                });
+        });
+    });
+});
 </script>
 {% endblock %}

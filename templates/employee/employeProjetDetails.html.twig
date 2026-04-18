@@ -15,6 +15,10 @@
             <p style="color: #94a3b8; font-size: 14px;">Analyse et suivi détaillé du projet</p>
         </div>
         <div class="d-flex gap-2">
+
+        <a href="{{ path('app_projet_export_pdf', {'id': projet.id}) }}" class="btn btn-danger shadow-sm fw-bold rounded-3 px-3">
+        <i class="ti ti-file-text me-1"></i> Exporter PDF
+    </a>
             <a href="{{ path('app_projet_chat', {'id': projet.id}) }}" class="btn btn-primary shadow-sm fw-bold rounded-3 px-4">
                 <i class="ti ti-messages me-1"></i> Chat Équipe
             </a>
