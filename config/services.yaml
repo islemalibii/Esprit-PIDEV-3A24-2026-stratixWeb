@@ -27,10 +27,10 @@ services:
 
     App\Service\MeetingSummaryService:  
         arguments:
-            $apiKey: '%env(GEMINI_API_KEY)%'
+            $apiKey: '%env(FEED_GEMINI_API_KEY)%'
 
     App\Service\RecommendationService:
         arguments:
-            $apiKey: '%env(GROQ_API_KEY)%'
+            $apiKey: '%env(REC_GROQ_API_KEY)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
