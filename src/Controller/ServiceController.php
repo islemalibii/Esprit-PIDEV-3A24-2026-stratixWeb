@@ -23,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin/services')]
 final class ServiceController extends AbstractController
 {
-   #[Route('/', name: 'app_service_index', methods: ['GET'])]
+    #[Route('/', name: 'app_service_index', methods: ['GET'])]
     public function index(Request $request, ServiceRepository $serviceRepository, CategorieServiceRepository $categorieServiceRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
@@ -62,7 +62,6 @@ final class ServiceController extends AbstractController
                 $newServiceIds[] = $service->getId();
             }
         }
-        
         
         $categories = $categorieServiceRepository->findBy(['archive' => false]);
 
@@ -199,38 +198,60 @@ final class ServiceController extends AbstractController
         }
     }
 
-    #[Route('/api/test-groq', name: 'api_test_groq', methods: ['GET'])]
-    public function testGroq(): JsonResponse
+    #[Route('/api/search', name: 'app_service_ajax_search', methods: ['GET'])]
+    public function ajaxSearch(Request $request, ServiceRepository $serviceRepository, PaginatorInterface $paginator): JsonResponse
     {
-        $apiKey = '';
-        
-        $data = [
-            'model' => 'llama-3.3-70b-versatile',
-            'messages' => [
-                ['role' => 'user', 'content' => 'Dis "API Groq fonctionne parfaitement" en français']
-            ]
-        ];
-        
-        $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $apiKey,
-            'Content-Type: application/json'
+        $keyword = $request->query->get('keyword');
+        $categorie = $request->query->get('categorie');
+        $archive = $request->query->get('archive') === '1';
+        $budgetMin = $request->query->get('budgetMin') ? (float) $request->query->get('budgetMin') : null;
+        $budgetMax = $request->query->get('budgetMax') ? (float) $request->query->get('budgetMax') : null;
+        $dateStart = $request->query->get('dateStart') ? new \DateTime($request->query->get('dateStart')) : null;
+        $dateEnd = $request->query->get('dateEnd') ? new \DateTime($request->query->get('dateEnd')) : null;
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+
+        $queryBuilder = $serviceRepository->getAdvancedSearchQueryBuilder(
+            $keyword, $categorie, $archive, $budgetMin, $budgetMax, $dateStart, $dateEnd
+        );
+
+        $pagination = $paginator->paginate($queryBuilder, $page, $limit);
+
+        $currentFilters = $request->query->all();
+        unset($currentFilters['page']);
+        $baseUrl = '/admin/services/api/search?';
+        $paginationHtml = $this->renderView('admin/service/_pagination.html.twig', [
+            'pagination' => $pagination,
+            'baseUrl' => $baseUrl,
+            'filters' => $currentFilters,
         ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-        
+
+        $services = $pagination->getItems();
+        $now = new \DateTime();
+        $sevenDaysAgo = (clone $now)->modify('-7 days');
+
+        $data = [];
+        foreach ($services as $service) {
+            $isNew = $service->getDateCreation() && $service->getDateCreation() > $sevenDaysAgo;
+            $data[] = [
+                'id'          => $service->getId(),
+                'titre'       => $service->getTitre(),
+                'budget'      => $service->getBudget(),
+                'categorie'   => $service->getCategorie() ? $service->getCategorie()->getNom() : null,
+                'description' => $service->getDescription(),
+                'dateDebut'   => $service->getDateDebut() ? $service->getDateDebut()->format('d/m/Y') : 'N/A',
+                'dateFin'     => $service->getDateFin() ? $service->getDateFin()->format('d/m/Y') : 'N/A',
+                'archive'     => $service->isArchive(),
+                'isNew'       => $isNew,
+            ];
+        }
+
         return $this->json([
-            'http_code' => $httpCode,
-            'curl_error' => $curlError,
-            'response' => json_decode($response, true)
+            'services' => $data,
+            'paginationHtml' => $paginationHtml,
+            'total' => $pagination->getTotalItemCount(),
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'pageCount' => $pagination->getPageCount(),
         ]);
     }
 
