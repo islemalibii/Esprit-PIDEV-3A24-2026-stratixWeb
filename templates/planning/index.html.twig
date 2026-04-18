@@ -7,7 +7,10 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-calendar-alt"></i> Gestion des Plannings</h1>
-        <div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('api_planning_export_excel') }}" target="_blank" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Exporter Excel
+            </a>
             <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Nouveau planning
             </a>
@@ -104,10 +107,10 @@
                     <tbody id="planningTableBody">
                         {% for planning in plannings %}
                         <tr>
-                            <td>{{ employes[planning.employeId] ?? 'Non assigné' }}</div>
-                            <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</div>
-                            <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</div>
-                            <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</div>
+                            <td>{{ employes[planning.employeId] ?? 'Non assigné' }}</td>
+                            <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</td>
+                            <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</td>
+                            <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</td>
                             <td>
                                 {% if planning.typeShift == 'JOUR' %}
                                     <span class="badge bg-info">☀️ JOUR</span>
@@ -124,9 +127,9 @@
                                 {% else %}
                                     <span class="badge bg-secondary">⚪ AUTRE</span>
                                 {% endif %}
-                            </div>
+                            </td>
                             <td class="text-center">
-                                <button onclick="showWeatherForDate('{{ planning.date|date('Y-m-d') }}', '{{ planning.typeShift }}', {{ planning.id }})" 
+                                <button onclick="showWeatherForDate('{{ planning.date|date('Y-m-d') }}', '{{ planning.typeShift }}', {{ planning.id }})"
                                         class="btn btn-sm btn-outline-info" title="Voir la météo">
                                     <i class="fas fa-cloud-sun"></i>
                                 </button>
@@ -139,6 +142,9 @@
                                     <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-outline-warning" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <a href="{{ path('api_planning_export_excel', {'employe_id': planning.employeId}) }}" target="_blank" class="btn btn-outline-success" title="Excel employé">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
                                     <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
                                         <button class="btn btn-outline-danger" title="Supprimer">
@@ -150,7 +156,7 @@
                         </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center">Aucun planning trouvé</div>
+                                <td colspan="7" class="text-center">Aucun planning trouvé</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -160,7 +166,7 @@
     </div>
 </div>
 
-<!-- Modal pour afficher la météo -->
+<!-- Modal météo -->
 <div class="modal fade" id="weatherModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -179,23 +185,17 @@
 </div>
 
 <script>
-// Fonction pour afficher la météo pour une date
 async function showWeatherForDate(date, shift, planningId) {
     const modal = new bootstrap.Modal(document.getElementById('weatherModal'));
     const modalBody = document.getElementById('weatherModalBody');
-    
     modalBody.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     modal.show();
-    
     try {
-        // Appel API météo
         const response = await fetch(`/api/meteo/planning/${planningId}`);
         const data = await response.json();
-        
         if (data.success) {
             const meteo = data.data.meteo;
             const conseils = data.data.conseils;
-            
             modalBody.innerHTML = `
                 <div class="text-center mb-3">
                     <div style="font-size: 3rem;">${meteo.icon || '🌤️'}</div>
@@ -204,27 +204,17 @@ async function showWeatherForDate(date, shift, planningId) {
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-6">
-                        <small class="text-muted">💧 Humidité</small>
-                        <div><strong>${meteo.humidity}%</strong></div>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-muted">💨 Vent</small>
-                        <div><strong>${meteo.wind_speed} km/h</strong></div>
-                    </div>
+                    <div class="col-6"><small class="text-muted">💧 Humidité</small><div><strong>${meteo.humidity}%</strong></div></div>
+                    <div class="col-6"><small class="text-muted">💨 Vent</small><div><strong>${meteo.wind_speed} km/h</strong></div></div>
                 </div>
                 <hr>
                 <div class="alert alert-info">
                     <strong>📋 Conseils pour le shift ${shift}</strong>
-                    <ul class="mb-0 mt-2">
-                        ${conseils.map(c => `<li><small>${c}</small></li>`).join('')}
-                    </ul>
+                    <ul class="mb-0 mt-2">${conseils.map(c => `<li><small>${c}</small></li>`).join('')}</ul>
                 </div>
                 <div class="alert ${data.data.recommandation.includes('⚠️') ? 'alert-warning' : 'alert-success'} mt-2">
-                    <strong>⚠️ Recommandation</strong><br>
-                    ${data.data.recommandation}
-                </div>
-            `;
+                    <strong>Recommandation</strong><br>${data.data.recommandation}
+                </div>`;
         } else {
             modalBody.innerHTML = '<div class="alert alert-danger">Erreur chargement météo</div>';
         }
@@ -233,68 +223,43 @@ async function showWeatherForDate(date, shift, planningId) {
     }
 }
 
-// Fonction pour afficher les prévisions de la semaine
 async function showWeatherWeek() {
     const modal = new bootstrap.Modal(document.getElementById('weatherModal'));
     const modalBody = document.getElementById('weatherModalBody');
-    
     modalBody.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
     modal.show();
-    
     try {
         const response = await fetch('/api/meteo/week');
         const data = await response.json();
-        
         if (data.success) {
-            let forecastHtml = `<h6 class="text-center mb-3">📅 Prévisions pour ${data.city}</h6>`;
-            forecastHtml += '<div class="row">';
-            
+            let html = `<h6 class="text-center mb-3">📅 Prévisions pour ${data.city}</h6><div class="row">`;
             data.forecast.forEach(day => {
-                forecastHtml += `
-                    <div class="col-4 mb-2 text-center">
-                        <div class="border rounded p-2">
-                            <strong>${day.day}</strong><br>
-                            <span style="font-size: 1.2rem;">${day.condition}</span><br>
-                            <small>${day.temp_min}°/${day.temp_max}°</small><br>
-                            <small class="text-muted">${day.advice}</small>
-                        </div>
-                    </div>
-                `;
+                html += `<div class="col-4 mb-2 text-center"><div class="border rounded p-2">
+                    <strong>${day.day}</strong><br>
+                    <span style="font-size:1.2rem">${day.condition}</span><br>
+                    <small>${day.temp_min}°/${day.temp_max}°</small><br>
+                    <small class="text-muted">${day.advice}</small>
+                </div></div>`;
             });
-            
-            forecastHtml += '</div>';
-            modalBody.innerHTML = forecastHtml;
-        } else {
-            modalBody.innerHTML = '<div class="alert alert-danger">Erreur chargement prévisions</div>';
+            html += '</div>';
+            modalBody.innerHTML = html;
         }
     } catch (error) {
         modalBody.innerHTML = '<div class="alert alert-danger">Erreur de connexion</div>';
     }
 }
 
-// Filtres
 const searchInput = document.getElementById('searchInput');
 const typeFilter = document.getElementById('typeFilter');
 const tbody = document.getElementById('planningTableBody');
 
-function getRows() {
-    return tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
-}
-
 function filterTable() {
     const searchText = searchInput.value.toLowerCase();
     const typeValue = typeFilter.value;
-
-    getRows().forEach(row => {
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
         const employe = row.cells[0]?.innerText.toLowerCase() || '';
         const type = row.cells[4]?.innerText || '';
-
-        let matchType = true;
-        if (typeValue) {
-            matchType = type.includes(typeValue);
-        }
-
-        row.style.display = (matchType && employe.includes(searchText)) ? '' : 'none';
+        row.style.display = (!typeValue || type.includes(typeValue)) && employe.includes(searchText) ? '' : 'none';
     });
 }
 
