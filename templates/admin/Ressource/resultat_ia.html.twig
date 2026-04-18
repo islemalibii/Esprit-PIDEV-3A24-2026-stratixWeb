@@ -36,7 +36,6 @@
                                     <p class="mb-0 text-muted">
                                         Prix : <span class="fw-bold text-dark">{{ meilleur.prix }} DT</span> | 
                                         Délai : <span class="fw-bold text-dark">{{ meilleur.delai }} jours</span>
-                                        {# Affichage conditionnel du score si présent #}
                                         {% if meilleur.score_ia is defined %}
                                             | Score IA : <span class="fw-bold text-primary">{{ meilleur.score_ia }}/100</span>
                                         {% endif %}
@@ -47,6 +46,20 @@
                     </div>
                 </div>
             {% endif %}
+
+            {# SECTION VISUALISATION : RADAR CHART #}
+            <div class="col-12 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="ti ti-chart-radar me-2 text-primary"></i>Comparaison Performance Fournisseurs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="max-height: 400px; position: relative;">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {# Tableau comparatif #}
             <div class="col-12">
@@ -86,7 +99,6 @@
                                                     {{ offre.delai }} jours
                                                 </span>
                                             </td>
-                                            {# Sécurité ici : on vérifie l'existence de la clé avant de l'afficher #}
                                             {% if offre.score_ia is defined %}
                                                 <td class="fw-bold text-primary">{{ offre.score_ia }}%</td>
                                             {% endif %}
@@ -113,4 +125,63 @@
     .bg-soft-success { background-color: #d1fae5; color: #065f46; }
     .bg-soft-warning { background-color: #fef3c7; color: #92400e; }
 </style>
+
+{# SCRIPTS POUR LE GRAPHIQUE #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        
+        // Configuration des labels (critères)
+        const labels = ["Prix (Optimisé)", "Rapidité (Délai)", "Fiabilité Score IA"];
+        
+        // Génération dynamique des datasets depuis Twig
+        const datasets = [
+            {% for offre in resultats %}
+            {
+                label: "{{ offre.fournisseur }}",
+                data: [
+                    {# Normalisation simple pour le rendu visuel (0-100) #}
+                    {{ (1000 / (offre.prix + 1)) * 5 }}, 
+                    {{ 100 - (offre.delai * 5) }},
+                    {{ offre.score_ia is defined ? offre.score_ia : 50 }}
+                ],
+                fill: true,
+                backgroundColor: 'rgba({{ random(0, 100) }}, {{ random(100, 200) }}, {{ random(150, 255) }}, 0.2)',
+                borderColor: 'rgb({{ random(0, 100) }}, {{ random(100, 200) }}, {{ random(150, 255) }})',
+                pointBackgroundColor: 'rgb({{ random(0, 100) }}, {{ random(100, 200) }}, {{ random(150, 255) }})',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb({{ random(0, 100) }}, {{ random(100, 200) }}, {{ random(150, 255) }})'
+            },
+            {% endfor %}
+        ];
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { display: true },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

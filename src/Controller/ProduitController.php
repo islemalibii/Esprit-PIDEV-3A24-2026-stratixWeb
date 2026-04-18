@@ -11,10 +11,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ProduitController extends AbstractController
 {
+    /**
+     * Liste des produits avec recherche et statistiques
+     */
     #[Route('/produit', name: 'produit_index')]
     public function index(ProduitRepository $repository, Request $request): Response
     {
@@ -46,6 +50,9 @@ class ProduitController extends AbstractController
         ]);
     }
 
+    /**
+     * Formulaire unifié pour l'ajout et la modification
+     */
     #[Route('/produit/new', name: 'produit_new')]
     #[Route('/produit/edit/{id}', name: 'produit_edit')]
     public function form(?Produit $produit = null, Request $request, EntityManagerInterface $em): Response
@@ -63,17 +70,17 @@ class ProduitController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
-            // 1. Sécurité supplémentaire : Date de fabrication
-            // On accepte le passé seulement en mode EDITION pour ne pas bloquer les vieux produits
+            // Validation personnalisée de la date de fabrication
             if (!$editMode && $produit->getDateFabrication() < $aujourdhui) {
                 $this->addFlash('error', 'La date de fabrication ne peut pas être antérieure à aujourd\'hui.');
                 return $this->render('admin/produit/formulaire.html.twig', [
                     'form' => $form->createView(),
-                    'editMode' => $editMode
+                    'editMode' => $editMode,
+                    'produit' => $produit // Ajout indispensable ici
                 ]);
             }
 
-            // 2. Gestion de l'image
+            // Gestion de l'upload de l'image
             $imageFile = $form->get('image_file')->getData();
             if ($imageFile) {
                 $newFilename = 'produit_'.uniqid().'.'.$imageFile->guessExtension();
@@ -84,25 +91,42 @@ class ProduitController extends AbstractController
                     );
                     $produit->setImagePath($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', "Erreur lors de l'enregistrement de l'image.");
+                    $this->addFlash('error', "Erreur lors de l'enregistrement de l'image sur le serveur.");
                 }
             }
 
-            // 3. Sauvegarde
             $em->persist($produit);
             $em->flush();
             
-            $this->addFlash('success', $editMode ? 'Produit mis à jour !' : 'Produit ajouté avec succès !');
+            $this->addFlash('success', $editMode ? 'Le produit a été mis à jour.' : 'Le produit a été ajouté à l\'inventaire Stratix.');
             return $this->redirectToRoute('produit_index');
         }
 
         return $this->render('admin/produit/formulaire.html.twig', [
             'form' => $form->createView(),
             'editMode' => $editMode,
-            'produit' => $produit 
+            'produit' => $produit // Ajout indispensable ici pour le template
         ]);
     }
 
+    /**
+     * Suppression sécurisée (Token CSRF)
+     */
+    #[Route('/produit/delete/{id}', name: 'produit_delete', methods: ['POST'])]
+    public function delete(Produit $produit, Request $request, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
+            $em->remove($produit);
+            $em->flush();
+            $this->addFlash('success', 'Le produit a été supprimé.');
+        }
+        
+        return $this->redirectToRoute('produit_index');
+    }
+
+    /**
+     * Génération du PDF pour l'inventaire
+     */
     #[Route('/produit/pdf', name: 'produit_pdf')]
     public function generatePdf(ProduitRepository $repository, PdfService $pdf): Response
     {
@@ -111,19 +135,52 @@ class ProduitController extends AbstractController
             'produits' => $produits
         ]);
         
-        // On retourne la réponse générée par le service (Content-Type: application/pdf)
-        return $pdf->showPdfFile($html, 'Rapport_Produits_Stratix_' . date('Y-m-d'));
+        return $pdf->showPdfFile($html, 'Inventaire_Stratix_' . date('Y-m-d'));
     }
 
-    #[Route('/produit/delete/{id}', name: 'produit_delete', methods: ['POST'])]
-    public function delete(Produit $produit, Request $request, EntityManagerInterface $em): Response
+    // --- SECTION API (JSON) ---
+
+    /**
+     * API : Liste des produits pour Flutter
+     */
+    #[Route('/api/produits', name: 'api_produits_list', methods: ['GET'])]
+    public function apiIndex(ProduitRepository $repository): JsonResponse
     {
-        if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
-            $em->remove($produit);
-            $em->flush();
-            $this->addFlash('success', 'Le produit a été retiré de l\'inventaire.');
-        }
+        $produits = $repository->findAll();
+        $data = array_map(function($p) {
+            return [
+                'id' => $p->getId(),
+                'nom' => $p->getNom(),
+                'prix' => $p->getPrix(),
+                'stock' => $p->getStockActuel(),
+                'image' => $p->getImagePath() ? '/uploads/produits/' . $p->getImagePath() : null,
+            ];
+        }, $produits);
+
+        return $this->json([
+            'status' => 'success',
+            'count' => count($data),
+            'produits' => $data
+        ]);
+    }
+
+    /**
+     * API : Export PDF en Base64
+     */
+    #[Route('/api/produit/pdf', name: 'api_produit_pdf', methods: ['GET'])]
+    public function apiPdf(ProduitRepository $repository, PdfService $pdf): JsonResponse
+    {
+        $produits = $repository->findAll();
+        $html = $this->renderView('admin/produit/pdf.html.twig', [
+            'produits' => $produits
+        ]);
         
-        return $this->redirectToRoute('produit_index');
+        $binary = $pdf->getBinaryContent($html);
+
+        return $this->json([
+            'status' => 'success',
+            'filename' => 'Rapport_Stratix_API.pdf',
+            'base64' => base64_encode($binary)
+        ]);
     }
 }
