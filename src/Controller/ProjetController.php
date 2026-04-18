@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Entity\Favori;
+use App\Repository\FavoriRepository;
+
 
 #[Route('/projet')]
 class ProjetController extends AbstractController
@@ -23,25 +26,35 @@ class ProjetController extends AbstractController
     //  LISTE (ADMIN) - Avec Pagination
     // ─────────────────────────────────────────────
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
-    public function index(Request $request, ProjetRepository $repo, PaginatorInterface $paginator): Response
-    {
-        $search = $request->query->get('search');
-        $statut = $request->query->get('statut');
+public function index(Request $request, ProjetRepository $repo, PaginatorInterface $paginator, FavoriRepository $favoriRepo): Response
+{
+    $search = $request->query->get('search');
+    $statut = $request->query->get('statut');
 
-        $query = $repo->findActiveWithFilters($search, $statut);
+    $query = $repo->findActiveWithFilters($search, $statut);
 
-        $pagination = $paginator->paginate(
-            $query,
-            $request->query->getInt('page', 1),
-            6 
-        );
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        6 
+    );
 
-        return $this->render('admin/Projet/listeProjets.html.twig', [
-            'projets'       => $pagination,
-            'currentSearch' => $search,
-            'currentStatut' => $statut,
-        ]);
+    // --- LOGIQUE POUR LES COEURS PLEINS ---
+    $userFavorisIds = [];
+    if ($this->getUser()) {
+        $favoris = $favoriRepo->findBy(['utilisateur' => $this->getUser()]);
+        foreach ($favoris as $f) {
+            $userFavorisIds[] = $f->getProjet()->getId();
+        }
     }
+
+    return $this->render('admin/Projet/listeProjets.html.twig', [
+        'projets'         => $pagination,
+        'currentSearch'   => $search,
+        'currentStatut'   => $statut,
+        'user_favoris_ids' => $userFavorisIds, // On envoie le tableau d'IDs ici
+    ]);
+}
 
     // ─────────────────────────────────────────────
     //  CRÉER UN PROJET
@@ -236,5 +249,49 @@ class ProjetController extends AbstractController
             'projet' => $projet,
             'sprints' => $projet->getSprints(), 
         ]);
+    }
+
+// Cette route sera accessible via : /projet/mes-favoris
+    #[Route('/mes-favoris', name: 'app_projet_favoris_liste')]
+    public function listeFavoris(FavoriRepository $favoriRepo): Response
+    {
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
+
+        $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
+
+        return $this->render('admin/Projet/favoris_liste.html.twig', [
+            'favoris' => $favoris
+        ]);
+    }
+
+    // Cette route sera accessible via : /projet/favori/{id}
+    #[Route('/favori/{id}', name: 'projet_toggle_favori', methods: ['GET', 'POST'])]
+    public function toggleFavori(
+        Projet $projet, 
+        EntityManagerInterface $em, 
+        FavoriRepository $repo
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) return $this->json(['message' => 'Non connecté'], 403);
+
+        $favori = $repo->findOneBy([
+            'utilisateur' => $user, 
+            'projet' => $projet
+        ]);
+
+        if ($favori) {
+            $em->remove($favori);
+            $isFavorite = false;
+        } else {
+            $favori = new Favori();
+            $favori->setUtilisateur($user);
+            $favori->setProjet($projet);
+            $em->persist($favori);
+            $isFavorite = true;
+        }
+
+        $em->flush();
+        return $this->json(['isFavorite' => $isFavorite]);
     }
 }

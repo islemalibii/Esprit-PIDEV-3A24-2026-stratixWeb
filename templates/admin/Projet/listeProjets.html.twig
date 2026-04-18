@@ -6,7 +6,7 @@
 <main id="content" class="content py-4">
     <div class="container-fluid px-4">
         
-        {# --- FORMULAIRE DE FILTRAGE --- #}
+        {# --- FORMULAIRE DE FILTRAGE ET ACTIONS --- #}
         <form method="get" action="{{ path('app_projet_index') }}" id="filterForm" class="row g-3 align-items-center mb-4 mt-2">
             <div class="col-lg-3">
                 <h2 class="fs-4 mb-0 fw-bold text-dark">Gestion des Projets</h2>
@@ -25,20 +25,12 @@
                 </div>
             </div>
             
-            <div class="col-lg-2">
-                <select name="statut" 
-                        id="statutFilter" 
-                        class="form-select border-0 shadow-sm fw-semibold text-danger" 
-                        onchange="this.form.submit()">
-                    <option value="">Tous les statuts</option>
-                    {% set statuts = ['Planifié', 'En cours', 'Terminé', 'Annulé'] %}
-                    {% for s in statuts %}
-                        <option value="{{ s }}" {{ (currentStatut ?? '') == s ? 'selected' : '' }}>{{ s }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="col-lg-3 text-end d-flex gap-2 justify-content-end">
+            <div class="col-lg-5 text-end d-flex gap-2 justify-content-end">
+                {# --- BOUTON : MES FAVORIS --- #}
+                <a href="{{ path('app_projet_favoris_liste') }}" class="btn btn-outline-danger shadow-sm px-3 fw-bold rounded-3">
+                    <i class="ti ti-heart-filled me-1"></i> Mes Favoris
+                </a>
+
                 <a href="{{ path('app_projet_archives') }}" class="btn btn-outline-secondary shadow-sm px-3 fw-bold rounded-3">
                     <i class="ti ti-archive me-1"></i> Archives
                 </a>
@@ -89,6 +81,20 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="btn-group shadow-sm rounded-3 border bg-white">
+                                    {# --- LOGIQUE DU BOUTON FAVORI --- #}
+                                    {% set isFav = false %}
+                                    {% if user_favoris_ids is defined %}
+                                        {% if projet.id in user_favoris_ids %}
+                                            {% set isFav = true %}
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    <a href="{{ path('projet_toggle_favori', {'id': projet.id}) }}" 
+                                       class="btn btn-sm btn-white js-favori-btn" 
+                                       title="Ajouter aux favoris">
+                                        <i class="ti {{ isFav ? 'ti-heart-filled text-danger' : 'ti-heart text-secondary' }}" style="font-size: 1.1rem;"></i>
+                                    </a>
+
                                     <a href="{{ path('app_projet_chat', {'id': projet.id}) }}" class="btn btn-sm btn-white text-info" title="Ouvrir le Chat">
                                         <i class="ti ti-messages" style="font-size: 1.1rem;"></i>
                                     </a>
@@ -118,7 +124,7 @@
             </div>
         </div>
 
-        {# --- BARRE DE PAGINATION --- #}
+        {# --- NAVIGATION PAGINÉE --- #}
         <div class="d-flex justify-content-center mt-4">
             <nav aria-label="Page navigation">
                 {{ knp_pagination_render(projets) }}
@@ -127,4 +133,37 @@
 
     </div>
 </main>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion asynchrone des favoris (AJAX)
+        document.querySelectorAll('.js-favori-btn').forEach(function(link) {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                const url = this.href;
+                const icon = this.querySelector('i');
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isFavorite) {
+                        icon.classList.remove('ti-heart', 'text-secondary');
+                        icon.classList.add('ti-heart-filled', 'text-danger');
+                    } else {
+                        icon.classList.remove('ti-heart-filled', 'text-danger');
+                        icon.classList.add('ti-heart', 'text-secondary');
+                    }
+                })
+                .catch(error => console.error('Erreur lors du toggle favori:', error));
+            });
+        });
+    });
+</script>
 {% endblock %}
