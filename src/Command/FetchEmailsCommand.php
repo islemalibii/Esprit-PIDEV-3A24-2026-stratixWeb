@@ -3,10 +3,11 @@
 namespace App\Command;
 
 use PhpImap\Mailbox;
-use App\Repository\FournisseurRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Offre;
+use App\Entity\ImportLog; // AJOUTÉ
+use App\Repository\FournisseurRepository;
 use App\Repository\RessourceRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,16 +40,20 @@ class FetchEmailsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $uploadDir = $this->params->get('catalogues_directory');
 
-        // 1. CONFIGURATION MAILBOX (À adapter avec tes accès Gmail/Outlook)
-        // Format: {serveur:port/imap/ssl}Dossier
+        // VERIFICATION DU DOSSIER
+       if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+        // CONFIGURATION MAILBOX
+        // Remplace 'ton-code-16-chars' par le mot de passe d'application Google
         $mailbox = new Mailbox(
             '{imap.gmail.com:993/imap/ssl}INBOX', 
-            'ton-email-stratix@gmail.com', 
-            'ton-mot-de-passe-application'
+            'startix.gestionnaire.ressources@gmail.com', 
+            'zghtptzvhfivpzsq' 
         );
 
         try {
-            // 2. CHERCHER LES EMAILS NON LUS
             $mailsIds = $mailbox->searchMailbox('UNSEEN');
 
             if (empty($mailsIds)) {
@@ -60,32 +65,37 @@ class FetchEmailsCommand extends Command
                 $mail = $mailbox->getMail($mailId);
                 $senderEmail = $mail->fromAddress;
 
-                // 3. VÉRIFIER SI L'EXPÉDITEUR EST UN FOURNISSEUR ENREGISTRÉ
                 $fournisseur = $this->fournisseurRepo->findOneBy(['email' => $senderEmail]);
 
                 if (!$fournisseur) {
-                    $io->warning("Email reçu de $senderEmail, mais ce n'est pas un fournisseur enregistré. Ignoré.");
+                    $io->warning("Email reçu de $senderEmail (Fournisseur non reconnu).");
                     continue;
                 }
 
-                // 4. RÉCUPÉRER LES PIÈCES JOINTES (CSV)
                 $attachments = $mail->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (strtolower(pathinfo($attachment->name, PATHINFO_EXTENSION)) === 'csv') {
                         
-                        $filePath = $uploadDir . '/' . uniqid() . '_' . $attachment->name;
+                        $newFileName = uniqid() . '_' . $attachment->name;
+                        $filePath = $uploadDir . '/' . $newFileName;
                         
-                        // Sauvegarde physique du fichier
                         if ($attachment->saveTo($filePath)) {
                             $io->note("Fichier CSV enregistré : " . $attachment->name);
                             
-                            // 5. ANALYSE ET IMPORTATION AUTOMATIQUE
+                            // 1. IMPORT DES DONNÉES DANS LES OFFRES
                             $this->importCsvData($filePath, $fournisseur, $io);
+
+                            // 2. CRÉATION DU LOG (Pour l'interface Ressources)
+                            $log = new ImportLog();
+                            $log->setFileName($newFileName);
+                            $log->setSenderEmail($senderEmail);
+                            $log->setStatus('SUCCESS');
+                            $this->em->persist($log);
                         }
                     }
                 }
                 
-                // Marquer comme lu
+                $this->em->flush(); // Sauvegarde les offres et le log
                 $mailbox->markMailAsRead($mailId);
             }
 
@@ -93,7 +103,7 @@ class FetchEmailsCommand extends Command
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $io->error('Erreur lors de la connexion IMAP : ' . $e->getMessage());
+            $io->error('Erreur : ' . $e->getMessage());
             return Command::FAILURE;
         }
     }
@@ -101,11 +111,11 @@ class FetchEmailsCommand extends Command
     private function importCsvData(string $filePath, $fournisseur, SymfonyStyle $io): void
     {
         if (($handle = fopen($filePath, "r")) !== FALSE) {
-            // On saute la première ligne si c'est une entête
             fgetcsv($handle, 1000, ","); 
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                // Supposons le format CSV : NomRessource, Prix, Delai
+                if (count($data) < 3) continue;
+
                 $nomRessource = $data[0];
                 $prix = (float)$data[1];
                 $delai = (int)$data[2];
@@ -123,9 +133,7 @@ class FetchEmailsCommand extends Command
                     $this->em->persist($offre);
                 }
             }
-            $this->em->flush();
             fclose($handle);
-            $io->success("Les données de " . $fournisseur->getNom() . " ont été injectées en base.");
         }
     }
 }
