@@ -20,9 +20,9 @@ class Projet
     #[ORM\Column]
     private ?int $id = null;
 
-    // --- RELATION AVEC SPRINT ---
-    #[ORM\OneToMany(mappedBy: 'projet', targetEntity: Sprint::class, orphanRemoval: true)]
-    private Collection $sprints;
+    // --- CORRECTION : Nom de variable corrigé et relation cible Phase ---
+    #[ORM\OneToMany(mappedBy: 'projet', targetEntity: Phase::class, cascade: ['persist', 'remove'])]
+    private Collection $phases;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: "Le nom du projet est obligatoire.")]
@@ -46,11 +46,6 @@ class Projet
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     #[Assert\Type("\DateTimeInterface")]
-    #[Assert\GreaterThanOrEqual(
-        "today", 
-        message: "La date de début ne peut pas être dans le passé.",
-        groups: ['registration'] 
-    )]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -85,9 +80,6 @@ class Projet
     #[ORM\ManyToMany(targetEntity: Utilisateur::class)]
     private Collection $membres;
 
-    /**
-     * Champ non-mappé pour l'upload dans le formulaire
-     */
     #[Assert\File(
         maxSize: '10M',
         mimeTypes: [
@@ -100,92 +92,82 @@ class Projet
         ],
         maxSizeMessage: 'Le fichier ne doit pas dépasser 10 Mo.',
         mimeTypesMessage: 'Seuls les formats PDF, DOCX, JPG et PNG sont autorisés.'
-    ) ]
+    )]
     private ?File $cahierDesChargesFile = null;
 
     public function __construct()
     {
         $this->membres = new ArrayCollection();
-        $this->sprints = new ArrayCollection(); // INITIALISATION ESSENTIELLE
+        $this->phases = new ArrayCollection(); // CORRIGÉ : correspond à l'attribut
         $this->statut = "Planifié";
         $this->isArchived = false;
         $this->dateDebut = new \DateTime();
     }
 
-    // --- GETTERS ET SETTERS ---
+    // --- GETTERS / SETTERS ---
 
     public function getId(): ?int { return $this->id; }
-
     public function getNom(): ?string { return $this->nom; }
     public function setNom(?string $nom): self { $this->nom = $nom; return $this; }
-
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; return $this; }
-
     public function getDateDebut(): ?\DateTimeInterface { return $this->dateDebut; }
     public function setDateDebut(?\DateTimeInterface $dateDebut): self { $this->dateDebut = $dateDebut; return $this; }
-
     public function getDateFin(): ?\DateTimeInterface { return $this->dateFin; }
     public function setDateFin(?\DateTimeInterface $dateFin): self { $this->dateFin = $dateFin; return $this; }
-
     public function getBudget(): ?float { return $this->budget; }
     public function setBudget(?float $budget): self { $this->budget = $budget; return $this; }
-
     public function getStatut(): ?string { return $this->statut; }
     public function setStatut(?string $statut): self { $this->statut = $statut ?? 'Planifié'; return $this; }
-
     public function isIsArchived(): ?bool { return $this->isArchived; }
     public function setIsArchived(bool $isArchived): self { $this->isArchived = $isArchived; return $this; }
-
     public function getCahierDesCharges(): ?string { return $this->cahierDesCharges; }
     public function setCahierDesCharges(?string $cahierDesCharges): self { $this->cahierDesCharges = $cahierDesCharges; return $this; }
-
     public function getCahierDesChargesFile(): ?File { return $this->cahierDesChargesFile; }
     public function setCahierDesChargesFile(?File $file): self { $this->cahierDesChargesFile = $file; return $this; }
-
     public function getResponsable(): ?Utilisateur { return $this->responsable; }
     public function setResponsable(?Utilisateur $responsable): self { $this->responsable = $responsable; return $this; }
 
-    /** @return Collection<int, Utilisateur> */
     public function getMembres(): Collection { return $this->membres; }
-
-    public function addMembre(Utilisateur $membre): self
-    {
+    public function addMembre(Utilisateur $membre): self {
         if (!$this->membres->contains($membre)) { $this->membres->add($membre); }
         return $this;
     }
-
-    public function removeMembre(Utilisateur $membre): self
-    {
+    public function removeMembre(Utilisateur $membre): self {
         $this->membres->removeElement($membre);
         return $this;
     }
 
-    // --- LOGIQUE POUR LES SPRINTS ---
+    // --- LOGIQUE POUR LES PHASES (CORRIGÉE) ---
 
-    /** @return Collection<int, Sprint> */
-    public function getSprints(): Collection
+    /** @return Collection<int, Phase> */
+    public function getPhases(): Collection
     {
-        return $this->sprints;
+        return $this->phases;
     }
 
-    public function addSprint(Sprint $sprint): self
+    public function addPhase(Phase $phase): self
     {
-        if (!$this->sprints->contains($sprint)) {
-            $this->sprints->add($sprint);
-            $sprint->setProjet($this);
+        if (!$this->phases->contains($phase)) {
+            $this->phases->add($phase);
+            $phase->setProjet($this);
         }
         return $this;
     }
 
-    public function removeSprint(Sprint $sprint): self
+    public function removePhase(Phase $phase): self
     {
-        if ($this->sprints->removeElement($sprint)) {
-            // set the owning side to null (unless already changed)
-            if ($sprint->getProjet() === $this) {
-                $sprint->setProjet(null);
+        if ($this->phases->removeElement($phase)) {
+            if ($phase->getProjet() === $this) {
+                $phase->setProjet(null);
             }
         }
         return $this;
+    }
+
+    // Alias pour la compatibilité avec tes anciens templates Twig qui utilisent .sprints
+    public function getSprints(): Collection
+    {
+        return $this->getPhases();
     }
 }

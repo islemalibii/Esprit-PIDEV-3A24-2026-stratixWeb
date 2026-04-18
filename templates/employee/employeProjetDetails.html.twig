@@ -15,10 +15,9 @@
             <p style="color: #94a3b8; font-size: 14px;">Analyse et suivi détaillé du projet</p>
         </div>
         <div class="d-flex gap-2">
-
-        <a href="{{ path('app_projet_export_pdf', {'id': projet.id}) }}" class="btn btn-danger shadow-sm fw-bold rounded-3 px-3">
-        <i class="ti ti-file-text me-1"></i> Exporter PDF
-    </a>
+            <a href="{{ path('app_projet_export_pdf', {'id': projet.id}) }}" class="btn btn-danger shadow-sm fw-bold rounded-3 px-3">
+                <i class="ti ti-file-text me-1"></i> Exporter PDF
+            </a>
             <a href="{{ path('app_projet_chat', {'id': projet.id}) }}" class="btn btn-primary shadow-sm fw-bold rounded-3 px-4">
                 <i class="ti ti-messages me-1"></i> Chat Équipe
             </a>
@@ -90,49 +89,50 @@
                 </div>
             </div>
 
-            {# --- SECTION AJOUTÉE : LISTE DÉTAILLÉE DES SPRINTS --- #}
+            {# --- SECTION CORRIGÉE : LISTE DÉTAILLÉE DES PHASES --- #}
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-dark">
-                        <i class="ti ti-run me-2 text-info"></i>Sprints du projet
+                        <i class="ti ti-layers-intersect me-2 text-info"></i>Phases du projet
                     </h5>
-                    <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ projet.sprints|length }} Sprint(s)</span>
+                    <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ projet.sprints|length }} Phase(s)</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th class="ps-4 py-3 text-muted small fw-bold border-0">NOM DU SPRINT</th>
+                                    <th class="ps-4 py-3 text-muted small fw-bold border-0">NOM DE LA PHASE</th>
                                     <th class="py-3 text-muted small fw-bold border-0 text-center">PÉRIODE</th>
                                     <th class="py-3 text-muted small fw-bold border-0 text-center">STATUT</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for sprint in projet.sprints %}
+                                {# Note : On garde projet.sprints si ton entité Projet a toujours une relation getSprints() #}
+                                {% for phase in projet.sprints %}
                                     <tr>
                                         <td class="ps-4">
-                                            <div class="fw-bold text-dark">{{ sprint.nom }}</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">Objectif : {{ sprint.objectif|default('Non défini')|slice(0, 50) }}...</div>
+                                            <div class="fw-bold text-dark">{{ phase.nom }}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">Objectif : {{ phase.objectif|default('Non défini')|slice(0, 50) }}...</div>
                                         </td>
                                         <td class="text-center">
-                                            <div class="small fw-medium text-dark">{{ sprint.dateDebut|date('d/m/Y') }}</div>
-                                            <div class="text-muted small">au {{ sprint.dateFin|date('d/m/Y') }}</div>
+                                            <div class="small fw-medium text-dark">{{ phase.dateDebut|date('d/m/Y') }}</div>
+                                            <div class="text-muted small">au {{ phase.dateFin|date('d/m/Y') }}</div>
                                         </td>
                                         <td class="text-center">
-                                            {% if sprint.statut == 'Terminé' %}
-                                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2"><i class="ti ti-check me-1"></i>Terminé</span>
-                                            {% elseif sprint.statut == 'En cours' %}
+                                            {% if phase.statut == 'Terminé' %}
+                                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2"><i class="ti ti-check me-1"></i>Terminée</span>
+                                            {% elseif phase.statut == 'En cours' %}
                                                 <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2"><i class="ti ti-loader me-1"></i>En cours</span>
                                             {% else %}
-                                                <span class="badge bg-light text-muted border rounded-pill px-3 py-2">Planifié</span>
+                                                <span class="badge bg-light text-muted border rounded-pill px-3 py-2">Planifiée</span>
                                             {% endif %}
                                         </td>
                                     </tr>
                                 {% else %}
                                     <tr>
                                         <td colspan="3" class="text-center py-4 text-muted fst-italic">
-                                            Aucun sprint défini pour ce projet.
+                                            Aucune phase définie pour ce projet.
                                         </td>
                                     </tr>
                                 {% endfor %}
