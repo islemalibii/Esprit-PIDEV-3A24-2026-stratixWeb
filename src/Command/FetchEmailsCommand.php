@@ -2,9 +2,8 @@
 
 namespace App\Command;
 
-use PhpImap\Mailbox;
 use App\Entity\Offre;
-use App\Entity\ImportLog; // AJOUTÉ
+use App\Entity\ImportLog;
 use App\Repository\FournisseurRepository;
 use App\Repository\RessourceRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +16,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 #[AsCommand(
     name: 'app:fetch-emails',
-    description: 'Récupère les catalogues CSV des fournisseurs par email',
+    description: 'Simule la récupération des catalogues (Sans IMAP)',
 )]
 class FetchEmailsCommand extends Command
 {
@@ -40,96 +39,64 @@ class FetchEmailsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $uploadDir = $this->params->get('catalogues_directory');
 
-        // VERIFICATION DU DOSSIER
-       if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-}
+        $io->title('Stratix - Importateur de Catalogues (Mode Local)');
 
-        // CONFIGURATION MAILBOX
-        // Remplace 'ton-code-16-chars' par le mot de passe d'application Google
-        $mailbox = new Mailbox(
-            '{imap.gmail.com:993/imap/ssl}INBOX', 
-            'startix.gestionnaire.ressources@gmail.com', 
-            'zghtptzvhfivpzsq' 
-        );
+        // Liste des fichiers CSV dans le dossier
+        $files = glob($uploadDir . '/*.csv');
 
-        try {
-            $mailsIds = $mailbox->searchMailbox('UNSEEN');
-
-            if (empty($mailsIds)) {
-                $io->info('Aucun nouvel email trouvé.');
-                return Command::SUCCESS;
-            }
-
-            foreach ($mailsIds as $mailId) {
-                $mail = $mailbox->getMail($mailId);
-                $senderEmail = $mail->fromAddress;
-
-                $fournisseur = $this->fournisseurRepo->findOneBy(['email' => $senderEmail]);
-
-                if (!$fournisseur) {
-                    $io->warning("Email reçu de $senderEmail (Fournisseur non reconnu).");
-                    continue;
-                }
-
-                $attachments = $mail->getAttachments();
-                foreach ($attachments as $attachment) {
-                    if (strtolower(pathinfo($attachment->name, PATHINFO_EXTENSION)) === 'csv') {
-                        
-                        $newFileName = uniqid() . '_' . $attachment->name;
-                        $filePath = $uploadDir . '/' . $newFileName;
-                        
-                        if ($attachment->saveTo($filePath)) {
-                            $io->note("Fichier CSV enregistré : " . $attachment->name);
-                            
-                            // 1. IMPORT DES DONNÉES DANS LES OFFRES
-                            $this->importCsvData($filePath, $fournisseur, $io);
-
-                            // 2. CRÉATION DU LOG (Pour l'interface Ressources)
-                            $log = new ImportLog();
-                            $log->setFileName($newFileName);
-                            $log->setSenderEmail($senderEmail);
-                            $log->setStatus('SUCCESS');
-                            $this->em->persist($log);
-                        }
-                    }
-                }
-                
-                $this->em->flush(); // Sauvegarde les offres et le log
-                $mailbox->markMailAsRead($mailId);
-            }
-
-            $io->success('Récupération et importation terminées !');
+        if (empty($files)) {
+            $io->warning("Aucun fichier CSV trouvé dans : $uploadDir");
+            $io->info("Dépose tes fichiers (carte esp32, cables) dans ce dossier pour tester.");
             return Command::SUCCESS;
-
-        } catch (\Exception $e) {
-            $io->error('Erreur : ' . $e->getMessage());
-            return Command::FAILURE;
         }
+
+        foreach ($files as $filePath) {
+            $fileName = basename($filePath);
+            
+            // On détermine le fournisseur selon le nom du fichier pour le test
+            // Par exemple: si le fichier contient 'quincaillerie', c'est rahmadjebbi67
+            $emailTest = (strpos($fileName, 'quincaillerie') !== false) 
+                ? 'rahmadjebbi67@gmail.com' 
+                : 'djebbi.Rahma@esprit.tn';
+
+            $fournisseur = $this->fournisseurRepo->findOneBy(['email' => $emailTest]);
+
+            if (!$fournisseur) {
+                $io->error("Fournisseur avec l'email $emailTest non trouvé. Crée-le en base !");
+                continue;
+            }
+
+            $this->importCsvData($filePath, $fournisseur, $io);
+
+            // Log pour l'interface
+            $log = new ImportLog();
+            $log->setFileName($fileName);
+            $log->setSenderEmail($fournisseur->getEmail());
+            $log->setStatus('SUCCESS');
+            $this->em->persist($log);
+            
+            $io->success("Importé : $fileName pour " . $fournisseur->getNom());
+        }
+
+        $this->em->flush();
+        return Command::SUCCESS;
     }
 
     private function importCsvData(string $filePath, $fournisseur, SymfonyStyle $io): void
     {
         if (($handle = fopen($filePath, "r")) !== FALSE) {
-            fgetcsv($handle, 1000, ","); 
-
+            fgetcsv($handle, 1000, ","); // Sauter l'entête
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 if (count($data) < 3) continue;
-
-                $nomRessource = $data[0];
-                $prix = (float)$data[1];
-                $delai = (int)$data[2];
-
-                $ressource = $this->ressourceRepo->findOneBy(['nom' => $nomRessource]);
-
+                
+                $ressource = $this->ressourceRepo->findOneBy(['nom' => $data[0]]);
                 if ($ressource) {
                     $offre = new Offre();
                     $offre->setFournisseur($fournisseur);
                     $offre->setRessource($ressource);
-                    $offre->setPrix($prix);
-                    $offre->setDelaiTransportJours($delai);
+                    $offre->setPrix((float)$data[1]);
+                    $offre->setDelaiTransportJours((int)$data[2]);
                     $offre->setDateOffre(new \DateTime());
-
                     $this->em->persist($offre);
                 }
             }
