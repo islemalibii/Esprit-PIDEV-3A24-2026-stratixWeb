@@ -63,23 +63,26 @@ class ProjetRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-public function findActiveWithFilters($search, $statut)
+    public function findActiveWithFilters(?string $search, ?string $statut)
 {
     $qb = $this->createQueryBuilder('p')
-        ->where('p.isArchived = :val')
+        ->andWhere('p.isArchived = :val')
         ->setParameter('val', false);
 
     if ($search) {
+        // Utilisation de trim() pour éviter les espaces inutiles
         $qb->andWhere('p.nom LIKE :search')
-           ->setParameter('search', '%'.$search.'%');
+           ->setParameter('search', '%' . trim($search) . '%');
     }
 
-    if ($statut) {
+    if ($statut && $statut !== '') {
         $qb->andWhere('p.statut = :statut')
            ->setParameter('statut', $statut);
     }
 
-    // IMPORTANT : Retourne le QueryBuilder ou ->getQuery()
+    // On trie par ID décroissant pour voir les nouveaux projets en premier
+    $qb->orderBy('p.id', 'DESC');
+
     return $qb->getQuery(); 
 }
 }

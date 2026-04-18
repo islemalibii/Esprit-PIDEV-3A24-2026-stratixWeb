@@ -352,4 +352,42 @@ public function exportPdf(Projet $projet): Response
         'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
     ]);
 }
+
+
+#[Route('/api/projets/calendar', name: 'api_projets_calendar', methods: ['GET'])]
+public function getCalendarEvents(ProjetRepository $projetRepository): JsonResponse
+{
+    $user = $this->getUser();
+    $projets = $projetRepository->findBy(['isArchived' => false]); 
+
+    $events = [];
+    foreach ($projets as $projet) {
+        if ($projet->getDateDebut() && $projet->getDateFin()) {
+            $events[] = [
+                'id' => $projet->getId(),
+                'title' => $projet->getNom(),
+                'start' => $projet->getDateDebut()->format('Y-m-d'),
+               
+                'end' => $projet->getDateFin()->modify('+1 day')->format('Y-m-d'),
+                'backgroundColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
+                'borderColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
+                'url' => $this->generateUrl('app_projet_show', ['id' => $projet->getId()]),
+                'allDay' => true
+            ];
+        }
+    }
+    
+    return new JsonResponse($events);
+}
+
+private function getColorByStatut(string $statut): string
+{
+    return match ($statut) {
+        'Planifié' => '#f39c12', // Orange
+        'En cours' => '#3498db', // Bleu
+        'Terminé' => '#2ecc71',  // Vert
+        'Annulé'   => '#e74c3c',  // Rouge
+        default    => '#95a5a6',  // Gris
+    };
+}
 }
