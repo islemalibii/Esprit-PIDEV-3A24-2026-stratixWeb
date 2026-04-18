@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Tâches</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #1f3b4c;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #1f3b4c;
+            margin: 0;
+        }
+        .header .date {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f3b4c;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #1f3b4c;
+            color: white;
+        }
+        .priority-high {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .priority-medium {
+            color: #f59e0b;
+        }
+        .priority-low {
+            color: #10b981;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .status-todo { background: #fef3c7; color: #d97706; }
+        .status-progress { background: #dbeafe; color: #2563eb; }
+        .status-done { background: #d1fae5; color: #059669; }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 {{ titre }}</h1>
+        <div class="date">Exporté le : {{ date_export }}</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-number">{{ total }}</div>
+            <div class="stat-label">Total Tâches</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ aFaire }}</div>
+            <div class="stat-label">À Faire</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ enCours }}</div>
+            <div class="stat-label">En Cours</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ terminees }}</div>
+            <div class="stat-label">Terminées</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ tauxCompletion }}%</div>
+            <div class="stat-label">Taux Completion</div>
+        </div>
+    </div>
+
+    {% if filtres.statut or filtres.priorite or filtres.employe_id %}
+    <div style="margin-bottom: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+        <strong>Filtres appliqués :</strong><br>
+        {% if filtres.statut %}Statut: {{ filtres.statut }}<br>{% endif %}
+        {% if filtres.priorite %}Priorité: {{ filtres.priorite }}<br>{% endif %}
+        {% if filtres.employe_id %}Employé ID: {{ filtres.employe_id }}{% endif %}
+    </div>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Priorité</th>
+                <th>Statut</th>
+                <th>Deadline</th>
+                <th>Employé</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tache in taches %}
+            <tr>
+                <td>{{ tache.id }}</td>
+                <td>{{ tache.titre }}</td>
+                <td>{{ tache.description|slice(0, 50) }}{% if tache.description|length > 50 %}...{% endif %}</td>
+                <td class="priority-{{ tache.priorite|lower }}">{{ tache.priorite }}</td>
+                <td>
+                    <span class="status 
+                        {% if tache.statut == 'A_FAIRE' %}status-todo
+                        {% elseif tache.statut == 'EN_COURS' %}status-progress
+                        {% else %}status-done{% endif %}">
+                        {{ tache.statut|replace({'_': ' '})|title }}
+                    </span>
+                </td>
+                <td>{{ tache.deadline ? tache.deadline|date('d/m/Y') : 'Non définie' }}</td>
+                <td>{{ tache.employeNom ?? 'Non assigné' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Document généré automatiquement par STRATIX</p>
+    </div>
+</body>
+</html>

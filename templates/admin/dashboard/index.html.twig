@@ -261,7 +261,7 @@
     .badge-statut-encours { background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .badge-statut-termine { background: #dcfce7; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 
-    /* Quick actions - CORRIGÉ et bien positionné */
+    /* Quick actions */
     .quick-actions {
         background: white;
         border-radius: 16px;
@@ -309,20 +309,51 @@
         padding: 8px 20px;
     }
 
-    /* Fix pour le bon alignement */
     .row.g-4 {
         margin-bottom: 0;
     }
     
-    /* Container fix */
     .container {
         max-width: 1400px;
     }
     
-    /* Pour que les colonnes aient la même hauteur */
     .col-lg-7, .col-lg-5 {
         display: flex;
         flex-direction: column;
+    }
+
+    /* Chatbot Styles */
+    .message {
+        margin-bottom: 12px;
+        display: flex;
+    }
+    .message.user {
+        justify-content: flex-end;
+    }
+    .message.user > div {
+        background: linear-gradient(135deg, #1f3b4c, #2a6f8f);
+        color: white;
+        border-radius: 12px 12px 4px 12px;
+        padding: 8px 12px;
+        max-width: 85%;
+        white-space: pre-wrap;
+        font-size: 13px;
+    }
+    .message.bot > div {
+        background: white;
+        color: #333;
+        border-radius: 12px 12px 12px 4px;
+        padding: 8px 12px;
+        max-width: 85%;
+        white-space: pre-wrap;
+        font-size: 13px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    #chatbotMessages {
+        scroll-behavior: smooth;
+    }
+    #chatbotToggle:hover {
+        transform: scale(1.05);
     }
 </style>
 {% endblock %}
@@ -491,7 +522,7 @@
             {% endif %}
         </div>
 
-        <!-- Bloc Accès rapides - MAINTENANT BIEN POSITIONNÉ -->
+        <!-- Bloc Accès rapides -->
         <div class="quick-actions">
             <div class="section-title">
                 <i class="fas fa-bolt text-warning"></i> ⚡ Actions rapides
@@ -508,6 +539,39 @@
             <a href="{{ path('app_tache_index') }}" class="quick-btn">
                 <i class="fas fa-list text-success"></i> Toutes les tâches
             </a>
+        </div>
+    </div>
+</div>
+
+{# ===== CHATBOT WIDGET ===== #}
+<div id="chatbotWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <div id="chatbotToggle" style="background: linear-gradient(135deg, #1f3b4c, #2a6f8f); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
+        <i class="fas fa-robot" style="color: white; font-size: 26px;"></i>
+    </div>
+    
+    <div id="chatbotWindow" style="display: none; position: absolute; bottom: 70px; right: 0; width: 380px; height: 500px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; flex-direction: column;">
+        <div style="background: linear-gradient(135deg, #1f3b4c, #2a6f8f); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <i class="fas fa-robot" style="margin-right: 8px;"></i>
+                <strong>Assistant STRATIX</strong>
+            </div>
+            <button id="chatbotClose" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
+        </div>
+        
+        <div id="chatbotMessages" style="flex: 1; overflow-y: auto; padding: 15px; background: #f8f9fa;">
+            <div class="message bot">
+                <div style="background: white; padding: 10px 14px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    👋 Bonjour ! Je suis votre assistant STRATIX.<br>
+                    Tapez <strong>Aide</strong> pour voir les commandes disponibles.
+                </div>
+            </div>
+        </div>
+        
+        <div style="padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
+            <input type="text" id="chatbotInput" placeholder="Écrivez votre message..." style="flex: 1; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 25px; outline: none; font-size: 13px;">
+            <button id="chatbotSend" style="background: #1f3b4c; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -581,6 +645,73 @@ filterStatut.addEventListener('change', doSearch);
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.search-section')) {
         resultsBox.style.display = 'none';
+    }
+});
+</script>
+
+{# ===== CHATBOT JS ===== #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    const chatbotClose = document.getElementById('chatbotClose');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotSend = document.getElementById('chatbotSend');
+    const chatbotMessages = document.getElementById('chatbotMessages');
+
+    if (chatbotToggle) {
+        chatbotToggle.addEventListener('click', () => {
+            chatbotWindow.style.display = 'flex';
+            chatbotInput.focus();
+        });
+    }
+
+    if (chatbotClose) {
+        chatbotClose.addEventListener('click', () => {
+            chatbotWindow.style.display = 'none';
+        });
+    }
+
+    function addMessage(text, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        messageDiv.innerHTML = `<div>${text.replace(/\n/g, '<br>')}</div>`;
+        chatbotMessages.appendChild(messageDiv);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const message = chatbotInput.value.trim();
+        if (!message) return;
+        
+        addMessage(message, true);
+        chatbotInput.value = '';
+        
+        try {
+            const response = await fetch('/api/chatbot/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+            if (data.success) {
+                addMessage(data.response.content);
+            } else {
+                addMessage('❌ Erreur: ' + (data.error || 'Problème de connexion'));
+            }
+        } catch (error) {
+            console.error('Erreur chatbot:', error);
+            addMessage('❌ Erreur de connexion au serveur');
+        }
+    }
+
+    if (chatbotSend) {
+        chatbotSend.addEventListener('click', sendMessage);
+    }
+    if (chatbotInput) {
+        chatbotInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
     }
 });
 </script>

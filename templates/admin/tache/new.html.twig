@@ -1,13 +1,131 @@
-{% extends 'admin/base_admin.html.twig' %}
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> {{ button_label|default('Nouveau planning') }}</h5>
+    </div>
+    <div class="card-body">
+        
+        {% if form_errors(form) %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> Veuillez remplir tous les champs obligatoires
+            </div>
+        {% endif %}
 
-{% block title %}New Tache{% endblock %}
+        <div class="row">
+            <!-- Date - OBLIGATOIRE -->
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.date, 'Date *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.date, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">La date est obligatoire</div>
+                {{ form_errors(form.date) }}
+            </div>
+            
+            <!-- Type Shift - OBLIGATOIRE -->
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.typeShift, 'Type de shift *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.typeShift, {'attr': {'class': 'form-select', 'required': 'required'}}) }}
+                <div class="invalid-feedback">Le type de shift est obligatoire</div>
+                {{ form_errors(form.typeShift) }}
+            </div>
+            
+            <!-- Employé - OBLIGATOIRE -->
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.employeId, 'Employé *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.employeId, {'attr': {'class': 'form-select', 'required': 'required'}}) }}
+                <div class="invalid-feedback">L'employé est obligatoire</div>
+                {{ form_errors(form.employeId) }}
+            </div>
+            
+            <!-- Heure Début -->
+            <div class="col-md-3 mb-3">
+                {{ form_label(form.heureDebut, 'Heure début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.heureDebut, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.heureDebut) }}
+            </div>
+            
+            <!-- Heure Fin -->
+            <div class="col-md-3 mb-3">
+                {{ form_label(form.heureFin, 'Heure fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.heureFin, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.heureFin) }}
+            </div>
+            
+            <!-- Commentaire -->
+            <div class="col-md-12 mb-3">
+                {{ form_label(form.commentaire, 'Commentaire', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.commentaire, {'attr': {'class': 'form-control', 'rows': 2, 'placeholder': 'Optionnel...'}}) }}
+                {{ form_errors(form.commentaire) }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+        <a href="{{ path('app_planning_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+{{ form_end(form) }}
 
-{% block admin_content %}
-    <h1>Create new Tache</h1>
+<script>
+(function() {
+    'use strict';
+    
+    const form = document.querySelector('.needs-validation');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    function validateForm() {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+            }
+        });
+        
+        // Vérifier la date
+        const dateField = document.querySelector('#planning_date');
+        if (dateField && dateField.value) {
+            const selectedDate = new Date(dateField.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                isValid = false;
+                dateField.classList.add('is-invalid');
+            }
+        }
+        
+        return isValid;
+    }
+    
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+            }
+        });
+    }
+})();
+</script>
 
-    {{ include('admin/tache/_form.html.twig') }}
-
-    <a href="{{ path('app_tache_index') }}">back to list</a>
-{% endblock %}
-
-
+<style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    .is-valid {
+        border-color: #198754 !important;
+    }
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+</style>

@@ -1,49 +1,66 @@
-{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-<div class="card">
-    <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> {{ button_label|default('Nouveau planning') }}</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.employe_id, 'Employé *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.employe_id, {'attr': {'class': 'form-select'}}) }}
-                {{ form_errors(form.employe_id) }}
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.date, 'Date *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.date) }}
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.heure_debut, 'Heure début *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.heure_debut, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.heure_debut) }}
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.heure_fin, 'Heure fin *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.heure_fin, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.heure_fin) }}
-            </div>
-            
-            <div class="col-md-12 mb-3">
-                {{ form_label(form.type_shift, 'Type de shift *', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.type_shift, {'attr': {'class': 'form-select'}}) }}
-                {{ form_errors(form.type_shift) }}
-            </div>
-        </div>
-    </div>
-    <div class="card-footer d-flex justify-content-between">
-        <button type="submit" class="btn btn-success">
-            <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
-        </button>
-        <a href="{{ path('app_planning_index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-    </div>
-</div>
-{{ form_end(form) }}
+<?php
 
+namespace App\Form;
+
+use App\Entity\Planning;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TimeType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class PlanningType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('date', DateType::class, [
+                'label' => 'Date *',
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control', 'required' => true]
+            ])
+            ->add('heureDebut', TimeType::class, [
+                'label' => 'Heure début',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('heureFin', TimeType::class, [
+                'label' => 'Heure fin',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('typeShift', ChoiceType::class, [
+                'label' => 'Type de shift *',
+                'choices' => [
+                    '☀️ JOUR' => 'JOUR',
+                    '🌆 SOIR' => 'SOIR',
+                    '🌙 NUIT' => 'NUIT',
+                    '🏖️ CONGÉ' => 'CONGE',
+                    '🤒 MALADIE' => 'MALADIE',
+                    '📚 FORMATION' => 'FORMATION'
+                ],
+                'attr' => ['class' => 'form-select', 'required' => true]
+            ])
+            ->add('employeId', null, [
+                'label' => 'Employé *',
+                'required' => true,
+                'attr' => ['class' => 'form-select']
+            ])
+            ->add('commentaire', TextType::class, [
+                'label' => 'Commentaire',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Optionnel...']
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Planning::class,
+        ]);
+    }
+}

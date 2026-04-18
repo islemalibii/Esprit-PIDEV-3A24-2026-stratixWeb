@@ -1,142 +1,216 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}STRATIX{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Font Awesome -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        
-        {% block stylesheets %}
-        {% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}STRATIX{% endblock %}</title>
 
-<<<<<<< HEAD
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ path('app_dashboard') }}">
-                    <i class="fas fa-chart-line"></i> STRATIX
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_dashboard') }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_tache_index') }}">
-                                <i class="fas fa-tasks"></i> Tâches
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_planning_index') }}">
-                                <i class="fas fa-calendar-alt"></i> Plannings
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_calendar_index') }}">
-                                <i class="fas fa-calendar-week"></i> Calendrier
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_whiteboard_index') }}">
-                                <i class="fas fa-chalkboard"></i> Kanban
-                            </a>
-                        </li>
-                        <li class="nav-item ms-2">
-                            <a class="btn btn-outline-light btn-sm mt-1" href="http://localhost:8000/admin">
-                                <i class="fas fa-th-large"></i> InApp
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-=======
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+    <!-- Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('inapp/assets/images/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('inapp/assets/images/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('inapp/assets/images/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset('inapp/assets/site.webmanifest') }}">
 
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
+    <!-- STYLE GLOBAL COMPACT -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a2c3e 0%, #0f1e2c 100%);
+            color: #e0e7ef;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .logo-area {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .logo-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.6rem;
+            color: #94a3b8;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(59,130,246,0.2);
+            color: white;
+        }
+        
+        .nav-link i {
+            width: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-section-header {
+            padding: 8px 15px 4px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            height: 50px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 20px;
+        }
+        
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        /* Contenu principal - TRÈS COMPACT */
+        .content, main.content, .py-4 {
+            margin-left: 250px;
+            margin-top: 50px;
+            padding: 10px !important;
+            min-height: calc(100vh - 50px);
+        }
+        
+        /* Cards compactes */
+        .card {
+            margin-bottom: 10px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        
+        .card-body {
+            padding: 8px 12px !important;
+        }
+        
+        /* Tableaux compacts */
+        .table td, .table th {
+            padding: 6px 8px !important;
+            font-size: 0.75rem !important;
+        }
+        
+        /* Badges compacts */
+        .badge {
+            font-size: 0.65rem !important;
+            padding: 3px 6px !important;
+            border-radius: 12px !important;
+        }
+        
+        /* Boutons compacts */
+        .btn-sm {
+            padding: 2px 6px !important;
+            font-size: 0.65rem !important;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 2px 4px !important;
+        }
+        
+        /* Display numbers */
+        .display-4 {
+            font-size: 1.5rem !important;
+        }
+        
+        h5 {
+            font-size: 0.7rem !important;
+        }
+        
+        h1 {
+            font-size: 1.2rem !important;
+            margin-bottom: 10px !important;
+        }
+        
+        /* Container */
+        .container-fluid {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+        
+        .row {
+            margin-bottom: 10px !important;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .navbar, .content { left: 0; margin-left: 0; }
+            .sidebar.open { transform: translateX(0); }
+        }
+    </style>
+
     {% block stylesheets %}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-        <link rel="stylesheet" crossorigin href="/styles/app.css">
-        <style>
-            :root {
-                --sidebar-width: 260px;
-                --navbar-height: 70px;
-            }
-            body {
-                background-color: #f8f9fa;
-                margin: 0;
-                overflow-x: hidden;
-            }
-            #content, .content {
-                margin-left: var(--sidebar-width);
-                padding-top: var(--navbar-height);
-                min-height: 100vh;
-                transition: all 0.3s ease;
-            }
-            body > .container-fluid {
-                margin-left: var(--sidebar-width);
-                padding-top: calc(var(--navbar-height) + 1.5rem);
-                padding-left: 2rem;
-                padding-right: 2rem;
-                min-height: 100vh;
-                max-width: 100%;
-            }
-            @media (max-width: 992px) {
-                #content, .content, body > .container-fluid {
-                    margin-left: 0;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="/styles/app.css">
     {% endblock %}
 </head>
+
 <body>
-    <div id="overlay" class="overlay"></div>
+
     {{ include('admin/partials/navbar.html.twig') }}
     {{ include('admin/partials/sidebar.html.twig') }}
->>>>>>> origin/master
 
-        <!-- CONTENU PRINCIPAL -->
-        <main class="py-4">
-            {% block body %}{% endblock %}
-        </main>
+    <main class="content py-4">
+        {% block body %}{% endblock %}
+    </main>
 
-<<<<<<< HEAD
-        <!-- Bootstrap JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-=======
     {% block javascripts %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="{{ asset('inapp/assets/js/main.js') }}"></script>
     {% endblock %}
+
 </body>
->>>>>>> origin/master
 </html>

@@ -5,9 +5,58 @@
 {% block admin_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-calendar-alt"></i> Gestion des Plannings</h1>
-    <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Nouveau planning
-    </a>
+    <div class="d-flex gap-2">
+        <!-- ============ BOUTONS EXPORT EXCEL ============ -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel"></i> Exporter Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel') }}" target="_blank">
+                        <i class="fas fa-download"></i> Tous les plannings
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'JOUR'}) }}" target="_blank">
+                        <i class="fas fa-sun"></i> Plannings JOUR
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'SOIR'}) }}" target="_blank">
+                        <i class="fas fa-moon"></i> Plannings SOIR
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'NUIT'}) }}" target="_blank">
+                        <i class="fas fa-star"></i> Plannings NUIT
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'CONGE'}) }}" target="_blank">
+                        <i class="fas fa-umbrella-beach"></i> Congés
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'MALADIE'}) }}" target="_blank">
+                        <i class="fas fa-thermometer-half"></i> Maladies
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ path('api_planning_export_excel', {'type_shift': 'FORMATION'}) }}" target="_blank">
+                        <i class="fas fa-graduation-cap"></i> Formations
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- ============ FIN EXPORT EXCEL ============ -->
+        
+        <a href="{{ path('app_planning_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau planning
+        </a>
+    </div>
 </div>
 
 <!-- Statistiques -->
@@ -67,9 +116,9 @@
                         <td>
                             {{ employes[planning.employeId] ?? 'Non assigné' }}
                         </td>
-                        <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</td>
-                        <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</td>
-                        <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</td>
+                        <td>{{ planning.date ? planning.date|date('d/m/Y') : '' }}</div>
+                        <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '' }}</div>
+                        <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '' }}</div>
                         <td>
                             {% if planning.typeShift == 'JOUR' %}
                                 <span class="badge bg-info">☀️ JOUR</span>
@@ -86,37 +135,45 @@
                             {% else %}
                                 <span class="badge bg-secondary">⚪ AUTRE</span>
                             {% endif %}
-                        </td>
+                        </div>
                         <td class="table-actions">
-                            <a href="{{ path('app_planning_show', {'id': planning.id}) }}" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
-                                <button class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ path('app_planning_show', {'id': planning.id}) }}" class="btn btn-outline-info" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" class="btn btn-outline-warning" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <!-- Bouton Export Excel pour ce planning -->
+                                <a href="{{ path('api_planning_export_excel', {'employe_id': planning.employeId}) }}" class="btn btn-outline-success" title="Excel employé" target="_blank">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce planning ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
+                                    <button class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {% else %}
                         <tr>
-                            <td colspan="6" class="text-center">Aucun planning trouvé</td>
-                        </tr>
+                            <td colspan="6" class="text-center">Aucun planning trouvé</div>
+                        </div>
                     {% endfor %}
                 </tbody>
-            </table>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    .table-actions .btn { padding: 2px 8px; margin: 0 2px; }
-    .badge { font-size: 0.85rem; padding: 5px 10px; }
-    .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .table-actions .btn { padding: 2px 6px; margin: 0 1px; }
+    .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; }
+    .card { border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .display-4 { font-size: 1.8rem; }
+    .btn-group .dropdown-item i { margin-right: 8px; width: 16px; }
+    .d-flex.gap-2 { gap: 10px; }
 </style>
 {% endblock %}
-
