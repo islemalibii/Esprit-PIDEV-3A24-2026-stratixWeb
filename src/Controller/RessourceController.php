@@ -6,7 +6,6 @@ use App\Entity\Ressource;
 use App\Form\RessourceType;
 use App\Repository\RessourceRepository;
 use App\Repository\ImportLogRepository;
-use App\Repository\OffreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\PdfService;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class RessourceController extends AbstractController
 {
@@ -44,7 +42,8 @@ class RessourceController extends AbstractController
 
         $imports = $importLogRepo->findBy([], ['createdAt' => 'DESC'], 10);
 
-        return $this->render('admin/ressource/index.html.twig', [
+        // Correction du chemin : admin/Ressource/
+        return $this->render('admin/Ressource/index.html.twig', [
             'ressources' => $ressources,
             'searchTerm' => $searchTerm,
             'quantiteTotale' => $quantiteTotale,
@@ -54,61 +53,65 @@ class RessourceController extends AbstractController
     }
 
     /**
-     * ANALYSE IA : Importation d'un CSV spécifique et calcul par Python
+     * ANALYSE IA : Importation de PLUSIEURS fichiers CSV et calcul par Python
      */
     #[Route('/ressource/{id}/analyser', name: 'app_ressource_analyser')]
     public function analyser(Ressource $ressource, Request $request): Response
     {
-        // Si on reçoit le fichier CSV via POST
         if ($request->isMethod('POST')) {
-            $file = $request->files->get('csv_file');
+            $files = $request->files->get('csv_files');
             
-            if ($file) {
+            if ($files && is_array($files)) {
                 $dataForAi = [];
-                if (($handle = fopen($file->getRealPath(), "r")) !== FALSE) {
-                    fgetcsv($handle); // Sauter l'entête
-                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                        // On filtre pour ne garder que les lignes qui concernent cette ressource
-                        if (isset($data[0]) && strtolower($data[0]) === strtolower($ressource->getNom())) {
-                            $dataForAi[] = [
-                                'fournisseur' => "Source Importée", 
-                                'prix' => (float)$data[1],
-                                'delai' => (int)$data[2]
-                            ];
+
+                foreach ($files as $file) {
+                    if ($file && ($handle = fopen($file->getRealPath(), "r")) !== FALSE) {
+                        fgetcsv($handle); // Sauter l'entête
+                        
+                        $fileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                            if (isset($data[0]) && strtolower(trim($data[0])) === strtolower(trim($ressource->getNom()))) {
+                                $dataForAi[] = [
+                                    'fournisseur' => $data[3] ?? $fileName, 
+                                    'prix' => (float)$data[1],
+                                    'delai' => (int)$data[2]
+                                ];
+                            }
                         }
+                        fclose($handle);
                     }
-                    fclose($handle);
                 }
 
                 if (empty($dataForAi)) {
-                    $this->addFlash('error', "Aucune donnée pour '" . $ressource->getNom() . "' trouvée dans ce fichier.");
+                    $this->addFlash('warning', "Aucune offre trouvée pour '" . $ressource->getNom() . "'.");
                     return $this->redirectToRoute('ressource_index');
                 }
 
-                // --- APPEL AU SCRIPT PYTHON ---
                 $projectDir = $this->getParameter('kernel.project_dir');
-                // Note : Assure-toi que python est dans ton PATH Windows
                 $process = new Process(['python', $projectDir . '/scripts/analyse_ia.py']);
                 $process->setInput(json_encode($dataForAi));
                 $process->run();
 
                 if (!$process->isSuccessful()) {
-                    $this->addFlash('error', "L'IA n'a pas pu répondre. Utilisation du tri par défaut.");
+                    $this->addFlash('error', "L'IA Stratix est indisponible. Tri manuel effectué.");
                     usort($dataForAi, fn($a, $b) => $a['prix'] <=> $b['prix']);
                     $resultatsIA = $dataForAi;
                 } else {
                     $resultatsIA = json_decode($process->getOutput(), true);
                 }
 
-                return $this->render('admin/ressource/resultat_ia.html.twig', [
+                // Correction du chemin : admin/Ressource/
+                return $this->render('admin/Ressource/resultat_ia.html.twig', [
                     'ressource' => $ressource,
                     'resultats' => $resultatsIA
                 ]);
             }
+            $this->addFlash('error', "Veuillez sélectionner au moins un fichier CSV.");
         }
 
-        // Si on arrive en GET, on affiche simplement le formulaire d'upload
-        return $this->render('admin/ressource/import_analyse.html.twig', [
+        // Correction du chemin : admin/Ressource/
+        return $this->render('admin/Ressource/import_analyse.html.twig', [
             'ressource' => $ressource
         ]);
     }
@@ -135,11 +138,12 @@ class RessourceController extends AbstractController
             $em->persist($ressource);
             $em->flush();
 
-            $this->addFlash('success', 'Ressource enregistrée !');
+            $this->addFlash('success', 'La ressource a été enregistrée avec succès !');
             return $this->redirectToRoute('ressource_index');
         }
 
-        return $this->render('admin/ressource/form.html.twig', [
+        // Correction du chemin : admin/Ressource/
+        return $this->render('admin/Ressource/form.html.twig', [
             'form' => $form->createView(),
             'editMode' => $ressource->getId() !== null,
             'ressource' => $ressource
@@ -168,7 +172,9 @@ class RessourceController extends AbstractController
     public function generatePdfRessources(RessourceRepository $repository, PdfService $pdf): void
     {
         $ressources = $repository->findAll();
-        $html = $this->renderView('admin/ressource/pdf.html.twig', [
+        
+        // Correction du chemin : admin/Ressource/
+        $html = $this->renderView('admin/Ressource/pdf.html.twig', [
             'ressources' => $ressources
         ]);
         $pdf->showPdfFile($html, 'Liste_Ressources_Stratix');
