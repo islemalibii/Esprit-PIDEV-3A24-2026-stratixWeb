@@ -7,9 +7,14 @@
             <h1 class="h3 mb-0 text-dark">Gestion des Services</h1>
             <p class="text-muted small mt-1">Page {{ services.currentPageNumber }} sur {{ services.pageCount }}</p>
         </div>
-        <a href="{{ path('app_service_new') }}" class="btn btn-orange">
-            <i class="fas fa-plus me-2"></i>Nouveau Service
-        </a>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary" id="visioBtn">
+                <i class="fas fa-video me-2"></i>Visio
+            </button>
+            <a href="{{ path('app_service_new') }}" class="btn btn-orange">
+                <i class="fas fa-plus me-2"></i>Nouveau Service
+            </a>
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
@@ -86,13 +91,12 @@
                                 <button type="submit" class="btn btn-orange-outline flex-grow-1">
                                     <i class="fas fa-search me-2"></i>Rechercher
                                 </button>
-                                 <button type="button" class="btn btn-outline-secondary" id="insightsBtn">
-                                    <i class="fas fa-brain me-1"></i> Assistant IA
-                                </button>
                                 <button type="button" class="btn btn-danger-outline" id="exportPdfBtn">
                                     <i class="fas fa-file-pdf"></i>
                                 </button>
-                               
+                                <button type="button" class="btn btn-outline-secondary" id="insightsBtn">
+                                    <i class="fas fa-brain me-1"></i> IA Insights
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -103,7 +107,7 @@
 
     <div id="insightsPanel" class="insights-panel" style="display: none;">
         <div class="insights-header">
-            <i class="fas fa-robot me-2"></i> Assistant IA
+            <i class="fas fa-robot me-2"></i> Insights IA
             <button type="button" class="insights-close" onclick="closeInsights()">✕</button>
         </div>
         <div id="insightsContent" class="insights-content">
@@ -221,6 +225,39 @@
     {% endif %}
 </div>
 
+<div class="modal fade" id="visioModal" tabindex="-1" aria-labelledby="visioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="height: 80vh;">
+            <div class="modal-header" style="background: var(--orange); color: white;">
+                <h5 class="modal-title" id="visioModalLabel">
+                    <i class="fas fa-video me-2"></i>Visioconférence
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 position-relative" style="height: calc(100% - 60px);">
+                <div id="visioLoading" class="position-absolute top-50 start-50 translate-middle text-center" style="z-index: 10;">
+                    <div class="spinner-border text-orange" role="status"></div>
+                    <p class="mt-2 text-muted">Chargement de la visioconférence...</p>
+                </div>
+                <iframe id="visioIframe" 
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0" 
+                        allow="camera; microphone; fullscreen; autoplay; display-capture" 
+                        allowfullscreen
+                        style="display: none;">
+                </iframe>
+                <div id="visioFallback" class="d-none h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5>Impossible de charger la visioconférence</h5>
+                    <p class="text-muted">Cliquez sur le lien ci-dessous pour ouvrir la réunion dans un nouvel onglet :</p>
+                    <a id="visioFallbackLink" href="#" target="_blank" class="btn btn-orange mt-2">Ouvrir la visio dans un nouvel onglet</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="assistantBubble" class="assistant-bubble" onclick="toggleAssistant()">
     <div class="bubble-icon">🤖</div>
     <div class="bubble-pulse"></div>
@@ -243,7 +280,7 @@
             <div class="message ai-message">
                 <div class="message-avatar">🤖</div>
                 <div class="message-bubble">
-                    Bonjour ! <br>
+                    Bonjour ! 👋<br>
                     J'ai analysé <strong>{{ services.getTotalItemCount }}</strong> services.<br><br>
                     Posez-moi des questions comme :<br>
                     • Budget total<br>
@@ -290,6 +327,7 @@
     }
     .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
     
+    /* HOVER OVERLAY */
     .service-hover-details {
         position: absolute;
         top: 0;
@@ -470,7 +508,7 @@
     .empty-state { text-align: center; padding: 3rem; background: white; border-radius: 20px; }
     
     .insights-panel {
-        background: linear-gradient(135deg, #0a0a0a 0%, #090909 100%);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         border-radius: 20px;
         margin-bottom: 2rem;
         overflow: hidden;
@@ -483,8 +521,8 @@
     }
     .insights-header {
         padding: 1rem 1.25rem;
-        background: rgba(17, 16, 16, 0.05);
-        border-bottom: 1px solid rgba(20, 20, 20, 0.1);
+        background: rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
         color: #f97316;
         font-weight: 600;
         display: flex;
@@ -741,6 +779,59 @@
     function closeInsights() {
         document.getElementById('insightsPanel').style.display = 'none';
         insightsVisible = false;
+    }
+    
+    const visioBtn = document.getElementById('visioBtn');
+    const visioModal = document.getElementById('visioModal');
+    const visioIframe = document.getElementById('visioIframe');
+    const visioLoading = document.getElementById('visioLoading');
+    const visioFallback = document.getElementById('visioFallback');
+    const visioFallbackLink = document.getElementById('visioFallbackLink');
+    
+    if (visioBtn) {
+        visioBtn.addEventListener('click', function() {
+            const roomName = 'stratix-' + Date.now();
+            const userName = '{{ app.user.prenom ?? "Invité" }} {{ app.user.nom ?? "" }}'.trim();
+            const url = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false&userInfo.displayName=${encodeURIComponent(userName)}`;
+            
+            visioIframe.style.display = 'none';
+            visioFallback.classList.add('d-none');
+            visioLoading.style.display = 'flex';
+            visioIframe.src = url;
+            visioFallbackLink.href = url;
+            
+            visioIframe.onload = function() {
+                visioLoading.style.display = 'none';
+                visioIframe.style.display = 'block';
+                visioFallback.classList.add('d-none');
+            };
+            
+            visioIframe.onerror = function() {
+                visioLoading.style.display = 'none';
+                visioIframe.style.display = 'none';
+                visioFallback.classList.remove('d-none');
+            };
+            
+            setTimeout(() => {
+                if (visioIframe.style.display !== 'block' && visioFallback.classList.contains('d-none')) {
+                    visioLoading.style.display = 'none';
+                    visioIframe.style.display = 'none';
+                    visioFallback.classList.remove('d-none');
+                }
+            }, 5000);
+            
+            const modal = new bootstrap.Modal(visioModal);
+            modal.show();
+        });
+    }
+    
+    if (visioModal) {
+        visioModal.addEventListener('hidden.bs.modal', function () {
+            visioIframe.src = '';
+            visioIframe.style.display = 'none';
+            visioLoading.style.display = 'flex';
+            visioFallback.classList.add('d-none');
+        });
     }
     
     const textarea = document.getElementById('questionInput');
