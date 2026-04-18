@@ -85,4 +85,23 @@ class ProjetRepository extends ServiceEntityRepository
 
     return $qb->getQuery(); 
 }
+
+    public function findProjetsProchesEcheance(int $days = 7): array
+{
+    $dateCible = new \DateTime();
+    $dateCible->modify('+' . $days . ' days');
+
+    // On définit le début et la fin de la journée cible pour être précis
+    $debutJour = (clone $dateCible)->setTime(0, 0, 0);
+    $finJour = (clone $dateCible)->setTime(23, 59, 59);
+
+    return $this->createQueryBuilder('p')
+        ->where('p.dateFin BETWEEN :debut AND :fin')
+        ->andWhere('p.isArchived = :archived')
+        ->setParameter('debut', $debutJour)
+        ->setParameter('fin', $finJour)
+        ->setParameter('archived', false) // On ignore les projets archivés
+        ->getQuery()
+        ->getResult();
+}
 }
