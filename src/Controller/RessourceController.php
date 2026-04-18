@@ -6,15 +6,15 @@ use App\Entity\Ressource;
 use App\Form\RessourceType;
 use App\Repository\RessourceRepository;
 use App\Repository\ImportLogRepository;
-use App\Repository\OffreRepository; // AJOUTÉ
+use App\Repository\OffreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\PdfService;
-use Symfony\Component\Process\Process; // AJOUTÉ
-use Symfony\Component\Process\Exception\ProcessFailedException; // AJOUTÉ
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class RessourceController extends AbstractController
 {
@@ -54,48 +54,62 @@ class RessourceController extends AbstractController
     }
 
     /**
-     * ANALYSE IA : Appelle le script Python pour comparer les offres
+     * ANALYSE IA : Importation d'un CSV spécifique et calcul par Python
      */
     #[Route('/ressource/{id}/analyser', name: 'app_ressource_analyser')]
-    public function analyser(Ressource $ressource, OffreRepository $offreRepo): Response
+    public function analyser(Ressource $ressource, Request $request): Response
     {
-        // 1. Récupérer les offres concurrentes pour cette ressource
-        $offres = $offreRepo->findBy(['ressource' => $ressource]);
+        // Si on reçoit le fichier CSV via POST
+        if ($request->isMethod('POST')) {
+            $file = $request->files->get('csv_file');
+            
+            if ($file) {
+                $dataForAi = [];
+                if (($handle = fopen($file->getRealPath(), "r")) !== FALSE) {
+                    fgetcsv($handle); // Sauter l'entête
+                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        // On filtre pour ne garder que les lignes qui concernent cette ressource
+                        if (isset($data[0]) && strtolower($data[0]) === strtolower($ressource->getNom())) {
+                            $dataForAi[] = [
+                                'fournisseur' => "Source Importée", 
+                                'prix' => (float)$data[1],
+                                'delai' => (int)$data[2]
+                            ];
+                        }
+                    }
+                    fclose($handle);
+                }
 
-        if (count($offres) < 2) {
-            $this->addFlash('warning', "Il faut au moins deux offres pour que l'IA puisse comparer.");
-            return $this->redirectToRoute('ressource_index');
+                if (empty($dataForAi)) {
+                    $this->addFlash('error', "Aucune donnée pour '" . $ressource->getNom() . "' trouvée dans ce fichier.");
+                    return $this->redirectToRoute('ressource_index');
+                }
+
+                // --- APPEL AU SCRIPT PYTHON ---
+                $projectDir = $this->getParameter('kernel.project_dir');
+                // Note : Assure-toi que python est dans ton PATH Windows
+                $process = new Process(['python', $projectDir . '/scripts/analyse_ia.py']);
+                $process->setInput(json_encode($dataForAi));
+                $process->run();
+
+                if (!$process->isSuccessful()) {
+                    $this->addFlash('error', "L'IA n'a pas pu répondre. Utilisation du tri par défaut.");
+                    usort($dataForAi, fn($a, $b) => $a['prix'] <=> $b['prix']);
+                    $resultatsIA = $dataForAi;
+                } else {
+                    $resultatsIA = json_decode($process->getOutput(), true);
+                }
+
+                return $this->render('admin/ressource/resultat_ia.html.twig', [
+                    'ressource' => $ressource,
+                    'resultats' => $resultatsIA
+                ]);
+            }
         }
 
-        // 2. Préparer les données pour Python
-        $dataForAi = [];
-        foreach ($offres as $o) {
-            $dataForAi[] = [
-                'fournisseur' => $o->getFournisseur()->getNom(),
-                'prix' => (float)$o->getPrix(),
-                'delai' => (int)$o->getDelaiTransportJours()
-            ];
-        }
-
-        // 3. Exécuter le script Python (situé dans /scripts/analyse_ia.py)
-        $projectDir = $this->getParameter('kernel.project_dir');
-        $process = new Process(['python', $projectDir . '/scripts/analyse_ia.py']);
-        $process->setInput(json_encode($dataForAi));
-        $process->run();
-
-        // Gestion d'erreur si Python ne répond pas
-        if (!$process->isSuccessful()) {
-            // Option de secours : Si Python échoue, on fait un tri PHP simple
-            $this->addFlash('error', "Le moteur IA n'a pas pu être lancé. Affichage d'un tri standard.");
-            usort($dataForAi, fn($a, $b) => $a['prix'] <=> $b['prix']);
-            $resultatsIA = $dataForAi;
-        } else {
-            $resultatsIA = json_decode($process->getOutput(), true);
-        }
-
-        return $this->render('admin/ressource/analyse.html.twig', [
-            'ressource' => $ressource,
-            'resultats' => $resultatsIA,
+        // Si on arrive en GET, on affiche simplement le formulaire d'upload
+        return $this->render('admin/ressource/import_analyse.html.twig', [
+            'ressource' => $ressource
         ]);
     }
 
@@ -121,7 +135,7 @@ class RessourceController extends AbstractController
             $em->persist($ressource);
             $em->flush();
 
-            $this->addFlash('success', 'La ressource a été enregistrée avec succès !');
+            $this->addFlash('success', 'Ressource enregistrée !');
             return $this->redirectToRoute('ressource_index');
         }
 

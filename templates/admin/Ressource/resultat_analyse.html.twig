@@ -1,0 +1,124 @@
+{# templates/admin/ressource/resultat_ia.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Analyse IA - {{ ressource.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid p-4">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-brain text-primary mr-2"></i>Intelligence Artificielle : Analyse de décision
+        </h1>
+        <a href="{{ path('ressource_index') }}" class="btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à l'inventaire
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            
+            {% set meilleur = resultats|first %}
+
+            <div class="card shadow mb-4 border-bottom-success">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">OFFRE RECOMMANDÉE PAR L'IA</h6>
+                    <i class="fas fa-star text-warning"></i>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Fournisseur Optimal Détecté
+                            </div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ meilleur.fournisseur }}</div>
+                            <p class="mt-2 text-muted">
+                                L'algorithme a analysé les variables de prix ({{ meilleur.prix }} TND) et de logistique ({{ meilleur.delai }} jours) 
+                                pour identifier cette offre comme la plus efficiente pour Stratix.
+                            </p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="display-4 font-weight-bold text-success">{{ meilleur.score_ia }}</div>
+                            <div class="text-center text-xs font-weight-bold">SCORE DE FIABILITÉ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tableau Comparatif des Offres</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Classement</th>
+                                    <th>Fournisseur</th>
+                                    <th>Prix (TND)</th>
+                                    <th>Délai (Jours)</th>
+                                    <th>Score IA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in resultats %}
+                                <tr {% if loop.first %}class="bg-light"{% endif %}>
+                                    <td>
+                                        {% if loop.first %}
+                                            <span class="badge badge-success"><i class="fas fa-award"></i> 1er</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ loop.index }}e</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ res.fournisseur }}</strong></td>
+                                    <td>{{ res.prix|number_format(2, ',', ' ') }}</td>
+                                    <td>{{ res.delai }} j</td>
+                                    <td>
+                                        <div class="progress progress-sm mr-2">
+                                            <div class="progress-bar bg-info" role="progressbar" 
+                                                 style="width: {{ (res.score_ia / (resultats|first).score_ia) * 100 }}%"></div>
+                                        </div>
+                                        <small>{{ res.score_ia }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Comment ça marche ?</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="fas fa-microchip fa-3x text-gray-300 mb-3"></i>
+                    </div>
+                    <p class="small">
+                        Le modèle **Stratix Decision Engine** utilise un algorithme de scoring pondéré en Python. Il traite les données brutes 
+                        du fichier CSV importé pour minimiser les coûts tout en optimisant la chaîne d'approvisionnement.
+                    </p>
+                    <hr>
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Poids des critères</div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-danger" style="width: 70%">Prix (70%)</div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 30%">Délai (30%)</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block shadow-sm" onclick="window.print();">
+                <i class="fas fa-download fa-sm text-white-50"></i> Exporter le rapport d'analyse
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
