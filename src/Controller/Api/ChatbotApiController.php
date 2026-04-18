@@ -232,4 +232,4 @@ class ChatbotApiController extends AbstractController
         
         return ['type' => 'text', 'content' => "✅ Tâche créée : **{$titre}**"];
     }
-}
+}//
