@@ -19,8 +19,7 @@ use App\Entity\Favori;
 use App\Repository\FavoriRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-
-
+use App\Entity\Phase;
 
 #[Route('/projet')]
 class ProjetController extends AbstractController
@@ -29,35 +28,34 @@ class ProjetController extends AbstractController
     //  LISTE (ADMIN) - Avec Pagination
     // ─────────────────────────────────────────────
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
-public function index(Request $request, ProjetRepository $repo, PaginatorInterface $paginator, FavoriRepository $favoriRepo): Response
-{
-    $search = $request->query->get('search');
-    $statut = $request->query->get('statut');
+    public function index(Request $request, ProjetRepository $repo, PaginatorInterface $paginator, FavoriRepository $favoriRepo): Response
+    {
+        $search = $request->query->get('search');
+        $statut = $request->query->get('statut');
 
-    $query = $repo->findActiveWithFilters($search, $statut);
+        $query = $repo->findActiveWithFilters($search, $statut);
 
-    $pagination = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1),
-        6 
-    );
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6 
+        );
 
-    // --- LOGIQUE POUR LES COEURS PLEINS ---
-    $userFavorisIds = [];
-    if ($this->getUser()) {
-        $favoris = $favoriRepo->findBy(['utilisateur' => $this->getUser()]);
-        foreach ($favoris as $f) {
-            $userFavorisIds[] = $f->getProjet()->getId();
+        $userFavorisIds = [];
+        if ($this->getUser()) {
+            $favoris = $favoriRepo->findBy(['utilisateur' => $this->getUser()]);
+            foreach ($favoris as $f) {
+                $userFavorisIds[] = $f->getProjet()->getId();
+            }
         }
-    }
 
-    return $this->render('admin/Projet/listeProjets.html.twig', [
-        'projets'         => $pagination,
-        'currentSearch'   => $search,
-        'currentStatut'   => $statut,
-        'user_favoris_ids' => $userFavorisIds, // On envoie le tableau d'IDs ici
-    ]);
-}
+        return $this->render('admin/Projet/listeProjets.html.twig', [
+            'projets'          => $pagination,
+            'currentSearch'    => $search,
+            'currentStatut'    => $statut,
+            'user_favoris_ids' => $userFavorisIds,
+        ]);
+    }
 
     // ─────────────────────────────────────────────
     //  CRÉER UN PROJET
@@ -118,7 +116,6 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
 
             if ($file) {
                 $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/cahiers';
-                // Supprimer l'ancien fichier
                 if ($projet->getCahierDesCharges()) {
                     $oldPath = $uploadDir . '/' . $projet->getCahierDesCharges();
                     if (file_exists($oldPath)) { unlink($oldPath); }
@@ -140,7 +137,7 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
     }
 
     // ─────────────────────────────────────────────
-    //  ARCHIVES (LISTE & ACTIONS)
+    //  ARCHIVES
     // ─────────────────────────────────────────────
     #[Route('/archives', name: 'app_projet_archives', methods: ['GET'])]
     public function archives(ProjetRepository $repo): Response
@@ -205,7 +202,6 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
             
             $result = $aiService->generateSummary(mb_substr(trim($contenu), 0, 3000));
             
-            // Nettoyage JSON pour éviter les erreurs de formatage de l'IA
             if (preg_match('/\{(?:[^{}]|(?R))*\}/s', $result, $matches)) {
                 $data = json_decode($matches[0], true);
                 return $this->json([
@@ -223,34 +219,29 @@ public function index(Request $request, ProjetRepository $repo, PaginatorInterfa
     // ─────────────────────────────────────────────
     //  VUES EMPLOYÉ
     // ─────────────────────────────────────────────
-   #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
-public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRepo): Response
-{
-    $user = $this->getUser();
-    if (!$user) return $this->redirectToRoute('app_login');
+    #[Route('/employee/mes-projets', name: 'app_projet_employee_index')]
+    public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRepo): Response
+    {
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
 
-    // Récupération des favoris de l'employé
-    $userFavorisIds = [];
-    $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
-    foreach ($favoris as $f) {
-        $userFavorisIds[] = $f->getProjet()->getId();
+        $userFavorisIds = [];
+        $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
+        foreach ($favoris as $f) {
+            $userFavorisIds[] = $f->getProjet()->getId();
+        }
+
+        return $this->render('employee/projetEmploye.html.twig', [
+            'projets' => $repo->findProjetsPourEmploye($user),
+            'user_favoris_ids' => $userFavorisIds,
+        ]);
     }
-
-    return $this->render('employee/projetEmploye.html.twig', [
-        'projets' => $repo->findProjetsPourEmploye($user),
-        'user_favoris_ids' => $userFavorisIds, // Essentiel pour garder les coeurs rouges
-    ]);
-}
-
-    // ... imports existants
 
     #[Route('/employee/projet/{id}/show', name: 'app_projet_employe_show', methods: ['GET'])]
     public function showEmployee(Projet $projet): Response
     {
         $user = $this->getUser();
 
-        // Sécurité : on vérifie si l'employé est lié au projet
-        // Remplace 'getMembres' par le nom de ta relation dans l'entité Projet
         if (!$projet->getMembres()->contains($user)) {
             $this->addFlash('danger', 'Accès refusé : vous ne faites pas partie de ce projet.');
             return $this->redirectToRoute('app_projet_employee_index');
@@ -258,11 +249,13 @@ public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRe
 
         return $this->render('employee/employeProjetDetails.html.twig', [
             'projet' => $projet,
-            'sprints' => $projet->getSprints(), 
+            'phases' => $projet->getPhases(), // Changé de getSprints() à getPhases()
         ]);
     }
 
-// Cette route sera accessible via : /projet/mes-favoris
+    // ─────────────────────────────────────────────
+    //  FAVORIS
+    // ─────────────────────────────────────────────
     #[Route('/mes-favoris', name: 'app_projet_favoris_liste')]
     public function listeFavoris(FavoriRepository $favoriRepo): Response
     {
@@ -276,20 +269,13 @@ public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRe
         ]);
     }
 
-    // Cette route sera accessible via : /projet/favori/{id}
     #[Route('/favori/{id}', name: 'projet_toggle_favori', methods: ['GET', 'POST'])]
-    public function toggleFavori(
-        Projet $projet, 
-        EntityManagerInterface $em, 
-        FavoriRepository $repo
-    ): Response {
+    public function toggleFavori(Projet $projet, EntityManagerInterface $em, FavoriRepository $repo): Response 
+    {
         $user = $this->getUser();
         if (!$user) return $this->json(['message' => 'Non connecté'], 403);
 
-        $favori = $repo->findOneBy([
-            'utilisateur' => $user, 
-            'projet' => $projet
-        ]);
+        $favori = $repo->findOneBy(['utilisateur' => $user, 'projet' => $projet]);
 
         if ($favori) {
             $em->remove($favori);
@@ -306,88 +292,81 @@ public function indexEmployee(ProjetRepository $repo, FavoriRepository $favoriRe
         return $this->json(['isFavorite' => $isFavorite]);
     }
 
-
     #[Route('/employee/mes-favoris', name: 'app_projet_employee_favoris')]
-public function favorisEmployee(FavoriRepository $favoriRepo): Response
-{
-    $user = $this->getUser();
-    if (!$user) return $this->redirectToRoute('app_login');
+    public function favorisEmployee(FavoriRepository $favoriRepo): Response
+    {
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
 
-    $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
+        $favoris = $favoriRepo->findBy(['utilisateur' => $user]);
 
-    return $this->render('employee/favoris_liste.html.twig', [
-        'favoris' => $favoris
-    ]);
-}
-
-#[Route('/employee/projet/{id}/export-pdf', name: 'app_projet_export_pdf', methods: ['GET'])]
-public function exportPdf(Projet $projet): Response
-{
-    // 1. Configuration de Dompdf
-    $pdfOptions = new Options();
-    $pdfOptions->set('defaultFont', 'Arial'); // Utilisation d'une police standard
-    $pdfOptions->set('isRemoteEnabled', true); // Utile si tu as des images externes (ex: logo Cloudinary)
-
-    $dompdf = new Dompdf($pdfOptions);
-
-    // 2. Récupération du HTML via Twig
-    // Note : On a supprimé le paramètre 'qrCode' ici
-    $html = $this->renderView('employee/projet_pdf.html.twig', [
-        'projet' => $projet,
-    ]);
-
-    // 3. Rendu du PDF
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-
-    // 4. Sécurisation du nom de fichier
-    // On enlève les caractères spéciaux qui pourraient poser problème au téléchargement
-    $safeFilename = str_replace([' ', '/', '\\'], '_', $projet->getNom());
-    $fileName = 'Stratix_Rapport_' . $safeFilename . '_' . date('Y-m-d') . '.pdf';
-
-    // 5. Envoi du fichier au navigateur
-    return new Response($dompdf->output(), 200, [
-        'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
-    ]);
-}
-
-
-#[Route('/api/projets/calendar', name: 'api_projets_calendar', methods: ['GET'])]
-public function getCalendarEvents(ProjetRepository $projetRepository): JsonResponse
-{
-    $user = $this->getUser();
-    $projets = $projetRepository->findBy(['isArchived' => false]); 
-
-    $events = [];
-    foreach ($projets as $projet) {
-        if ($projet->getDateDebut() && $projet->getDateFin()) {
-            $events[] = [
-                'id' => $projet->getId(),
-                'title' => $projet->getNom(),
-                'start' => $projet->getDateDebut()->format('Y-m-d'),
-               
-                'end' => $projet->getDateFin()->modify('+1 day')->format('Y-m-d'),
-                'backgroundColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
-                'borderColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
-                'url' => $this->generateUrl('app_projet_show', ['id' => $projet->getId()]),
-                'allDay' => true
-            ];
-        }
+        return $this->render('employee/favoris_liste.html.twig', [
+            'favoris' => $favoris
+        ]);
     }
-    
-    return new JsonResponse($events);
-}
 
-private function getColorByStatut(string $statut): string
-{
-    return match ($statut) {
-        'Planifié' => '#f39c12', // Orange
-        'En cours' => '#3498db', // Bleu
-        'Terminé' => '#2ecc71',  // Vert
-        'Annulé'   => '#e74c3c',  // Rouge
-        default    => '#95a5a6',  // Gris
-    };
-}
+    // ─────────────────────────────────────────────
+    //  EXPORT PDF
+    // ─────────────────────────────────────────────
+    #[Route('/employee/projet/{id}/export-pdf', name: 'app_projet_export_pdf', methods: ['GET'])]
+    public function exportPdf(Projet $projet): Response
+    {
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($pdfOptions);
+        $html = $this->renderView('employee/projet_pdf.html.twig', [
+            'projet' => $projet,
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $safeFilename = str_replace([' ', '/', '\\'], '_', $projet->getNom());
+        $fileName = 'Stratix_Rapport_' . $safeFilename . '_' . date('Y-m-d') . '.pdf';
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+        ]);
+    }
+
+    // ─────────────────────────────────────────────
+    //  CALENDRIER
+    // ─────────────────────────────────────────────
+    #[Route('/api/projets/calendar', name: 'api_projets_calendar', methods: ['GET'])]
+    public function getCalendarEvents(ProjetRepository $projetRepository): JsonResponse
+    {
+        $projets = $projetRepository->findBy(['isArchived' => false]); 
+
+        $events = [];
+        foreach ($projets as $projet) {
+            if ($projet->getDateDebut() && $projet->getDateFin()) {
+                $events[] = [
+                    'id' => $projet->getId(),
+                    'title' => $projet->getNom(),
+                    'start' => $projet->getDateDebut()->format('Y-m-d'),
+                    'end' => $projet->getDateFin()->modify('+1 day')->format('Y-m-d'),
+                    'backgroundColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
+                    'borderColor' => $this->getColorByStatut($projet->getStatut() ?? 'default'),
+                    'url' => $this->generateUrl('app_projet_show', ['id' => $projet->getId()]),
+                    'allDay' => true
+                ];
+            }
+        }
+        return new JsonResponse($events);
+    }
+
+    private function getColorByStatut(string $statut): string
+    {
+        return match ($statut) {
+            'Planifié' => '#f39c12',
+            'En cours' => '#3498db',
+            'Terminé'  => '#2ecc71',
+            'Annulé'   => '#e74c3c',
+            default    => '#95a5a6',
+        };
+    }
 }
