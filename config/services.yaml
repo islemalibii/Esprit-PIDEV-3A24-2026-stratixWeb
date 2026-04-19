@@ -42,3 +42,7 @@ services:
             $apiKey: '%env(OPENAI_API_KEY_PROJET)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+parameters:
+    mail_user: '%env(STRATIX_MAIL_USER)%'
+    mail_pass: '%env(STRATIX_MAIL_PASS)%'
+    catalogues_directory: '%kernel.project_dir%/public/uploads/catalogues'
