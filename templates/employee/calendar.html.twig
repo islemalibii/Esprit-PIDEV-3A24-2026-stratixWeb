@@ -1,0 +1,375 @@
+{# templates/employee/calendar.html.twig #}
+{% extends 'employee/base_employee.html.twig' %}
+
+{% block title %}Calendrier - STRATIX{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --accent: #3b82f6;
+        }
+
+        #calendar {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 6px;
+            border: none !important;
+            font-size: 0.82rem;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.2rem !important;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .fc-day-today { background-color: #eff6ff !important; }
+
+        /* Filtres */
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .filter-bar .badge-filter {
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 2px solid transparent;
+            transition: all .2s;
+            user-select: none;
+        }
+        .filter-bar .badge-filter.active { border-color: #1e3a5f; }
+
+        /* Stats bar */
+        .stat-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 14px; border-radius: 20px;
+            font-size: 0.82rem; font-weight: 600;
+        }
+
+        /* Modal */
+        .modal-header-custom { background: linear-gradient(135deg, #1e3a5f, #3b82f6); color: white; border-radius: 12px 12px 0 0; }
+        .detail-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .detail-row:last-child { border: none; }
+        .detail-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+
+        /* Toast */
+        #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast-notif {
+            background: white; border-radius: 12px; padding: 14px 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.15); display: flex; align-items: center; gap: 12px;
+            min-width: 280px; animation: slideIn .3s ease; font-size: 0.88rem;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Alerte retard */
+        .retard-banner {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-left: 4px solid #ef4444;
+            border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+        }
+
+        /* Vue buttons */
+        .vue-btn { border-radius: 20px !important; padding: 5px 16px !important; font-size: 0.82rem !important; }
+        .vue-btn.active { background: var(--primary) !important; color: white !important; }
+
+        .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.07); border-radius: 12px; }
+    </style>
+{% endblock %}
+
+{% block employee_content %}
+<div class="container-fluid">
+
+    {# ─── Alerte tâches en retard ─── #}
+    <div id="retardBanner" class="retard-banner d-none">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-triangle text-danger"></i>
+            <strong class="text-danger">Tâches en retard : </strong>
+            <span id="retardCount" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h4 class="mb-0" style="color:var(--primary)">
+                    <i class="fas fa-calendar-alt me-2"></i>Mon Planning Stratix
+                </h4>
+
+                {# Stats pills #}
+                <div class="d-flex gap-2 flex-wrap" id="statsPills"></div>
+
+                {# Boutons vue + Export #}
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary vue-btn active" onclick="switchView('dayGridMonth')">
+                            <i class="fas fa-calendar me-1"></i>Mois
+                        </button>
+                        <button class="btn btn-outline-primary vue-btn" onclick="switchView('timeGridWeek')">
+                            <i class="fas fa-calendar-week me-1"></i>Semaine
+                        </button>
+                        <button class="btn btn-outline-primary vue-btn" onclick="switchView('listWeek')">
+                            <i class="fas fa-list me-1"></i>Liste
+                        </button>
+                    </div>
+                    <button class="btn btn-success btn-sm" onclick="exportICS()" title="Exporter ICS">
+                        <i class="fas fa-download me-1"></i>Export ICS
+                    </button>
+                </div>
+            </div>
+
+            {# ─── Filtres ─── #}
+            <div class="filter-bar mt-3">
+                <small class="text-muted fw-semibold">Filtrer :</small>
+                <span class="badge-filter active bg-primary text-white" data-filter="all" onclick="applyFilter('all', this)">
+                    Tout
+                </span>
+                <span class="badge-filter bg-danger text-white" data-filter="HAUTE" onclick="applyFilter('HAUTE', this)">
+                    🔴 Haute priorité
+                </span>
+                <span class="badge-filter bg-warning text-dark" data-filter="MOYENNE" onclick="applyFilter('MOYENNE', this)">
+                    🟡 Moyenne
+                </span>
+                <span class="badge-filter bg-success text-white" data-filter="BASSE" onclick="applyFilter('BASSE', this)">
+                    🟢 Basse
+                </span>
+                <span class="badge-filter bg-info text-white" data-filter="planning" onclick="applyFilter('planning', this)">
+                    📅 Plannings
+                </span>
+                <span class="badge-filter bg-secondary text-white" data-filter="tache" onclick="applyFilter('tache', this)">
+                    📌 Tâches
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+{# ─── Modal détail événement ─── #}
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px; border:none;">
+            <div class="modal-header-custom p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="modalIcon" style="font-size:2rem;"></div>
+                    <div>
+                        <h5 class="mb-0 fw-bold" id="modalTitle"></h5>
+                        <small id="modalType" class="opacity-75"></small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="modalBody"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ─── Toast container ─── #}
+<div id="toastContainer"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js'></script>
+
+    <script>
+    const allEvents = {{ events|default('[]')|raw }};
+    let calendar;
+    let currentFilter = 'all';
+
+    /* ── Couleurs ── */
+    const priorityColors = { HAUTE: '#dc2626', MOYENNE: '#f59e0b', BASSE: '#10b981' };
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', function () {
+        buildStats();
+        checkRetard();
+        initCalendar(allEvents);
+        showToast('📅 Calendrier chargé — ' + allEvents.length + ' événement(s)', 'info');
+    });
+
+    /* ── Calendrier ── */
+    function initCalendar(events) {
+        const el = document.getElementById('calendar');
+        if (!el) return;
+
+        if (calendar) calendar.destroy();
+
+        calendar = new FullCalendar.Calendar(el, {
+            locale: 'fr',
+            initialView: 'dayGridMonth',
+            headerToolbar: false,
+            events: events,
+            height: 'auto',
+            expandRows: true,
+            handleWindowResize: true,
+            eventDidMount: function(info) {
+                // Drag-and-drop visuel
+                info.el.setAttribute('draggable', true);
+            },
+            eventClick: function(info) {
+                openModal(info.event);
+            },
+            eventDrop: function(info) {
+                showToast('📌 "' + info.event.title + '" déplacé au ' + info.event.start.toLocaleDateString('fr'), 'success');
+            },
+            editable: true,
+            droppable: true,
+        });
+
+        calendar.render();
+    }
+
+    /* ── Switch vue ── */
+    function switchView(view) {
+        if (calendar) calendar.changeView(view);
+        document.querySelectorAll('.vue-btn').forEach(b => b.classList.remove('active'));
+        event.target.closest('.vue-btn').classList.add('active');
+    }
+
+    /* ── Filtres ── */
+    function applyFilter(filter, el) {
+        currentFilter = filter;
+        document.querySelectorAll('.badge-filter').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+
+        let filtered = allEvents;
+        if (filter === 'planning') {
+            filtered = allEvents.filter(e => e.title.startsWith('📅'));
+        } else if (filter === 'tache') {
+            filtered = allEvents.filter(e => e.title.startsWith('📌'));
+        } else if (['HAUTE','MOYENNE','BASSE'].includes(filter)) {
+            filtered = allEvents.filter(e => e.priorite === filter);
+        }
+
+        initCalendar(filtered);
+        showToast('🔍 Filtre : ' + filter + ' — ' + filtered.length + ' événement(s)', 'info');
+    }
+
+    /* ── Modal ── */
+    function openModal(event) {
+        const isTache   = event.title.startsWith('📌');
+        const isPlanning = event.title.startsWith('📅');
+        const title     = event.title.replace(/^[📌📅]\s*/, '');
+        const date      = event.start ? event.start.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : '—';
+        const priorite  = event.extendedProps.priorite || null;
+        const statut    = event.extendedProps.statut   || null;
+
+        document.getElementById('modalIcon').textContent  = isTache ? '📌' : '📅';
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalType').textContent  = isTache ? 'Tâche' : 'Planning';
+
+        let body = `
+            <div class="detail-row">
+                <div class="detail-icon bg-blue-50" style="background:#eff6ff">📅</div>
+                <div><small class="text-muted">Date</small><div class="fw-semibold">${date}</div></div>
+            </div>`;
+
+        if (priorite) {
+            const colors = { HAUTE: '#fef2f2', MOYENNE: '#fffbeb', BASSE: '#f0fdf4' };
+            const badges = { HAUTE: 'danger', MOYENNE: 'warning', BASSE: 'success' };
+            body += `
+            <div class="detail-row">
+                <div class="detail-icon" style="background:${colors[priorite] || '#f8fafc'}">🎯</div>
+                <div><small class="text-muted">Priorité</small>
+                    <div><span class="badge bg-${badges[priorite] || 'secondary'}">${priorite}</span></div>
+                </div>
+            </div>`;
+        }
+
+        if (statut) {
+            body += `
+            <div class="detail-row">
+                <div class="detail-icon" style="background:#f0fdf4">✅</div>
+                <div><small class="text-muted">Statut</small><div class="fw-semibold">${statut.replace('_', ' ')}</div></div>
+            </div>`;
+        }
+
+        document.getElementById('modalBody').innerHTML = body;
+        new bootstrap.Modal(document.getElementById('eventModal')).show();
+    }
+
+    /* ── Stats pills ── */
+    function buildStats() {
+        const taches   = allEvents.filter(e => e.title.startsWith('📌')).length;
+        const plannings = allEvents.filter(e => e.title.startsWith('📅')).length;
+        const hautes   = allEvents.filter(e => e.priorite === 'HAUTE').length;
+
+        const container = document.getElementById('statsPills');
+        container.innerHTML = `
+            <span class="stat-pill bg-light text-dark border">📌 ${taches} tâche(s)</span>
+            <span class="stat-pill bg-light text-dark border">📅 ${plannings} planning(s)</span>
+            ${hautes > 0 ? `<span class="stat-pill bg-danger text-white">🔴 ${hautes} urgente(s)</span>` : ''}
+        `;
+    }
+
+    /* ── Retard ── */
+    function checkRetard() {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const retard = allEvents.filter(e => {
+            if (!e.start || !e.title.startsWith('📌')) return false;
+            return new Date(e.start) < today;
+        });
+
+        if (retard.length > 0) {
+            document.getElementById('retardBanner').classList.remove('d-none');
+            document.getElementById('retardCount').textContent = retard.length + ' tâche(s) dépassée(s)';
+        }
+    }
+
+    /* ── Export ICS ── */
+    function exportICS() {
+        let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//STRATIX//FR\r\n';
+
+        allEvents.forEach(function(e) {
+            const title = e.title.replace(/[📌📅]\s*/g, '');
+            const dateStr = e.start ? e.start.replace(/-/g, '') : '';
+            ics += 'BEGIN:VEVENT\r\n';
+            ics += 'DTSTART;VALUE=DATE:' + dateStr + '\r\n';
+            ics += 'SUMMARY:' + title + '\r\n';
+            ics += 'END:VEVENT\r\n';
+        });
+
+        ics += 'END:VCALENDAR';
+
+        const blob = new Blob([ics], { type: 'text/calendar' });
+        const a    = document.createElement('a');
+        a.href     = URL.createObjectURL(blob);
+        a.download = 'stratix-planning.ics';
+        a.click();
+        showToast('✅ Export ICS téléchargé !', 'success');
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, type) {
+        const colors = { success: '#10b981', info: '#3b82f6', warning: '#f59e0b', error: '#ef4444' };
+        const icons  = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
+        const toast  = document.createElement('div');
+        toast.className = 'toast-notif';
+        toast.innerHTML = `<span style="font-size:1.2rem">${icons[type]||'ℹ️'}</span>
+                           <span>${msg}</span>`;
+        toast.style.borderLeft = '4px solid ' + (colors[type] || '#3b82f6');
+
+        const container = document.getElementById('toastContainer');
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+    </script>
+{% endblock %}
