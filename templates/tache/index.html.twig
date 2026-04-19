@@ -8,7 +8,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-tasks"></i> Gestion des Tâches</h1>
         <div>
-            <!-- BOUTON STATISTIQUES -->
             <button onclick="toggleStats()" class="btn btn-info me-2" id="statsBtn">
                 <i class="fas fa-chart-line"></i> Afficher Statistiques
             </button>
@@ -21,9 +20,11 @@
         </div>
     </div>
 
+    <!-- ===== SECTION ALERTES SURCHARGE ===== -->
+    <div id="alertesSurcharge" style="display:none;" class="mb-4"></div>
+
     <!-- SECTION STATISTIQUES (cachée par défaut) -->
     <div id="statsSection" style="display: none;">
-        <!-- Statistiques principales -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card text-white bg-primary">
@@ -59,7 +60,6 @@
             </div>
         </div>
 
-        <!-- Graphiques -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="card h-100">
@@ -83,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Taux de complétion -->
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
@@ -168,7 +167,7 @@
                                     <i class="fas fa-calendar-alt"></i>
                                 {% endif %}
                                 {{ tache.deadline ? tache.deadline|date('d/m/Y') : '—' }}
-                            </div>
+                            </td>
                             <td>
                                 {% if tache.statut == 'A_FAIRE' %}
                                     <span class="badge bg-warning text-dark">📌 À faire</span>
@@ -177,7 +176,7 @@
                                 {% else %}
                                     <span class="badge bg-success">✅ Terminée</span>
                                 {% endif %}
-                            </div>
+                            </td>
                             <td>
                                 {% if tache.priorite == 'HAUTE' %}
                                     <span class="badge bg-danger">🔴 Haute</span>
@@ -186,7 +185,7 @@
                                 {% else %}
                                     <span class="badge bg-secondary">🟢 Basse</span>
                                 {% endif %}
-                            </div>
+                            </td>
                             <td class="table-actions">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ path('app_tache_show', {'id': tache.id}) }}" class="btn btn-outline-info" title="Voir">
@@ -205,7 +204,7 @@
                                         </button>
                                     </form>
                                 </div>
-                            </div>
+                            </td>
                         </tr>
                         {% else %}
                             <tr>
@@ -221,14 +220,53 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// ===== ALERTES SURCHARGE =====
+async function loadAlertesSurcharge() {
+    try {
+        const response = await fetch('/api/alertes/surcharge');
+        const data = await response.json();
+        const container = document.getElementById('alertesSurcharge');
+
+        if (data.success && data.total_alertes > 0) {
+            let html = `
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-exclamation-triangle me-2"></i> <strong>⚠️ Alertes surcharge (${data.total_alertes} employé(s))</strong></span>
+                        <button onclick="document.getElementById('alertesSurcharge').style.display='none'" class="btn btn-sm btn-outline-dark">✕ Fermer</button>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row g-2">`;
+
+            data.alertes.forEach(a => {
+                const color = a.niveau === 'critique' ? 'danger' : 'warning';
+                html += `
+                    <div class="col-md-4">
+                        <div class="alert alert-${color} py-2 mb-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user me-1"></i> <strong>${a.employe}</strong><br>
+                                <small>${a.taches_en_cours} tâches en cours</small>
+                            </div>
+                            <span class="badge bg-${color}">${a.niveau.toUpperCase()}</span>
+                        </div>
+                    </div>`;
+            });
+
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+    } catch (e) {
+        console.error('Erreur alertes:', e);
+    }
+}
+
+// ===== STATS =====
 let statutChart, prioriteChart;
 let statsVisible = false;
 
-// Fonction pour afficher/cacher les stats
 function toggleStats() {
     const statsSection = document.getElementById('statsSection');
     const statsBtn = document.getElementById('statsBtn');
-    
     if (statsVisible) {
         statsSection.style.display = 'none';
         statsBtn.innerHTML = '<i class="fas fa-chart-line"></i> Afficher Statistiques';
@@ -237,87 +275,57 @@ function toggleStats() {
         statsSection.style.display = 'block';
         statsBtn.innerHTML = '<i class="fas fa-chart-line"></i> Masquer Statistiques';
         statsVisible = true;
-        
-        // Créer les graphiques seulement si nécessaire
         setTimeout(createCharts, 100);
     }
 }
 
-// Créer les graphiques
 function createCharts() {
-    // Graphique des statuts
     const statutCtx = document.getElementById('statutChart')?.getContext('2d');
     if (statutCtx && !statutChart) {
         statutChart = new Chart(statutCtx, {
             type: 'doughnut',
             data: {
                 labels: ['À faire', 'En cours', 'Terminées'],
-                datasets: [{
-                    data: [{{ a_faire|default(0) }}, {{ en_cours|default(0) }}, {{ terminees|default(0) }}],
-                    backgroundColor: ['#ffc107', '#0dcaf0', '#198754'],
-                    borderWidth: 0
-                }]
+                datasets: [{ data: [{{ a_faire|default(0) }}, {{ en_cours|default(0) }}, {{ terminees|default(0) }}], backgroundColor: ['#ffc107', '#0dcaf0', '#198754'], borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { position: 'bottom' } }
-            }
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
         });
     }
-    
-    // Graphique des priorités
     const prioriteCtx = document.getElementById('prioriteChart')?.getContext('2d');
     if (prioriteCtx && !prioriteChart) {
         prioriteChart = new Chart(prioriteCtx, {
             type: 'doughnut',
             data: {
                 labels: ['Haute', 'Moyenne', 'Basse'],
-                datasets: [{
-                    data: [{{ haute|default(0) }}, {{ moyenne|default(0) }}, {{ basse|default(0) }}],
-                    backgroundColor: ['#dc3545', '#ffc107', '#198754'],
-                    borderWidth: 0
-                }]
+                datasets: [{ data: [{{ haute|default(0) }}, {{ moyenne|default(0) }}, {{ basse|default(0) }}], backgroundColor: ['#dc3545', '#ffc107', '#198754'], borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { position: 'bottom' } }
-            }
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
         });
     }
 }
 
-// Filtres
-const searchInput = document.getElementById('searchInput');
+// ===== FILTRES =====
+const searchInput  = document.getElementById('searchInput');
 const statutFilter = document.getElementById('statutFilter');
 const priorityFilter = document.getElementById('priorityFilter');
 const tbody = document.getElementById('tacheTableBody');
 
-function getRows() {
-    return tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
-}
-
 function filterTable() {
-    const searchText = searchInput.value.toLowerCase();
+    const searchText  = searchInput.value.toLowerCase();
     const statutValue = statutFilter.value;
     const priorityValue = priorityFilter.value;
-
-    getRows().forEach(row => {
-        const titre = row.cells[0]?.innerText.toLowerCase() || '';
-        const statut = row.cells[3]?.innerText || '';
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+        const titre   = row.cells[0]?.innerText.toLowerCase() || '';
+        const statut  = row.cells[3]?.innerText || '';
         const priorite = row.cells[4]?.innerText || '';
-
         let matchStatut = true;
         if (statutValue === 'A_FAIRE') matchStatut = statut.includes('À faire');
         else if (statutValue === 'EN_COURS') matchStatut = statut.includes('En cours');
         else if (statutValue === 'TERMINEE') matchStatut = statut.includes('Terminée');
-
         let matchPriority = true;
         if (priorityValue === 'HAUTE') matchPriority = priorite.includes('Haute');
         else if (priorityValue === 'MOYENNE') matchPriority = priorite.includes('Moyenne');
         else if (priorityValue === 'BASSE') matchPriority = priorite.includes('Basse');
-
         row.style.display = (matchStatut && matchPriority && titre.includes(searchText)) ? '' : 'none';
     });
 }
@@ -332,6 +340,9 @@ function resetFilters() {
 if (searchInput) searchInput.addEventListener('keyup', filterTable);
 if (statutFilter) statutFilter.addEventListener('change', filterTable);
 if (priorityFilter) priorityFilter.addEventListener('change', filterTable);
+
+// Charger les alertes au démarrage
+loadAlertesSurcharge();
 </script>
 
 <style>
@@ -340,7 +351,6 @@ if (priorityFilter) priorityFilter.addEventListener('change', filterTable);
     .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .card-header { border-radius: 15px 15px 0 0; }
     .progress-bar { transition: width 0.5s ease; }
-    .btn-group .btn { margin: 0 1px; }
     #statsSection { transition: all 0.3s ease; }
 </style>
 {% endblock %}
