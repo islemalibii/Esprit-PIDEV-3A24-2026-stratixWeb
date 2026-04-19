@@ -55,8 +55,24 @@ class AuthController extends AbstractController
         return $this->redirectToRoute('app_employee_dashboard');
     }
 
-    #[Route('/theme/toggle', name: 'app_theme_toggle', methods: ['POST'])]
-    public function toggleTheme(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\JsonResponse
+    #[Route('/emotion/save', name: 'app_emotion_save', methods: ['POST'])]
+    public function saveEmotion(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\JsonResponse
+    {
+        /** @var \App\Entity\Utilisateur $user */
+        $user = $this->getUser();
+        if (!$user) return $this->json(['error' => 'Non connecté'], 401);
+
+        $emotion = $request->request->get('emotion', 'neutral');
+        $allowed = ['happy', 'sad', 'angry', 'fearful', 'disgusted', 'surprised', 'neutral'];
+        if (!in_array($emotion, $allowed)) $emotion = 'neutral';
+
+        $user->setLastEmotion($emotion);
+        $em->flush();
+
+        return $this->json(['ok' => true, 'emotion' => $emotion]);
+    }
+
+    #[Route('/theme/toggle', name: 'app_theme_toggle', methods: ['POST'])]    public function toggleTheme(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\JsonResponse
     {
         /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();

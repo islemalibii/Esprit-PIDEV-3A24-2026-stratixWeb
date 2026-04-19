@@ -50,6 +50,16 @@ class AdminController extends AbstractController
         $recent = $repo->findBy([], ['id' => 'DESC'], 8);
         $lockedUsers = $repo->findBy(['account_locked' => true], ['id' => 'DESC'], 5);
 
+        // Stats émotions du jour
+        $allUsers = $repo->findBy(['statut' => 'actif']);
+        $emotionStats = ['happy' => 0, 'neutral' => 0, 'sad' => 0, 'angry' => 0, 'fearful' => 0, 'surprised' => 0, 'disgusted' => 0, 'unknown' => 0];
+        foreach ($allUsers as $u) {
+            $e = $u->getLastEmotion() ?? 'unknown';
+            if (isset($emotionStats[$e])) $emotionStats[$e]++;
+            else $emotionStats['unknown']++;
+        }
+        $totalEmotions = array_sum($emotionStats);
+
         return $this->render('admin/dashboard.html.twig', [
             'stats' => [
                 'total'       => $total,
@@ -61,6 +71,8 @@ class AdminController extends AbstractController
             'roles'       => $roles,
             'recent'      => $recent,
             'lockedUsers' => $lockedUsers,
+            'emotionStats'   => $emotionStats,
+            'totalEmotions'  => $totalEmotions,
         ]);
     }
 
