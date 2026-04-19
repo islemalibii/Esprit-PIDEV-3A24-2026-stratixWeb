@@ -1,129 +1,110 @@
-{# templates/projet/chat.html.twig #}
+{# 1. Héritage dynamique #}
+{% extends is_granted('ROLE_RESPONSABLE') 
+    ? 'responsable/base_responsable.html.twig' 
+    : 'employee/base_employee.html.twig' 
+%}
 
-{% extends 'base.html.twig' %}
 {% block title %}STRATIX - Chat {{ projet.nom }}{% endblock %}
 
-{% block body %}
-<main id="content" class="content py-4">
-    <div class="container-fluid px-4">
-
-        <div class="row g-3 align-items-center mb-4 mt-2">
-            <div class="col-lg-8">
+{% block employee_content %}
+<div class="main-wrapper-centered" style="width: 100%; min-height: 85vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 30px;">
+    
+    <div class="central-chat-area" style="width: 100%; max-width: 1000px; margin: 0 auto;">
+        
+        {# En-tête #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
                 <h2 class="fs-4 mb-0 fw-bold text-dark">
                     <i class="ti ti-messages me-2 text-danger"></i>Discussion de groupe
                 </h2>
                 <p class="text-muted small mb-0">Projet : <span class="fw-bold text-dark">{{ projet.nom }}</span></p>
             </div>
-            <div class="col-lg-4 text-end">
-                <a href="{{ path('app_projet_index') }}" class="btn btn-outline-secondary shadow-sm px-4 fw-bold rounded-3">
+            <div>
+                {% set back_path = is_granted('ROLE_RESPONSABLE_PRODUCTION') 
+                    ? path('app_projet_index', {'id': projet.id}) 
+                    : path('app_projet_employee_index') 
+                %}
+                <a href="{{ back_path }}" class="btn btn-outline-secondary shadow-sm px-4 fw-bold rounded-3">
                     <i class="ti ti-arrow-back-up me-1"></i> Retour
                 </a>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mx-auto" style="max-width: 1000px;">
+        {# Carte de Chat #}
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: #fff;">
             <div class="card-body p-0">
-
+                
+                {# Zone des messages #}
                 <div id="chat-container" class="p-4"
                      style="height: 500px; overflow-y: auto; display: flex; flex-direction: column;
-                            gap: 10px; scroll-behavior: smooth; background-color: #f8fafc;">
-                    <div id="empty-state" class="text-center text-muted m-auto" style="font-size: 0.88rem;">
-                        <i class="ti ti-message-off d-block mb-2" style="font-size: 2rem; opacity: 0.3;"></i>
-                        Aucun message pour l'instant
+                            gap: 12px; scroll-behavior: smooth; background-color: #f8fafc;">
+                    
+                    <div id="empty-state" class="text-center text-muted m-auto">
+                        <i class="ti ti-message-off d-block mb-2" style="font-size: 2.5rem; opacity: 0.2;"></i>
+                        <p class="mb-0">Aucun message pour le moment.</p>
                     </div>
                 </div>
 
+                {# Zone de saisie #}
                 <div class="p-3 bg-white border-top">
-                    <div class="d-flex align-items-end gap-2">
+                    <div class="d-flex align-items-end gap-3 px-2">
                         <textarea id="msgInput" rows="1"
-                            class="form-control rounded-4 border py-2 px-3"
-                            placeholder="Écrivez votre message…"
+                            class="form-control rounded-4 border-2 py-2 px-3"
+                            placeholder="Écrivez votre message..."
                             style="resize: none; overflow-y: hidden; max-height: 120px;
-                                   line-height: 1.5; font-size: 0.92rem;
-                                   box-shadow: none; outline: none;"></textarea>
+                                   line-height: 1.5; font-size: 0.95rem;
+                                   box-shadow: none; outline: none; border-color: #e2e8f0;"></textarea>
 
-                        <button class="btn btn-danger rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                id="btnSend" style="width: 42px; height: 42px;">
-                            <i class="ti ti-send" style="font-size: 1rem;"></i>
+                        <button class="btn btn-danger rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm"
+                                id="btnSend" style="width: 48px; height: 48px;">
+                            <i class="ti ti-send" style="font-size: 1.2rem;"></i>
                         </button>
                     </div>
-                    <p class="text-muted mb-0 mt-1" style="font-size: 0.72rem; padding-left: 4px;">
-                        <kbd>Entrée</kbd> pour envoyer &nbsp;·&nbsp; <kbd>Maj + Entrée</kbd> pour une nouvelle ligne
-                    </p>
                 </div>
-
             </div>
         </div>
     </div>
-</main>
+</div>
 
 <style>
-    #chat-container::-webkit-scrollbar { width: 5px; }
-    #chat-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-
-    .msg-wrapper {
-        display: flex;
-        flex-direction: column;
-        max-width: 65%;
+    /* Forcer l'annulation des marges du layout parent si nécessaire */
+    #content, .content-wrapper, .body-wrapper {
+        display: block !important;
+        width: 100% !important;
     }
-    .msg-me    { align-self: flex-end;   align-items: flex-end; }
+
+    /* Bulles */
+    .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; margin-bottom: 5px; }
+    .msg-me { align-self: flex-end; align-items: flex-end; }
     .msg-other { align-self: flex-start; align-items: flex-start; }
 
-    .msg-row {
-        display: flex;
-        align-items: flex-end;
-        gap: 7px;
-    }
+    .msg-row { display: flex; align-items: flex-end; gap: 10px; }
     .msg-me .msg-row { flex-direction: row-reverse; }
 
     .msg-avatar {
-        width: 28px; height: 28px;
-        border-radius: 50%;
-        font-size: 0.68rem;
-        font-weight: 600;
+        width: 32px; height: 32px; border-radius: 50%;
+        font-size: 0.75rem; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-        background-color: #e2e8f0;
-        color: #475569;
+        background-color: #edf2f7; color: #4a5568;
     }
-    .msg-me .msg-avatar {
-        background-color: #fde8ea;
-        color: #dc3545;
-    }
+    .msg-me .msg-avatar { background-color: #fee2e2; color: #dc3545; }
 
     .chat-bubble {
-        padding: 8px 14px;
-        font-size: 0.92rem;
-        line-height: 1.5;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-        width: fit-content;
-        max-width: 100%;
+        padding: 10px 16px; font-size: 0.95rem; line-height: 1.5;
+        word-wrap: break-word; white-space: pre-wrap;
     }
-    .bubble-me {
-        background-color: #dc3545;
-        color: #fff;
-        border-radius: 16px 16px 4px 16px;
-    }
-    .bubble-other {
-        background-color: #ffffff;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px 16px 16px 4px;
-    }
+    .bubble-me { background-color: #dc3545; color: #fff; border-radius: 18px 18px 4px 18px; }
+    .bubble-other { background-color: #ffffff; color: #1e293b; border: 1px solid #eef2f6; border-radius: 18px 18px 18px 4px; }
 
-    .msg-info {
-        font-size: 0.72rem;
-        color: #94a3b8;
-        margin-bottom: 3px;
-        padding: 0 36px;
-    }
-
-    #msgInput:focus {
-        border-color: #dc3545 !important;
-        box-shadow: 0 0 0 3px rgba(220, 53, 69, .15) !important;
-    }
+    .msg-info { font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; padding: 0 42px; }
+    
+    #chat-container::-webkit-scrollbar { width: 6px; }
+    #chat-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
+{% endblock %}
+
+{% block responsable_content %}
+    {{ block('employee_content') }}
 {% endblock %}
 
 {% block javascripts %}
@@ -133,41 +114,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
     const firebaseConfig = { databaseURL: "https://stratixchat-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
-    const database   = firebase.database();
-    const projetId   = "{{ projet.id }}";
-    const myName     = "{{ app.user.nom }} {{ app.user.prenom }}";
-    const chatRef    = database.ref('projet-' + projetId);
+    const database = firebase.database();
+    const projetId = "{{ projet.id }}";
+    const myName = "{{ app.user.nom }} {{ app.user.prenom }}";
+    const chatRef = database.ref('projet-' + projetId);
 
     const chatContainer = document.getElementById('chat-container');
-    const msgInput      = document.getElementById('msgInput');
-    const btnSend       = document.getElementById('btnSend');
+    const msgInput = document.getElementById('msgInput');
+    const btnSend = document.getElementById('btnSend');
 
     function escapeHtml(text) {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function getInitials(name) {
-        return name.split(' ')
-                   .map(w => w[0] || '')
-                   .join('')
-                   .substring(0, 2)
-                   .toUpperCase();
+        return name.split(' ').map(w => w[0] || '').join('').substring(0, 2).toUpperCase();
     }
 
     function displayMessage(sender, text, timestamp) {
         const emptyState = document.getElementById('empty-state');
         if (emptyState) emptyState.remove();
 
-        const isMe  = (sender === myName);
-        const date  = new Date(timestamp);
+        const isMe = (sender === myName);
+        const date = new Date(timestamp);
         const heure = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
         const initials = getInitials(sender);
 
@@ -189,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function sendMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
-
         chatRef.push({
             sender: myName,
             text: text,
@@ -201,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     btnSend.addEventListener('click', sendMessage);
-
     msgInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -218,7 +188,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const msg = snapshot.val();
         displayMessage(msg.sender, msg.text, msg.timestamp);
     });
-
 });
 </script>
 {% endblock %}
